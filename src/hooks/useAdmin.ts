@@ -1,0 +1,390 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+
+export type UserRole = 'admin' | 'customer';
+
+export interface UserRoleData {
+  id: string;
+  user_id: string;
+  role: UserRole;
+  created_at: string;
+}
+
+export interface ReservationWithDetails {
+  id: string;
+  user_id: string;
+  event_date: string;
+  event_time: string;
+  event_address: string;
+  zone_id?: string;
+  adult_count: number;
+  child_count: number;
+  comments?: string;
+  subtotal: number;
+  transport_cost: number;
+  total: number;
+  status: 'pending_payment' | 'paid' | 'confirmed' | 'cancelled';
+  payment_proof_url?: string;
+  created_at: string;
+  updated_at: string;
+  zone?: {
+    name: string;
+    transport_cost: number;
+  };
+  user_profile?: {
+    first_name?: string;
+    last_name?: string;
+    phone?: string;
+  };
+  reservation_items?: Array<{
+    id: string;
+    product_name: string;
+    product_price: number;
+    quantity: number;
+    extra_hours: number;
+    extra_hour_percentage: number;
+    item_total: number;
+  }>;
+}
+
+export interface DashboardStats {
+  totalReservations: number;
+  pendingPayments: number;
+  confirmedReservations: number;
+  totalRevenue: number;
+  thisMonthRevenue: number;
+  popularProducts: Array<{
+    product_name: string;
+    total_quantity: number;
+    total_revenue: number;
+  }>;
+}
+
+// Role management hooks
+export const useUserRole = () => {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: ['user-role', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        throw new Error(error.message);
+      }
+      
+      return data as UserRoleData | null;
+    },
+    enabled: !!user,
+  });
+};
+
+export const useIsAdmin = () => {
+  const { data: userRole } = useUserRole();
+  return userRole?.role === 'admin';
+};
+
+// Admin reservation management
+export const useReservations = (filters?: {
+  status?: string;
+  startDate?: string;
+  endDate?: string;
+}) => {
+  return useQuery({
+    queryKey: ['admin-reservations', filters],
+    queryFn: async () => {
+      let query = supabase
+        .from('reservations')
+        .select(`
+          *,
+          zone:zones(name, transport_cost),
+          user_profile:profiles!reservations_user_id_fkey(first_name, last_name, phone),
+          reservation_items(*)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (filters?.status && filters.status !== 'all') {
+        query = query.eq('status', filters.status);
+      }
+
+      if (filters?.startDate) {
+        query = query.gte('event_date', filters.startDate);
+      }
+
+      if (filters?.endDate) {
+        query = query.lte('event_date', filters.endDate);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw new Error(error.message);
+      return data as ReservationWithDetails[];
+    },
+  });
+};
+
+export const useUpdateReservationStatus = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ 
+      reservationId, 
+      status, 
+      paymentProofUrl 
+    }: {
+      reservationId: string;
+      status: string;
+      paymentProofUrl?: string;
+    }) => {
+      const updates: any = { status };
+      if (paymentProofUrl) {
+        updates.payment_proof_url = paymentProofUrl;
+      }
+
+      const { data, error } = await supabase
+        .from('reservations')
+        .update(updates)
+        .eq('id', reservationId)
+        .select()
+        .single();
+
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-reservations'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+    },
+  });
+};
+
+// Dashboard statistics
+export const useDashboardStats = () => {
+  return useQuery({
+    queryKey: ['dashboard-stats'],
+    queryFn: async () => {
+      // Get basic reservation counts
+      const { data: reservationCounts } = await supabase
+        .from('reservations')
+        .select('status, total, created_at');
+
+      // Get popular products this month
+      const { data: popularProducts } = await supabase
+        .from('reservation_items')
+        .select(`
+          product_name,
+          quantity,
+          item_total,
+          reservation:reservations!inner(created_at, status)
+        `)
+        .gte('reservation.created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())
+        .eq('reservation.status', 'confirmed');
+
+      if (!reservationCounts) {
+        throw new Error('Failed to fetch reservation stats');
+      }
+
+      const totalReservations = reservationCounts.length;
+      const pendingPayments = reservationCounts.filter(r => r.status === 'pending_payment').length;
+      const confirmedReservations = reservationCounts.filter(r => r.status === 'confirmed').length;
+      const totalRevenue = reservationCounts
+        .filter(r => r.status === 'confirmed')
+        .reduce((sum, r) => sum + Number(r.total), 0);
+
+      const thisMonth = new Date();
+      thisMonth.setDate(1);
+      const thisMonthRevenue = reservationCounts
+        .filter(r => 
+          r.status === 'confirmed' && 
+          new Date(r.created_at) >= thisMonth
+        )
+        .reduce((sum, r) => sum + Number(r.total), 0);
+
+      // Calculate popular products
+      const productStats = popularProducts?.reduce((acc: any, item: any) => {
+        const existing = acc[item.product_name] || { 
+          product_name: item.product_name, 
+          total_quantity: 0, 
+          total_revenue: 0 
+        };
+        existing.total_quantity += item.quantity;
+        existing.total_revenue += Number(item.item_total);
+        acc[item.product_name] = existing;
+        return acc;
+      }, {});
+
+      const popularProductsArray = Object.values(productStats || {})
+        .sort((a: any, b: any) => b.total_quantity - a.total_quantity)
+        .slice(0, 5);
+
+      return {
+        totalReservations,
+        pendingPayments,
+        confirmedReservations,
+        totalRevenue,
+        thisMonthRevenue,
+        popularProducts: popularProductsArray,
+      } as DashboardStats;
+    },
+  });
+};
+
+// Product management
+export const useCreateProduct = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (productData: {
+      category_id: string;
+      name: string;
+      description?: string;
+      base_price: number;
+      extra_hour_percentage?: number;
+      image_url?: string;
+    }) => {
+      const { data, error } = await supabase
+        .from('products')
+        .insert(productData)
+        .select()
+        .single();
+
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    },
+  });
+};
+
+export const useUpdateProduct = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ 
+      productId, 
+      ...updates 
+    }: {
+      productId: string;
+      [key: string]: any;
+    }) => {
+      const { data, error } = await supabase
+        .from('products')
+        .update(updates)
+        .eq('id', productId)
+        .select()
+        .single();
+
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    },
+  });
+};
+
+export const useDeleteProduct = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (productId: string) => {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId);
+
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    },
+  });
+};
+
+// Category management
+export const useCreateCategory = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (categoryData: {
+      name: string;
+      description?: string;
+      image_url?: string;
+    }) => {
+      const { data, error } = await supabase
+        .from('categories')
+        .insert(categoryData)
+        .select()
+        .single();
+
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+    },
+  });
+};
+
+export const useUpdateCategory = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ 
+      categoryId, 
+      ...updates 
+    }: {
+      categoryId: string;
+      [key: string]: any;
+    }) => {
+      const { data, error } = await supabase
+        .from('categories')
+        .update(updates)
+        .eq('id', categoryId)
+        .select()
+        .single();
+
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+    },
+  });
+};
+
+// Zone management
+export const useUpdateZone = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ 
+      zoneId, 
+      ...updates 
+    }: {
+      zoneId: string;
+      [key: string]: any;
+    }) => {
+      const { data, error } = await supabase
+        .from('zones')
+        .update(updates)
+        .eq('id', zoneId)
+        .select()
+        .single();
+
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['zones'] });
+    },
+  });
+};
