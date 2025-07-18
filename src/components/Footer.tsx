@@ -34,15 +34,21 @@ export const Footer = () => {
             
             {/* Social Media */}
             <div className="flex gap-3">
-              <Button variant="ghost" size="sm" className="hover:text-primary">
-                <Facebook className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="sm" className="hover:text-primary">
-                <Instagram className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="sm" className="hover:text-primary">
-                <MessageCircle className="h-5 w-5" />
-              </Button>
+              <a href="https://www.facebook.com/profile.php?id=100076060550859" target="_blank" rel="noopener noreferrer">
+                <Button variant="ghost" size="sm" className="hover:text-primary">
+                  <Facebook className="h-5 w-5" />
+                </Button>
+              </a>
+              <a href="https://www.instagram.com/coolbalu.entretenimientos/" target="_blank" rel="noopener noreferrer">
+                <Button variant="ghost" size="sm" className="hover:text-primary">
+                  <Instagram className="h-5 w-5" />
+                </Button>
+              </a>
+              <a href="https://wa.me/543412770608" target="_blank" rel="noopener noreferrer">
+                <Button variant="ghost" size="sm" className="hover:text-primary">
+                  <MessageCircle className="h-5 w-5" />
+                </Button>
+              </a>
             </div>
           </div>
 
@@ -54,29 +60,28 @@ export const Footer = () => {
                 <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-muted-foreground">
-                    Rosario y Alrededores<br />
-                    Santa Fe<br />
-                    Argentina
+                    Rosario y Alrededores,<br />
+                    Santa Fe, Argentina
                   </p>
                 </div>
               </div>
               
               <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 text-primary flex-shrink-0" />
-                <span className="text-muted-foreground">+54 11 1234-5678</span>
+                <span className="text-muted-foreground">+54 341 2770608</span>
               </div>
               
               <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 text-primary flex-shrink-0" />
-                <span className="text-muted-foreground">info@coolbalu.com.ar</span>
+                <span className="text-muted-foreground">contactocoolbalu@gmail.com</span>
               </div>
               
               <div className="flex items-start gap-3">
                 <Clock className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                 <div className="text-muted-foreground">
                   <p>Lun - Vie: 9:00 - 18:00</p>
-                  <p>Sáb: 9:00 - 14:00</p>
-                  <p>Dom: Cerrado</p>
+                  <p>Sáb: 9:00 - 21:00</p>
+                  <p>Dom: 9:00 - 21:00</p>
                 </div>
               </div>
             </div>
@@ -126,9 +131,7 @@ export const Footer = () => {
               <p className="text-muted-foreground">Juegos Inflables</p>
               <p className="text-muted-foreground">Mobiliario para Eventos</p>
               <p className="text-muted-foreground">Servicios de Catering</p>
-              <p className="text-muted-foreground">Decoración Temática</p>
-              <p className="text-muted-foreground">Animación Infantil</p>
-              <p className="text-muted-foreground">Traslado Incluido</p>
+              <p className="text-muted-foreground">Traslado y Montaje Incluidos</p>
             </div>
           </div>
         </div>
