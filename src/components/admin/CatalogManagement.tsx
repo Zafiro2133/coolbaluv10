@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useProducts } from '@/hooks/useProducts';
-import { useCreateProduct, useUpdateProduct, useDeleteProduct, useCreateCategory, useUpdateCategory } from '@/hooks/useAdmin';
+import { useAdminProducts } from '@/hooks/useProducts';
+import { useCreateProduct, useUpdateProduct, useDeleteProduct, useDuplicateProduct, useCreateCategory, useUpdateCategory } from '@/hooks/useAdmin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Package, Plus, Edit, Trash2, Image, DollarSign, Tag, Eye, EyeOff } from 'lucide-react';
+import { Package, Plus, Edit, Trash2, Image, DollarSign, Tag, Eye, EyeOff, Copy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Category {
@@ -74,10 +74,11 @@ function ProductManagement() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
-  const { data: products, isLoading } = useProducts();
+  const { data: products, isLoading } = useAdminProducts();
   const createProductMutation = useCreateProduct();
   const updateProductMutation = useUpdateProduct();
   const deleteProductMutation = useDeleteProduct();
+  const duplicateProductMutation = useDuplicateProduct();
   const { toast } = useToast();
 
   const handleCreateProduct = async (productData: any) => {
@@ -131,6 +132,24 @@ function ProductManagement() {
       toast({
         title: "Error",
         description: "No se pudo eliminar el producto.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDuplicateProduct = async (productId: string) => {
+    if (!confirm('¿Estás seguro de que quieres duplicar este producto?')) return;
+    
+    try {
+      await duplicateProductMutation.mutateAsync(productId);
+      toast({
+        title: "Producto duplicado",
+        description: "El producto ha sido duplicado exitosamente.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo duplicar el producto.",
         variant: "destructive",
       });
     }
@@ -276,6 +295,15 @@ function ProductManagement() {
                         </DialogContent>
                       </Dialog>
                       
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDuplicateProduct(product.id)}
+                        disabled={duplicateProductMutation.isPending}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+
                       <Button
                         variant="destructive"
                         size="sm"

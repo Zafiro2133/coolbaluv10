@@ -4,7 +4,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Home, Search, ArrowLeft, Frown } from "lucide-react";
+import { Home, Search, ArrowLeft, Frown, MessageCircle } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
@@ -67,6 +67,7 @@ const NotFound = () => {
                   variant="outline"
                   onClick={goBack}
                   className="w-full"
+                  disabled={window.history.length <= 1}
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Atrás
@@ -81,6 +82,15 @@ const NotFound = () => {
                   Catálogo
                 </Button>
               </div>
+              
+              <Button 
+                variant="outline"
+                onClick={() => navigate('/contact')}
+                className="w-full"
+              >
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Contacto
+              </Button>
             </div>
 
             {/* Helpful Links */}

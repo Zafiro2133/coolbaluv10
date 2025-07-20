@@ -29,7 +29,7 @@ export const Footer = () => {
           <div className="space-y-4">
             <h3 className="text-xl font-bold text-foreground">Coolbalu</h3>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              Hacemos de tu evento algo especial con la mejor calidad en alquiler de juegos inflables, mobiliario y servicios de catering.
+              Llegamos con la diversión para los más chicos. Tenemos la mejor calidad en alquiler de juegos inflables para fiestas infantiles.
             </p>
             
             {/* Social Media */}
@@ -115,12 +115,12 @@ export const Footer = () => {
               >
                 Mi Perfil
               </Link>
-              <a 
-                href="#como-funciona" 
+              <Link 
+                to="/#como-funciona" 
                 className="block text-muted-foreground hover:text-primary transition-colors"
               >
                 Cómo Funciona
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -172,7 +172,7 @@ export const Footer = () => {
         <Button
           size="lg"
           className="rounded-full shadow-lg hover:shadow-xl transition-all duration-300 bg-green-500 hover:bg-green-600 text-white"
-          onClick={() => window.open('https://wa.me/5491123456789', '_blank')}
+          onClick={() => window.open('https://wa.me/5493412770608', '_blank')}
         >
           <MessageCircle className="h-6 w-6" />
           <span className="sr-only">WhatsApp</span>

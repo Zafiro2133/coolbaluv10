@@ -1,7 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Image } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export const HeroSection = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="flex flex-col items-center justify-center px-6 py-12 text-center">
       {/* Placeholder circular image */}
@@ -14,14 +17,14 @@ export const HeroSection = () => {
       </h1>
       
       <p className="text-lg text-muted-foreground mb-8 max-w-sm leading-relaxed">
-        Alquila juegos inflables, mobiliario y servicios de catering para hacer de tu celebración un momento inolvidable.
+        Alquila juegos inflables, mobiliario y servicios de catering en Rosario y alrededores para hacer de tu celebración un momento inolvidable.
       </p>
       
       <div className="flex flex-col gap-4 w-full max-w-xs">
-        <Button variant="coolbalu" size="lg" className="w-full" onClick={() => window.location.href = "/catalog"}>
+        <Button variant="coolbalu" size="lg" className="w-full" onClick={() => navigate('/catalog')}>
           Ver Catálogo
         </Button>
-        <Button variant="coolbalu_outline" size="lg" className="w-full">
+        <Button variant="coolbalu_outline" size="lg" className="w-full" onClick={() => navigate('/reservation')}>
           Reservar
         </Button>
       </div>

@@ -1,4 +1,4 @@
-import { Menu, MessageCircle, BookOpen, User, LogOut, ShoppingCart, Calendar } from "lucide-react";
+import { Menu, MessageCircle, BookOpen, User, LogOut, ShoppingCart, Calendar, Home, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -8,8 +8,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { 
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useCartContext } from '@/contexts/CartContext';
 import { useCartItems } from '@/hooks/useCart';
 import { useIsAdmin } from '@/hooks/useAdmin';
@@ -20,6 +28,21 @@ export const Header = () => {
   const { openCart } = useCartContext();
   const { data: cartItems = [] } = useCartItems();
   const isAdmin = useIsAdmin();
+  const location = useLocation();
+
+  const getPageTitle = (pathname: string) => {
+    const titles: Record<string, string> = {
+      '/': 'Inicio',
+      '/catalog': 'Catálogo',
+      '/contact': 'Contacto',
+      '/auth': 'Iniciar Sesión',
+      '/reservation': 'Reservar',
+      '/profile': 'Mi Perfil',
+      '/admin': 'Panel Admin',
+      '/faq': 'Preguntas Frecuentes',
+    };
+    return titles[pathname] || 'Página';
+  };
 
   const handleAuthClick = () => {
     if (user) {
@@ -32,9 +55,33 @@ export const Header = () => {
   return (
     <header className="w-full bg-card border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-foreground hover:text-primary transition-colors">
-            Coolbalu
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link to="/" className="text-2xl font-bold text-foreground hover:text-primary transition-colors">
+              Coolbalu
+            </Link>
+            
+            {/* Breadcrumbs */}
+            {location.pathname !== '/' && (
+              <div className="hidden md:flex">
+                <Breadcrumb>
+                  <BreadcrumbList>
+                    <BreadcrumbItem>
+                      <BreadcrumbLink onClick={() => navigate('/')} className="flex items-center gap-1 cursor-pointer hover:text-primary">
+                        <Home className="h-4 w-4" />
+                        Inicio
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage className="font-medium">
+                        {getPageTitle(location.pathname)}
+                      </BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </BreadcrumbList>
+                </Breadcrumb>
+              </div>
+            )}
+          </div>
           
           <div className="flex items-center gap-3">
             {isAdmin && (
@@ -77,6 +124,16 @@ export const Header = () => {
             >
               <MessageCircle className="h-5 w-5" />
               <span className="hidden sm:inline">Contacto</span>
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => navigate('/faq')}
+              className="rounded-full flex items-center gap-2 px-3"
+            >
+              <HelpCircle className="h-5 w-5" />
+              <span className="hidden sm:inline">Preguntas Frecuentes</span>
             </Button>
             
             <Button 

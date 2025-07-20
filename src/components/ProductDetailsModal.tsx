@@ -16,6 +16,7 @@ import { useAddToCart } from '@/hooks/useCart';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCartContext } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
+import { DELIVERY_COST } from '@/hooks/useCart';
 
 interface ProductDetailsModalProps {
   product: Product | null;
@@ -42,6 +43,15 @@ export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetails
   };
 
   const calculateTotal = () => {
+    const basePrice = product.base_price * quantity;
+    const extraCost = extraHours > 0 
+      ? basePrice * (product.extra_hour_percentage || 0) / 100 * extraHours
+      : 0;
+    const subtotal = basePrice + extraCost;
+    return subtotal + DELIVERY_COST;
+  };
+
+  const calculateSubtotal = () => {
     const basePrice = product.base_price * quantity;
     const extraCost = extraHours > 0 
       ? basePrice * (product.extra_hour_percentage || 0) / 100 * extraHours
@@ -89,12 +99,12 @@ export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetails
     {
       icon: Truck,
       title: "Incluye Traslado",
-      description: "Entrega y retiro sin costo adicional"
+      description: "Traslado e instalación en Rosario y alrededores con costo adicional"
     },
     {
       icon: Clock,
       title: "Duración Estándar",
-      description: "4 horas de uso incluidas"
+      description: "3 horas de uso incluidas"
     },
     {
       icon: Users,
@@ -135,7 +145,7 @@ export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetails
               )}
               {product.extra_hour_percentage > 0 && (
                 <Badge variant="default" className="absolute top-3 right-3">
-                  +{product.extra_hour_percentage}%/h extra
+                  +${Math.round(product.base_price * (product.extra_hour_percentage / 100)).toLocaleString()}/hora extra
                 </Badge>
               )}
             </div>
@@ -166,7 +176,7 @@ export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetails
               <h3 className="text-lg font-semibold mb-2">Descripción</h3>
               <p className="text-muted-foreground leading-relaxed">
                 {product.description || 
-                  `${product.name} es perfecto para hacer de tu evento algo especial. Incluye todo lo necesario para que disfrutes sin preocupaciones. Nuestro equipo se encarga de la instalación y el retiro.`
+                  `${product.name} es perfecto para hacer de tu evento algo especial en Rosario y alrededores. Incluye todo lo necesario para que disfrutes sin preocupaciones. Nuestro equipo se encarga de la instalación y el retiro.`
                 }
               </p>
             </div>
@@ -180,12 +190,12 @@ export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetails
                 <div className="text-3xl font-bold text-primary">
                   {formatPrice(product.base_price)}
                   <span className="text-sm text-muted-foreground font-normal ml-2">
-                    por 4 horas
+                    por 3 horas
                   </span>
                 </div>
                 {product.extra_hour_percentage > 0 && (
                   <p className="text-sm text-muted-foreground mt-1">
-                    Horas adicionales: +{product.extra_hour_percentage}% por hora
+                    Horas adicionales: +${Math.round(product.base_price * (product.extra_hour_percentage / 100)).toLocaleString()} por hora
                   </p>
                 )}
               </div>
@@ -246,7 +256,7 @@ export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetails
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Subtotal ({quantity} unidad{quantity > 1 ? 'es' : ''}):</span>
-                  <span>{formatPrice(product.base_price * quantity)}</span>
+                  <span>{formatPrice(calculateSubtotal())}</span>
                 </div>
                 {extraHours > 0 && (
                   <div className="flex justify-between text-sm">
@@ -258,6 +268,10 @@ export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetails
                     </span>
                   </div>
                 )}
+                <div className="flex justify-between text-sm">
+                  <span>Traslado e Instalación:</span>
+                  <span>{formatPrice(DELIVERY_COST)}</span>
+                </div>
                 <Separator />
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total:</span>
@@ -265,15 +279,34 @@ export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetails
                 </div>
               </div>
 
-              {/* Add to Cart Button */}
-              <Button
-                onClick={handleAddToCart}
-                className="w-full"
-                size="lg"
-                disabled={addToCart.isPending}
-              >
-                {addToCart.isPending ? 'Agregando...' : 'Agregar al Carrito'}
-              </Button>
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                <Button 
+                  onClick={handleAddToCart} 
+                  className="w-full" 
+                  size="lg"
+                  disabled={addToCart.isPending}
+                >
+                  {addToCart.isPending ? "Agregando..." : "Agregar al Carrito"}
+                </Button>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => { onClose(); openCart(); }}
+                    className="w-full"
+                  >
+                    Ver Carrito
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={onClose}
+                    className="w-full"
+                  >
+                    Seguir Comprando
+                  </Button>
+                </div>
+              </div>
             </div>
 
             {/* Additional Info */}
@@ -286,7 +319,7 @@ export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetails
                   <div>
                     <h4 className="font-semibold text-sm mb-1">¡Servicio Premium!</h4>
                     <p className="text-xs text-muted-foreground">
-                      Incluimos instalación, supervisión durante el evento y retiro. 
+                      Incluimos instalación y traslado en Rosario y alrededores. 
                       Todo para que solo te preocupes por disfrutar.
                     </p>
                   </div>

@@ -70,7 +70,7 @@ export const ProductCard = ({ product, onDetails, onReserve }: ProductCardProps)
           )}
           {product.extra_hour_percentage > 0 && (
             <Badge variant="secondary" className="absolute top-2 right-2 text-xs">
-              +{product.extra_hour_percentage}%/h
+              +${Math.round(product.base_price * (product.extra_hour_percentage / 100)).toLocaleString()}/hora extra
             </Badge>
           )}
         </div>
@@ -91,6 +91,9 @@ export const ProductCard = ({ product, onDetails, onReserve }: ProductCardProps)
           
           <div className="text-2xl font-bold text-primary mb-6">
             {formatPrice(product.base_price)}
+            <span className="text-sm text-muted-foreground font-normal ml-2">
+              por 3 horas
+            </span>
           </div>
           
           {/* Action Buttons */}

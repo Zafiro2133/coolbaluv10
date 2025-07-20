@@ -96,3 +96,31 @@ export const useProduct = (productId: string) => {
     },
   });
 };
+
+// Hook para administración - muestra todos los productos (activos e inactivos)
+export const useAdminProducts = (categoryId?: string) => {
+  return useQuery({
+    queryKey: ['admin-products', categoryId],
+    queryFn: async () => {
+      let query = supabase
+        .from('products')
+        .select(`
+          *,
+          category:categories(*)
+        `)
+        .order('display_order', { ascending: true });
+
+      if (categoryId && categoryId !== 'all') {
+        query = query.eq('category_id', categoryId);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      return data as Product[];
+    },
+  });
+};

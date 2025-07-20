@@ -241,14 +241,7 @@ export const useCreateProduct = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (productData: {
-      category_id: string;
-      name: string;
-      description?: string;
-      base_price: number;
-      extra_hour_percentage?: number;
-      image_url?: string;
-    }) => {
+    mutationFn: async (productData: any) => {
       const { data, error } = await supabase
         .from('products')
         .insert(productData)
@@ -260,6 +253,7 @@ export const useCreateProduct = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
     },
   });
 };
@@ -268,13 +262,7 @@ export const useUpdateProduct = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ 
-      productId, 
-      ...updates 
-    }: {
-      productId: string;
-      [key: string]: any;
-    }) => {
+    mutationFn: async ({ productId, ...updates }: { productId: string; [key: string]: any }) => {
       const { data, error } = await supabase
         .from('products')
         .update(updates)
@@ -287,6 +275,7 @@ export const useUpdateProduct = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
     },
   });
 };
@@ -305,6 +294,48 @@ export const useDeleteProduct = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+    },
+  });
+};
+
+export const useDuplicateProduct = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (productId: string) => {
+      // Primero obtener el producto original
+      const { data: originalProduct, error: fetchError } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', productId)
+        .single();
+
+      if (fetchError) throw new Error(fetchError.message);
+      if (!originalProduct) throw new Error('Producto no encontrado');
+
+      // Crear una copia del producto con "Copia" en el nombre
+      const duplicatedProduct = {
+        ...originalProduct,
+        id: undefined, // Para que se genere un nuevo ID
+        name: `${originalProduct.name} (Copia)`,
+        is_active: false, // Por defecto inactivo para revisión
+        created_at: undefined, // Para que se genere automáticamente
+        updated_at: undefined, // Para que se genere automáticamente
+      };
+
+      const { data, error } = await supabase
+        .from('products')
+        .insert(duplicatedProduct)
+        .select()
+        .single();
+
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
     },
   });
 };
@@ -314,11 +345,7 @@ export const useCreateCategory = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (categoryData: {
-      name: string;
-      description?: string;
-      image_url?: string;
-    }) => {
+    mutationFn: async (categoryData: any) => {
       const { data, error } = await supabase
         .from('categories')
         .insert(categoryData)
@@ -330,6 +357,8 @@ export const useCreateCategory = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
     },
   });
 };
@@ -338,13 +367,7 @@ export const useUpdateCategory = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ 
-      categoryId, 
-      ...updates 
-    }: {
-      categoryId: string;
-      [key: string]: any;
-    }) => {
+    mutationFn: async ({ categoryId, ...updates }: { categoryId: string; [key: string]: any }) => {
       const { data, error } = await supabase
         .from('categories')
         .update(updates)
@@ -357,6 +380,8 @@ export const useUpdateCategory = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
     },
   });
 };

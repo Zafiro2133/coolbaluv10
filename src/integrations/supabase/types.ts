@@ -344,6 +344,42 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_messages: {
+        Row: {
+          id: string
+          nombre: string
+          apellido: string
+          email: string
+          telefono: string
+          mensaje: string
+          status: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          nombre: string
+          apellido: string
+          email: string
+          telefono: string
+          mensaje: string
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          nombre?: string
+          apellido?: string
+          email?: string
+          telefono?: string
+          mensaje?: string
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

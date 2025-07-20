@@ -9,11 +9,11 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { User, Calendar, MapPin, Phone, Mail, Edit, Save, X, Package, DollarSign, Clock } from 'lucide-react';
+import { User, Calendar, MapPin, Phone, Mail, Edit, Save, X, Package, Clock, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 interface UserProfile {
   id: string;
@@ -51,6 +51,7 @@ interface Reservation {
 export default function Profile() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -185,22 +186,6 @@ export default function Profile() {
     );
   };
 
-  const calculateStats = () => {
-    const totalReservations = reservations.length;
-    const totalSpent = reservations.reduce((sum, r) => sum + r.total, 0);
-    const completedReservations = reservations.filter(r => r.status === 'completed').length;
-    const averageSpent = totalReservations > 0 ? totalSpent / totalReservations : 0;
-
-    return {
-      totalReservations,
-      totalSpent,
-      completedReservations,
-      averageSpent,
-    };
-  };
-
-  const stats = calculateStats();
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -209,13 +194,12 @@ export default function Profile() {
           <div className="space-y-6">
             <div className="h-32 bg-muted animate-pulse rounded" />
             <div className="h-64 bg-muted animate-pulse rounded" />
-        </div>
-      </main>
-      
-      <Footer />
-    </div>
-  );
-}
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -224,11 +208,22 @@ export default function Profile() {
         <div className="space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold">Mi Perfil</h1>
-              <p className="text-muted-foreground">
-                Gestiona tu información personal y revisa tu historial
-              </p>
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(-1)}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Volver
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold">Mi Perfil</h1>
+                <p className="text-muted-foreground">
+                  Gestiona tu información personal y revisa tu historial
+                </p>
+              </div>
             </div>
             <Button
               variant={isEditing ? "outline" : "default"}
@@ -253,7 +248,7 @@ export default function Profile() {
           </div>
 
           <Tabs defaultValue="profile" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="profile" className="flex items-center gap-2">
                 <User className="h-4 w-4" />
                 Perfil
@@ -261,10 +256,6 @@ export default function Profile() {
               <TabsTrigger value="reservations" className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
                 Reservas
-              </TabsTrigger>
-              <TabsTrigger value="statistics" className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4" />
-                Estadísticas
               </TabsTrigger>
             </TabsList>
 
@@ -480,92 +471,6 @@ export default function Profile() {
                       </Button>
                     </div>
                   )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="statistics" className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-8 w-8 text-primary" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Total Reservas</p>
-                        <p className="text-2xl font-bold">{stats.totalReservations}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-8 w-8 text-primary" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Total Gastado</p>
-                        <p className="text-2xl font-bold">${stats.totalSpent.toLocaleString()}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-2">
-                      <Package className="h-8 w-8 text-primary" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Completadas</p>
-                        <p className="text-2xl font-bold">{stats.completedReservations}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-8 w-8 text-primary" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Promedio</p>
-                        <p className="text-2xl font-bold">${Math.round(stats.averageSpent).toLocaleString()}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Resumen de Actividad</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span>Reservas pendientes de pago</span>
-                      <Badge variant="secondary">
-                        {reservations.filter(r => r.status === 'pending_payment').length}
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Reservas confirmadas</span>
-                      <Badge variant="default">
-                        {reservations.filter(r => r.status === 'confirmed').length}
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Reservas completadas</span>
-                      <Badge variant="outline">
-                        {reservations.filter(r => r.status === 'completed').length}
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Reservas canceladas</span>
-                      <Badge variant="destructive">
-                        {reservations.filter(r => r.status === 'cancelled').length}
-                      </Badge>
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
