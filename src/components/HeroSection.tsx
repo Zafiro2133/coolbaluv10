@@ -7,10 +7,7 @@ export const HeroSection = () => {
 
   return (
     <section className="flex flex-col items-center justify-center px-6 py-12 text-center">
-      {/* Placeholder circular image */}
-      <div className="w-32 h-32 rounded-full border-2 border-muted bg-card mb-8 flex items-center justify-center">
-        <Image className="h-12 w-12 text-muted-foreground" />
-      </div>
+      
       
       <h1 className="text-4xl font-bold text-foreground mb-6 leading-tight">
         Tu evento fácil<br />y rápido

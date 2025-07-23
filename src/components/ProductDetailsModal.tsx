@@ -16,7 +16,7 @@ import { useAddToCart } from '@/hooks/useCart';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCartContext } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
-import { DELIVERY_COST } from '@/hooks/useCart';
+
 
 interface ProductDetailsModalProps {
   product: Product | null;
@@ -44,11 +44,10 @@ export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetails
 
   const calculateTotal = () => {
     const basePrice = product.base_price * quantity;
-    const extraCost = extraHours > 0 
+    const extraCost = extraHours > 0
       ? basePrice * (product.extra_hour_percentage || 0) / 100 * extraHours
       : 0;
-    const subtotal = basePrice + extraCost;
-    return subtotal + DELIVERY_COST;
+    return basePrice + extraCost;
   };
 
   const calculateSubtotal = () => {
@@ -268,11 +267,7 @@ export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetails
                     </span>
                   </div>
                 )}
-                <div className="flex justify-between text-sm">
-                  <span>Traslado e Instalación:</span>
-                  <span>{formatPrice(DELIVERY_COST)}</span>
-                </div>
-                <Separator />
+
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total:</span>
                   <span className="text-primary">{formatPrice(calculateTotal())}</span>
@@ -319,8 +314,8 @@ export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetails
                   <div>
                     <h4 className="font-semibold text-sm mb-1">¡Servicio Premium!</h4>
                     <p className="text-xs text-muted-foreground">
-                      Incluimos instalación y traslado en Rosario y alrededores. 
-                      Todo para que solo te preocupes por disfrutar.
+                      Incluimos instalación y traslado en Rosario y alrededores.
+                      *El costo final se calculará según tu zona al hacer la reserva.
                     </p>
                   </div>
                 </div>

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useCartContext } from '@/contexts/CartContext';
-import { useCartItems, useUpdateCartItem, useRemoveFromCart, calculateItemTotal, calculateCartTotal, calculateCartSubtotal, DELIVERY_COST } from '@/hooks/useCart';
+import { useCartItems, useUpdateCartItem, useRemoveFromCart, calculateItemTotal, calculateCartTotal, calculateCartSubtotal } from '@/hooks/useCart';
 import { useAuth } from '@/contexts/AuthContext';
 import { Minus, Plus, Trash2, ShoppingBag, Truck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -44,9 +44,7 @@ export const CartDrawer = () => {
     navigate('/reservation');
   };
 
-  const subtotal = calculateCartSubtotal(cartItems);
-  const deliveryCost = DELIVERY_COST;
-  const total = subtotal + deliveryCost;
+  const total = calculateCartSubtotal(cartItems);
 
   if (!user) {
     return (
@@ -214,47 +212,11 @@ export const CartDrawer = () => {
             ))
           )}
 
-          {/* Delivery Item */}
-          {cartItems.length > 0 && (
-            <div className="border rounded-lg p-4 space-y-3 bg-muted/30">
-              <div className="flex items-start gap-3">
-                <div className="w-16 h-16 bg-primary/10 rounded-lg flex-shrink-0 flex items-center justify-center">
-                  <Truck className="h-6 w-6 text-primary" />
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-sm">Traslado e Instalación</h4>
-                  <Badge variant="outline" className="text-xs mt-1">
-                    Servicio Incluido
-                  </Badge>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Traslado de equipos e instalación en el lugar del evento
-                  </p>
-                </div>
-              </div>
 
-              <Separator />
-              
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Costo:</span>
-                <span className="font-bold text-primary">
-                  {formatPrice(deliveryCost)}
-                </span>
-              </div>
-            </div>
-          )}
         </div>
 
         {cartItems.length > 0 && (
           <div className="border-t pt-4 space-y-4">
-            <div className="flex justify-between items-center text-lg font-bold">
-              <span>Subtotal:</span>
-              <span className="text-primary">{formatPrice(subtotal)}</span>
-            </div>
-            <div className="flex justify-between items-center text-lg font-bold">
-              <span>Traslado e Instalación:</span>
-              <span className="text-primary">{formatPrice(deliveryCost)}</span>
-            </div>
             <div className="flex justify-between items-center text-lg font-bold">
               <span>Total:</span>
               <span className="text-primary">{formatPrice(total)}</span>

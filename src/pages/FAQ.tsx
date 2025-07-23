@@ -63,19 +63,15 @@ export const FAQ = () => {
       ]
     },
     {
-      category: "Zonas y Traslado",
+      category: "Servicio y Traslado",
       questions: [
         {
-          question: "¿En qué zonas brindan servicio?",
-          answer: "Trabajamos en Rosario y alrededores. El sistema valida automáticamente la dirección de la fiesta y te muestra si está en nuestra zona de cobertura."
+          question: "¿En qué áreas brindan servicio?",
+          answer: "Trabajamos en Rosario y alrededores. Consultá con nosotros si tu evento está en nuestra área de cobertura."
         },
         {
-          question: "¿Cómo se calcula el costo de traslado?",
-          answer: "El costo se calcula automáticamente según la zona de la fiesta. Incluye traslado e instalación. Te mostramos el precio antes de confirmar la reserva."
-        },
-        {
-          question: "¿Qué incluye el servicio de traslado?",
-          answer: "Incluye: traslado de inflables, instalación profesional, supervisión, retiro y limpieza. Todo está incluido en el precio."
+          question: "¿Qué incluye el servicio?",
+          answer: "Incluye: traslado de inflables, instalación profesional, supervisión durante el evento, retiro y limpieza. Todo está incluido en el precio."
         }
       ]
     },
@@ -307,4 +303,4 @@ export const FAQ = () => {
   );
 };
 
-export default FAQ; 
+export default FAQ;

@@ -4,7 +4,7 @@ import { AdminHeader } from '@/components/AdminHeader';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { ReservationManagement } from '@/components/admin/ReservationManagement';
 import { CatalogManagement } from '@/components/admin/CatalogManagement';
-import { ZoneManagement } from '@/components/admin/ZoneManagement';
+
 import { UserManagement } from '@/components/admin/UserManagement';
 import { 
   LayoutDashboard, 
@@ -45,12 +45,7 @@ const adminMenuItems = [
     icon: Package,
     description: 'Productos y categorías'
   },
-  { 
-    id: 'zones', 
-    title: 'Zonas', 
-    icon: MapPin,
-    description: 'Áreas de cobertura y traslado'
-  },
+
   { 
     id: 'users', 
     title: 'Usuarios', 
@@ -117,8 +112,7 @@ const AdminPanel = () => {
         return <ReservationManagement />;
       case 'catalog':
         return <CatalogManagement />;
-      case 'zones':
-        return <ZoneManagement />;
+
       case 'users':
         return <UserManagement />;
       default:

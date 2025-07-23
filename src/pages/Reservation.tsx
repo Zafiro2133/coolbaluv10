@@ -13,7 +13,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCartItems, calculateItemTotal, calculateCartSubtotal, useClearCart } from '@/hooks/useCart';
-import { useValidateAddress } from '@/hooks/useCart';
+
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { CalendarDays, Clock, MapPin, Users, MessageSquare, CreditCard, AlertCircle, Calendar as CalendarIcon, ArrowLeft } from 'lucide-react';
@@ -27,7 +27,7 @@ export default function Reservation() {
   const { toast } = useToast();
   const { data: cartItems = [] } = useCartItems();
   const clearCart = useClearCart();
-  const validateAddress = useValidateAddress();
+
 
   const [formData, setFormData] = useState({
     eventDate: null as Date | null,
@@ -40,8 +40,7 @@ export default function Reservation() {
     comments: ''
   });
 
-  const [validatedZone, setValidatedZone] = useState<any>(null);
-  const [isValidatingAddress, setIsValidatingAddress] = useState(false);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   React.useEffect(() => {
@@ -69,69 +68,20 @@ export default function Reservation() {
   };
 
   const subtotal = calculateCartSubtotal(cartItems);
-  const transportCost = validatedZone?.transport_cost || 0;
-  const total = subtotal + transportCost;
+  const total = subtotal;
 
   const handleInputChange = (field: string, value: string | number | Date | null) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
-    // Reset zone validation if address fields change
-    if (field === 'street' || field === 'number' || field === 'city') {
-      setValidatedZone(null);
-    }
+
   };
 
-  const handleValidateAddress = async () => {
-    if (!formData.street.trim() || !formData.number.trim()) {
-      toast({
-        title: "Dirección requerida",
-        description: "Ingresa la calle y altura del evento",
-        variant: "destructive",
-      });
-      return;
-    }
 
-    const fullAddress = `${formData.street} ${formData.number}, ${formData.city}`;
-
-    setIsValidatingAddress(true);
-    try {
-      const zone = await validateAddress.mutateAsync(fullAddress);
-      if (zone) {
-        setValidatedZone(zone);
-        toast({
-          title: "Dirección válida",
-          description: `Tu evento está en ${zone.name}. Costo de traslado e instalación: ${formatPrice(zone.transport_cost)}`,
-        });
-      } else {
-        setValidatedZone(null);
-        toast({
-          title: "Área no cubierta",
-          description: "Lo sentimos, no brindamos servicios en esa zona. Solo cubrimos Rosario y alrededores.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error de validación",
-        description: "No se pudo validar la dirección. Asegúrate de incluir el barrio o código postal de Rosario.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsValidatingAddress(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validatedZone) {
-      toast({
-        title: "Valida la dirección",
-        description: "Debes validar la dirección antes de continuar",
-        variant: "destructive",
-      });
-      return;
-    }
+
 
     if (!user) return;
 
@@ -147,12 +97,12 @@ export default function Reservation() {
           event_date: formData.eventDate?.toISOString().split('T')[0] || '',
           event_time: formData.eventTime,
           event_address: fullAddress,
-          zone_id: validatedZone.id,
+          zone_id: null,
           adult_count: formData.adultCount,
           child_count: formData.childCount,
           comments: formData.comments,
           subtotal,
-          transport_cost: transportCost,
+          transport_cost: 0,
           total,
           status: 'pending_payment'
         })
@@ -333,24 +283,7 @@ export default function Reservation() {
                         />
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleValidateAddress}
-                        disabled={isValidatingAddress || !formData.street.trim() || !formData.number.trim()}
-                        className="flex-1"
-                      >
-                        {isValidatingAddress ? 'Validando...' : 'Validar Dirección'}
-                      </Button>
-                    </div>
-                    
-                    {validatedZone && (
-                      <div className="flex items-center gap-2 text-sm text-green-600">
-                        <div className="h-2 w-2 bg-green-600 rounded-full" />
-                        Zona válida: {validatedZone.name} - Traslado e Instalación: {formatPrice(validatedZone.transport_cost)}
-                      </div>
-                    )}
+
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -429,7 +362,7 @@ export default function Reservation() {
                 type="submit"
                 className="w-full"
                 size="lg"
-                disabled={isSubmitting || !validatedZone}
+                disabled={isSubmitting}
               >
                 {isSubmitting ? 'Creando reserva...' : 'Confirmar Reserva'}
               </Button>
@@ -484,14 +417,7 @@ export default function Reservation() {
                       <span>{formatPrice(subtotal)}</span>
                     </div>
                     
-                    <div className="flex justify-between text-sm">
-                      <span>Traslado e Instalación:</span>
-                      <span>
-                        {validatedZone ? formatPrice(transportCost) : (
-                          <span className="text-muted-foreground">Validar dirección</span>
-                        )}
-                      </span>
-                    </div>
+
                     
                     <Separator />
                     
@@ -501,15 +427,7 @@ export default function Reservation() {
                     </div>
                   </div>
 
-                  {!validatedZone && (
-                    <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                      <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                      <div className="text-sm text-amber-800">
-                        <p className="font-medium">Valida tu dirección</p>
-                        <p>Necesitamos validar que brindamos servicios en tu zona de Rosario y alrededores.</p>
-                      </div>
-                    </div>
-                  )}
+
                 </CardContent>
               </Card>
 
