@@ -110,7 +110,13 @@ export default function Profile() {
 
       if (reservationsError) throw reservationsError;
 
-      setReservations(reservationsData || []);
+      // Normaliza reservation_items para que siempre sea un array
+      const normalized = (reservationsData || []).map((r) => ({
+        ...r,
+        reservation_items: Array.isArray(r.reservation_items) ? r.reservation_items : [],
+      }));
+
+      setReservations(normalized);
     } catch (error: any) {
       // Solo mostrar el toast si el error NO es "no existe el perfil"
       if (!error?.code || error.code !== 'PGRST116') {

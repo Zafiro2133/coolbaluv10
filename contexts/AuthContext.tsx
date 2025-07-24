@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/services/supabase/client';
+import { registerUser } from '@/services/supabase/registerUser';
 
 interface AuthContextType {
   user: User | null;
@@ -72,7 +73,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -83,6 +84,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
     });
+
+    // Si el registro fue exitoso y tenemos el user, guardamos el perfil
+    if (!error && data?.user) {
+      await supabase.from('profiles').insert({
+        user_id: data.user.id,
+        first_name: firstName || '',
+        last_name: lastName || '',
+      });
+    }
     return { error };
   };
 

@@ -113,7 +113,6 @@ export const useReservations = (filters?: {
         .from('reservations')
         .select(`
           *,
-          zone:zones(name, transport_cost),
           user_profile:profiles!reservations_user_id_fkey(first_name, last_name, phone),
           reservation_items(*)
         `)
@@ -134,7 +133,14 @@ export const useReservations = (filters?: {
       const { data, error } = await query;
 
       if (error) throw new Error(error.message);
-      return data as ReservationWithDetails[];
+
+      const normalized = (data || []).map((r) => ({
+        ...r,
+        reservation_items: Array.isArray(r.reservation_items) ? r.reservation_items : [],
+        // zone eliminado temporalmente
+      }));
+
+      return normalized as ReservationWithDetails[];
     },
   });
 };

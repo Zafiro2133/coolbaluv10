@@ -44,9 +44,10 @@ export const Header = () => {
     return titles[pathname] || 'Página';
   };
 
-  const handleAuthClick = () => {
+  const handleAuthClick = async () => {
     if (user) {
-      signOut();
+      await signOut();
+      navigate('/');
     } else {
       navigate('/auth');
     }
@@ -89,7 +90,7 @@ export const Header = () => {
                 variant="default" 
                 size="sm"
                 onClick={() => navigate('/admin')}
-                className="hidden sm:flex items-center gap-2 bg-primary hover:bg-primary/90"
+                className="flex items-center gap-2 bg-primary hover:bg-primary/90"
               >
                 <Menu className="h-4 w-4" />
                 Panel Admin
