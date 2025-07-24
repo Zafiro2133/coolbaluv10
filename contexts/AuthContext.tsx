@@ -46,6 +46,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Crear perfil automáticamente si no existe después de login
+  useEffect(() => {
+    const createProfileIfNotExists = async () => {
+      if (user) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+        if (!data) {
+          await supabase
+            .from('profiles')
+            .insert({
+              user_id: user.id,
+              first_name: user.user_metadata?.first_name || '',
+              last_name: user.user_metadata?.last_name || '',
+            });
+        }
+      }
+    };
+    createProfileIfNotExists();
+  }, [user]);
+
   const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
     const redirectUrl = `${window.location.origin}/`;
     

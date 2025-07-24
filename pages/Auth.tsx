@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, LogIn, UserPlus, ArrowLeft } from 'lucide-react';
+import { supabase } from '@/services/supabase/client';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -67,6 +68,30 @@ const Auth = () => {
             });
           }
         } else {
+          // Esperar a que el usuario esté disponible en el contexto
+          let newUser = null;
+          for (let i = 0; i < 10; i++) {
+            await new Promise(res => setTimeout(res, 500));
+            const session = await supabase.auth.getSession();
+            newUser = session.data.session?.user;
+            if (newUser) break;
+          }
+          if (newUser) {
+            const { error: profileError } = await supabase
+              .from('profiles')
+              .insert({
+                user_id: newUser.id,
+                first_name: firstName,
+                last_name: lastName,
+              });
+            if (profileError) {
+              toast({
+                title: "Error al crear perfil",
+                description: profileError.message,
+                variant: "destructive",
+              });
+            }
+          }
           toast({
             title: "¡Registro exitoso!",
             description: "Revisa tu email para confirmar tu cuenta.",

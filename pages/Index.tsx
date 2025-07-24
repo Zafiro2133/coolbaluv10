@@ -22,7 +22,8 @@ const Index = () => {
 
   // Handle anchor scrolling when navigating to page with hash
   useEffect(() => {
-    if (location.hash) {
+    // Solo hacer scroll si el hash es un selector CSS válido (ej: #mi-seccion)
+    if (location.hash && /^#[a-zA-Z][\w\-]*$/.test(location.hash)) {
       const element = document.querySelector(location.hash);
       if (element) {
         setTimeout(() => {

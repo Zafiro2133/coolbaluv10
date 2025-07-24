@@ -111,13 +111,16 @@ export default function Profile() {
       if (reservationsError) throw reservationsError;
 
       setReservations(reservationsData || []);
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-      toast({
-        title: "Error",
-        description: "No se pudo cargar la información del perfil.",
-        variant: "destructive",
-      });
+    } catch (error: any) {
+      // Solo mostrar el toast si el error NO es "no existe el perfil"
+      if (!error?.code || error.code !== 'PGRST116') {
+        console.error('Error fetching user data:', error);
+        toast({
+          title: "Error",
+          description: "No se pudo cargar la información del perfil.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }

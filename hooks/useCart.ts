@@ -45,8 +45,7 @@ export const useCartItems = () => {
             name,
             base_price,
             extra_hour_percentage,
-            image_url,
-            category:categories(name)
+            image_url
           )
         `)
         .eq('user_id', user.id);

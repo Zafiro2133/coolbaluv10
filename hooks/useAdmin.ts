@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/services/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useEffect } from 'react';
 
 export type UserRole = 'admin' | 'customer';
 
@@ -64,30 +65,38 @@ export interface DashboardStats {
 // Role management hooks
 export const useUserRole = () => {
   const { user } = useAuth();
-  
+
   return useQuery({
     queryKey: ['user-role', user?.id],
     queryFn: async () => {
       if (!user) return null;
-      
       const { data, error } = await supabase
         .from('user_roles')
         .select('*')
         .eq('user_id', user.id)
         .single();
-
       if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching user role:', error);
         throw new Error(error.message);
       }
-      
+      if (!data) {
+        console.log('No user role found for user:', user.id);
+      } else {
+        console.log('User role for', user.id, ':', data.role);
+      }
       return data as UserRoleData | null;
     },
     enabled: !!user,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    refetchOnMount: true,
   });
 };
 
 export const useIsAdmin = () => {
-  const { data: userRole } = useUserRole();
+  const { data: userRole, isLoading, refetch } = useUserRole();
+  // Forzar refetch si el usuario cambia
+  useEffect(() => { refetch(); }, [userRole?.user_id]);
   return userRole?.role === 'admin';
 };
 
