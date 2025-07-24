@@ -23,8 +23,16 @@
 
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./*"]
     }
   },
-  "include": ["src"]
+  "include": [
+    "components",
+    "contexts",
+    "hooks",
+    "pages",
+    "services",
+    "styles",
+    "utils"
+  ]
 }
