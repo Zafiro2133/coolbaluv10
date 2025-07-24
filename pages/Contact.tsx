@@ -8,20 +8,19 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useContact } from "@/hooks/useContact";
 
-interface ContactForm {
-  nombre: string;
-  apellido: string;
-  email: string;
-  telefono: string;
-  mensaje: string;
-}
-
 export const Contact = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { sendMessage } = useContact();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState<ContactForm>({
+  const initialFormData = {
+    nombre: '',
+    apellido: '',
+    email: '',
+    telefono: '',
+    mensaje: ''
+  };
+  const [formData, setFormData] = useState({
     nombre: '',
     apellido: '',
     email: '',
@@ -29,7 +28,7 @@ export const Contact = () => {
     mensaje: ''
   });
 
-  const handleInputChange = (field: keyof ContactForm, value: string) => {
+  const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -103,13 +102,7 @@ export const Contact = () => {
       });
 
       // Limpiar formulario
-      setFormData({
-        nombre: '',
-        apellido: '',
-        email: '',
-        telefono: '',
-        mensaje: ''
-      });
+      setFormData(initialFormData);
 
     } catch (error) {
       toast({
