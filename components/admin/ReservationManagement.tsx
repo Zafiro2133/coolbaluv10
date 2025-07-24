@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar, Clock, MapPin, Users, Eye, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
@@ -187,6 +187,9 @@ export function ReservationManagement() {
                           <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                             <DialogHeader>
                               <DialogTitle>Detalles de la Reserva</DialogTitle>
+                              <DialogDescription>
+                                Información detallada de la reserva seleccionada
+                              </DialogDescription>
                             </DialogHeader>
                             {selectedReservation && (
                               <ReservationDetails 

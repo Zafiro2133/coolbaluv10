@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
@@ -74,7 +74,12 @@ export function UserManagement() {
             .eq('user_id', profile.user_id);
 
           // Find user roles for this profile
-          const profileRoles = userRoles?.filter(role => role.user_id === profile.user_id) || [];
+          const profileRoles = (userRoles?.filter(role => role.user_id === profile.user_id) || [])
+            .filter(role => role.role === 'admin' || role.role === 'customer')
+            .map(role => ({
+              ...role,
+              role: role.role as 'admin' | 'customer',
+            }));
 
           const reservations_count = reservations?.length || 0;
           const total_spent = reservations?.reduce((sum, r) => sum + r.total, 0) || 0;
@@ -358,6 +363,9 @@ export function UserManagement() {
                           <DialogContent className="max-w-2xl">
                             <DialogHeader>
                               <DialogTitle>Detalles del Usuario</DialogTitle>
+                              <DialogDescription>
+                                Información detallada del usuario seleccionado
+                              </DialogDescription>
                             </DialogHeader>
                             {selectedUser && (
                               <UserDetails 
