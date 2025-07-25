@@ -18,6 +18,7 @@ import { CalendarDays, Clock, MapPin, Users, MessageSquare, CreditCard, AlertCir
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/utils/utils';
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 
 export default function Reservation() {
   const { user } = useAuth();
@@ -38,6 +39,12 @@ export default function Reservation() {
     comments: ''
   });
 
+  const [availabilities, setAvailabilities] = useState<{ date: string; hour: string }[]>([]);
+  const [availableDateStrings, setAvailableDateStrings] = useState<string[]>([]); // YYYY-MM-DD
+  const [availableHours, setAvailableHours] = useState<string[]>([]);
+  const [loadingAvailabilities, setLoadingAvailabilities] = useState(true);
+  const [selectedDateString, setSelectedDateString] = useState<string | null>(null); // YYYY-MM-DD
+
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -56,6 +63,57 @@ export default function Reservation() {
       });
     }
   }, [user, cartItems.length, navigate, toast]);
+
+  React.useEffect(() => {
+    // Cargar disponibilidades del admin
+    const fetchAvailabilities = async () => {
+      setLoadingAvailabilities(true);
+      const { data, error } = await supabase
+        .from('availabilities')
+        .select('*');
+      if (!error && data) {
+        setAvailabilities(data);
+        // Extraer fechas únicas como strings
+        const uniqueDateStrings = Array.from(new Set(data.map((d: any) => d.date)));
+        setAvailableDateStrings(uniqueDateStrings);
+      }
+      setLoadingAvailabilities(false);
+    };
+    fetchAvailabilities();
+  }, []);
+
+  // Actualizar horas disponibles cuando cambia la fecha seleccionada
+  React.useEffect(() => {
+    if (selectedDateString) {
+      const hours = availabilities
+        .filter(a => a.date === selectedDateString)
+        .map(a => a.hour);
+      setAvailableHours(hours);
+      // Si la hora seleccionada ya no está disponible, resetear
+      if (!hours.includes(formData.eventTime)) {
+        setFormData(prev => ({ ...prev, eventTime: '' }));
+      }
+    } else {
+      setAvailableHours([]);
+      setFormData(prev => ({ ...prev, eventTime: '' }));
+    }
+  }, [selectedDateString, availabilities]);
+
+  // Cuando el usuario selecciona una fecha en el calendario
+  const handleDateSelect = (date: Date | null) => {
+    if (!date) {
+      setFormData(prev => ({ ...prev, eventDate: null }));
+      setSelectedDateString(null);
+      return;
+    }
+    // Convertir la fecha seleccionada a string YYYY-MM-DD en local
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const dateString = `${year}-${month}-${day}`;
+    setFormData(prev => ({ ...prev, eventDate: date }));
+    setSelectedDateString(dateString);
+  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('es-AR', {
@@ -86,13 +144,12 @@ export default function Reservation() {
     setIsSubmitting(true);
     try {
       const fullAddress = `${formData.street} ${formData.number}, ${formData.city}`;
-      
-      // Create reservation
+      // Usar selectedDateString para guardar la fecha exacta seleccionada
       const { data: reservation, error: reservationError } = await supabase
         .from('reservations')
         .insert({
           user_id: user.id,
-          event_date: formData.eventDate?.toISOString().split('T')[0] || '',
+          event_date: selectedDateString || '',
           event_time: formData.eventTime,
           event_address: fullAddress,
           zone_id: null,
@@ -203,13 +260,14 @@ export default function Reservation() {
                               "w-full justify-start text-left font-normal min-h-[40px]",
                               !formData.eventDate && "text-muted-foreground"
                             )}
+                            disabled={loadingAvailabilities}
                           >
                             <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
                             <span className="truncate">
                               {formData.eventDate ? (
                                 format(formData.eventDate, "PPP", { locale: es })
                               ) : (
-                                "Selecciona una fecha"
+                                loadingAvailabilities ? "Cargando..." : "Selecciona una fecha"
                               )}
                             </span>
                           </Button>
@@ -218,31 +276,45 @@ export default function Reservation() {
                           <Calendar
                             mode="single"
                             selected={formData.eventDate || undefined}
-                            onSelect={(date) => handleInputChange('eventDate', date || null)}
-                            disabled={(date) => date < new Date()}
+                            onSelect={handleDateSelect}
+                            disabled={(date) => {
+                              const year = date.getFullYear();
+                              const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                              const day = date.getDate().toString().padStart(2, '0');
+                              const dateString = `${year}-${month}-${day}`;
+                              return !availableDateStrings.includes(dateString);
+                            }}
                             initialFocus
                             className={cn("p-3 pointer-events-auto")}
                           />
                         </PopoverContent>
                       </Popover>
                     </div>
-                    
                     <div className="space-y-2">
                       <Label htmlFor="eventTime">
                         <Clock className="inline h-4 w-4 mr-1" />
                         Hora del evento
                       </Label>
-                      <div className="relative">
-                        <Input
-                          id="eventTime"
-                          type="time"
-                          value={formData.eventTime}
-                          onChange={(e) => handleInputChange('eventTime', e.target.value)}
-                          required
-                          className="appearance-none bg-background border border-input rounded-md px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                        />
-                        <Clock className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                      </div>
+                      <Select
+                        value={formData.eventTime}
+                        onValueChange={(value) => handleInputChange('eventTime', value)}
+                        disabled={!selectedDateString || availableHours.length === 0}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder={
+                            !selectedDateString
+                              ? "Selecciona una fecha primero"
+                              : availableHours.length === 0
+                                ? "No hay horas disponibles"
+                                : "Selecciona una hora"
+                          } />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableHours.map((hour) => (
+                            <SelectItem key={hour} value={hour}>{hour}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 
