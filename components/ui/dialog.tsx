@@ -8,7 +8,12 @@ const Dialog = DialogPrimitive.Root
 
 const DialogTrigger = DialogPrimitive.Trigger
 
-const DialogPortal = DialogPrimitive.Portal
+// Reemplazo DialogPortal para forzar el montaje en el body
+const DialogPortal = ({ children }: { children: React.ReactNode }) => (
+  <DialogPrimitive.Portal container={typeof window !== "undefined" ? document.body : undefined}>
+    {children}
+  </DialogPrimitive.Portal>
+);
 
 const DialogClose = DialogPrimitive.Close
 

@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { MapContainer, TileLayer, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, useMap, Polygon } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
@@ -16,7 +16,11 @@ L.Marker.prototype.options.icon = DefaultIcon;
 const rosarioCenter: [number, number] = [-32.9587, -60.6939];
 
 // Nuevo componente controlador para lógica de Leaflet
-const ZoneMapController: React.FC = () => {
+interface ZoneMapControllerProps {
+  onPolygonDrawn?: (coordinates: any) => void;
+}
+
+const ZoneMapController: React.FC<ZoneMapControllerProps> = ({ onPolygonDrawn }) => {
   const map = useMap();
   const drawnItemsRef = React.useRef<L.FeatureGroup | null>(null);
   const drawControlRef = React.useRef<L.Control.Draw | null>(null);
@@ -57,7 +61,10 @@ const ZoneMapController: React.FC = () => {
       drawnItems.addLayer(layer);
       if (layer instanceof L.Polygon) {
         const latlngs = layer.getLatLngs();
-        console.log("Polígono dibujado:", latlngs);
+        // Notifica al padre
+        if (onPolygonDrawn) {
+          onPolygonDrawn(latlngs);
+        }
       }
     };
     map.on(L.Draw.Event.CREATED, onCreated);
@@ -72,12 +79,17 @@ const ZoneMapController: React.FC = () => {
         map.removeControl(drawControlRef.current);
       }
     };
-  }, [map]);
+  }, [map, onPolygonDrawn]);
 
   return null;
 };
 
-const ZoneMap: React.FC = () => {
+interface ZoneMapProps {
+  onPolygonDrawn?: (coordinates: any) => void;
+  polygonCoords?: any;
+}
+
+const ZoneMap: React.FC<ZoneMapProps> = ({ onPolygonDrawn, polygonCoords }) => {
   return (
     <div className="w-full h-96 rounded overflow-hidden">
       <MapContainer
@@ -89,7 +101,10 @@ const ZoneMap: React.FC = () => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <ZoneMapController />
+        {polygonCoords && (
+          <Polygon positions={polygonCoords} />
+        )}
+        <ZoneMapController onPolygonDrawn={onPolygonDrawn} />
       </MapContainer>
     </div>
   );
