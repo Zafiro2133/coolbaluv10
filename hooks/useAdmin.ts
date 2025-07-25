@@ -80,9 +80,9 @@ export const useUserRole = () => {
         throw new Error(error.message);
       }
       if (!data) {
-        console.log('No user role found for user:', user.id);
+        console.debug('No user role found for user:', user.id);
       } else {
-        console.log('User role for', user.id, ':', data.role);
+        console.debug('User role for', user.id, ':', data.role);
       }
       return data as UserRoleData | null;
     },
@@ -113,7 +113,7 @@ export const useReservations = (filters?: {
         .from('reservations')
         .select(`
           *,
-          user_profile:profiles!reservations_user_id_fkey(first_name, last_name, phone),
+          user_profile:profiles!reservations_user_id_profiles_fkey(user_id, first_name, last_name, phone),
           reservation_items(*)
         `)
         .order('created_at', { ascending: false });
