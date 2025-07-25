@@ -10,6 +10,7 @@ import {
   TrendingUp,
   Package
 } from 'lucide-react';
+import AdminAvailabilityPicker from './AdminAvailabilityPicker';
 
 export const AdminDashboard = () => {
   const { data: stats, isLoading } = useDashboardStats();

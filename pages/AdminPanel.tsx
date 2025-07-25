@@ -11,8 +11,10 @@ import {
   Calendar, 
   Package, 
   MapPin,
-  Users
+  Users,
+  Clock
 } from 'lucide-react';
+import AdminAvailabilities from './AdminAvailabilities';
 import { 
   Sidebar,
   SidebarContent,
@@ -51,6 +53,12 @@ const adminMenuItems = [
     title: 'Usuarios', 
     icon: Users,
     description: 'Gestión de clientes'
+  },
+  {
+    id: 'availabilities',
+    title: 'Disponibilidades',
+    icon: Clock,
+    description: 'Fechas y horarios disponibles'
   },
 ];
 
@@ -115,6 +123,8 @@ const AdminPanel = () => {
 
       case 'users':
         return <UserManagement />;
+      case 'availabilities':
+        return <AdminAvailabilities />;
       default:
         return <AdminDashboard />;
     }
