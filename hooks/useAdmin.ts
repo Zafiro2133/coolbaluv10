@@ -428,3 +428,18 @@ export const useUpdateZone = () => {
     },
   });
 };
+
+// Obtener todas las zonas activas
+export const useZones = () => {
+  return useQuery({
+    queryKey: ['zones'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('zones')
+        .select('*');
+      if (error) throw new Error(error.message);
+      return data || [];
+    },
+    refetchOnWindowFocus: false,
+  });
+};

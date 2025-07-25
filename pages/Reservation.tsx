@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,10 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCartItems, calculateItemTotal, calculateCartSubtotal, useClearCart } from '@/hooks/useCart';
+import { useGeocode } from '@/hooks/use-geocode';
+import { useZones } from '@/hooks/useAdmin';
+import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
+import { point } from '@turf/helpers';
 
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/services/supabase/client';
@@ -20,12 +24,22 @@ import { es } from 'date-fns/locale';
 import { cn } from '@/utils/utils';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 
+// Utilidad para validar si un objeto es un Polygon o MultiPolygon GeoJSON
+function isGeoJsonPolygon(obj: any): obj is { type: 'Polygon' | 'MultiPolygon'; coordinates: any } {
+  return obj && typeof obj === 'object' && (obj.type === 'Polygon' || obj.type === 'MultiPolygon') && Array.isArray(obj.coordinates);
+}
+
 export default function Reservation() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { data: cartItems = [] } = useCartItems();
   const clearCart = useClearCart();
+  const { geocode, coords, loading: geocodeLoading, error: geocodeError } = useGeocode();
+  const { data: zones = [], isLoading: zonesLoading } = useZones();
+  const [zoneResult, setZoneResult] = useState<{ name: string; is_active: boolean } | null>(null);
+  const [zoneError, setZoneError] = useState<string | null>(null);
+  const [geocodeTimeout, setGeocodeTimeout] = useState<any>(null);
 
 
   const [formData, setFormData] = useState({
@@ -126,12 +140,63 @@ export default function Reservation() {
   const subtotal = calculateCartSubtotal(cartItems);
   const total = subtotal;
 
-  const handleInputChange = (field: string, value: string | number | Date | null) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    
+  function handleInputChange(field: string, value: string | number) {
+    setFormData((prev) => ({ ...prev, [field]: value.toString() }));
+    // Si se modifica calle o altura, reiniciar resultado de zona
+    if (field === 'street' || field === 'number') {
+      setZoneResult(null);
+      setZoneError(null);
+      if (geocodeTimeout) clearTimeout(geocodeTimeout);
+      // Solo buscar si ambos campos tienen valor
+      const streetVal = field === 'street' ? value.toString() : formData.street;
+      const numberVal = field === 'number' ? value.toString() : formData.number;
+      if (streetVal && numberVal) {
+        const timeout = setTimeout(() => {
+          geocode(streetVal, numberVal, formData.city);
+        }, 700); // debounce
+        setGeocodeTimeout(timeout);
+      }
+    }
+  }
 
-  };
-
+  useEffect(() => {
+    if (coords && zones.length > 0) {
+      const pt = point([coords.lon, coords.lat]);
+      const matchingZones = [];
+      for (const zone of zones) {
+        if (zone.coordinates) {
+          try {
+            let coordinates = zone.coordinates;
+            if (typeof coordinates === 'string') {
+              coordinates = JSON.parse(coordinates);
+            }
+            let feature: any;
+            if (isGeoJsonPolygon(coordinates)) {
+              feature = { type: 'Feature', geometry: coordinates, properties: {} };
+            } else if (Array.isArray(coordinates)) {
+              feature = { type: 'Feature', geometry: { type: 'Polygon', coordinates }, properties: {} };
+            } else {
+              continue;
+            }
+            if (booleanPointInPolygon(pt, feature)) {
+              matchingZones.push(zone);
+            }
+          } catch (e) { /* ignorar error de formato */ }
+        }
+      }
+      const activeZone = matchingZones.find(z => z.is_active);
+      if (activeZone) {
+        setZoneResult({ name: activeZone.name, is_active: true });
+        setZoneError(null);
+      } else if (matchingZones.length > 0) {
+        setZoneResult({ name: matchingZones[0].name, is_active: false });
+        setZoneError(null);
+      } else {
+        setZoneResult(null);
+        setZoneError('No se encontró una zona para esta dirección.');
+      }
+    }
+  }, [coords, zones]);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -328,7 +393,7 @@ export default function Reservation() {
                         <Input
                           id="street"
                           placeholder="Calle (ej: San Martín)"
-                          value={formData.street}
+                          value={formData.street?.toString() ?? ''}
                           onChange={(e) => handleInputChange('street', e.target.value)}
                           required
                         />
@@ -337,7 +402,7 @@ export default function Reservation() {
                         <Input
                           id="number"
                           placeholder="Altura (ej: 1234)"
-                          value={formData.number}
+                          value={formData.number?.toString() ?? ''}
                           onChange={(e) => handleInputChange('number', e.target.value)}
                           required
                         />
@@ -346,13 +411,22 @@ export default function Reservation() {
                         <Input
                           id="city"
                           placeholder="Ciudad"
-                          value={formData.city}
+                          value={formData.city?.toString() ?? ''}
                           onChange={(e) => handleInputChange('city', e.target.value)}
                           required
                         />
                       </div>
                     </div>
-
+                    {/* Resultado de zona */}
+                    {geocodeLoading && <span className="text-sm text-muted-foreground">Buscando zona...</span>}
+                    {geocodeError && <span className="text-sm text-destructive">{geocodeError}</span>}
+                    {zoneError && <span className="text-sm text-destructive">{zoneError}</span>}
+                    {zoneResult && (
+                      <div className="text-sm">
+                        Zona detectada: <b>{zoneResult.name}</b> {zoneResult.is_active ? <span className="text-green-600">(Habilitada)</span> : <span className="text-red-600">(No habilitada)</span>}
+                        {!zoneResult.is_active && <div className="text-red-600 font-semibold">Esta zona no está habilitada para reservas.</div>}
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

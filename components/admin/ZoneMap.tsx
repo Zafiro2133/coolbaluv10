@@ -6,6 +6,7 @@ import "leaflet-draw/dist/leaflet.draw.css";
 import 'leaflet-draw';
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+import { Polygon as LeafletPolygon } from "react-leaflet";
 
 let DefaultIcon = L.icon({
   iconUrl: icon,
@@ -98,11 +99,15 @@ const ZoneMap: React.FC<ZoneMapProps> = ({ onPolygonDrawn, polygonCoords }) => {
         style={{ height: "100%", width: "100%" }}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution="&copy; OpenStreetMap contributors"
         />
-        {polygonCoords && (
-          <Polygon positions={polygonCoords} />
+        {/* Mostrar polígono si polygonCoords es GeoJSON Polygon */}
+        {polygonCoords && polygonCoords.type === 'Polygon' && (
+          <LeafletPolygon
+            positions={polygonCoords.coordinates[0].map(([lng, lat]: [number, number]) => [lat, lng])}
+            pathOptions={{ color: 'blue', weight: 3, fillOpacity: 0.2 }}
+          />
         )}
         <ZoneMapController onPolygonDrawn={onPolygonDrawn} />
       </MapContainer>
