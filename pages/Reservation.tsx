@@ -11,7 +11,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCartItems, calculateItemTotal, calculateCartSubtotal, useClearCart } from '@/hooks/useCart';
-import { useGeocode } from '@/hooks/use-geocode';
+import { useGeocode, detectZoneAndTransportCost } from '@/hooks/use-geocode';
 import { useZones } from '@/hooks/useAdmin';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import { point } from '@turf/helpers';
@@ -23,6 +23,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/utils/utils';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { useCartContext } from '@/contexts/CartContext';
 
 // Utilidad para validar si un objeto es un Polygon o MultiPolygon GeoJSON
 function isGeoJsonPolygon(obj: any): obj is { type: 'Polygon' | 'MultiPolygon'; coordinates: any } {
@@ -37,21 +38,47 @@ export default function Reservation() {
   const clearCart = useClearCart();
   const { geocode, coords, loading: geocodeLoading, error: geocodeError } = useGeocode();
   const { data: zones = [], isLoading: zonesLoading } = useZones();
-  const [zoneResult, setZoneResult] = useState<{ name: string; is_active: boolean } | null>(null);
-  const [zoneError, setZoneError] = useState<string | null>(null);
-  const [geocodeTimeout, setGeocodeTimeout] = useState<any>(null);
+  const { address, setAddress, zone: cartZone, setZone: setCartZone } = useCartContext();
 
-
+  // Usar dirección del carrito como valor inicial
   const [formData, setFormData] = useState({
     eventDate: null as Date | null,
     eventTime: '',
-    street: '',
-    number: '',
-    city: 'Rosario',
+    street: address.street,
+    number: address.number,
+    city: address.city,
     adultCount: 1,
     childCount: 0,
     comments: ''
   });
+
+  // Detectar zona y costo de traslado
+  let transportCost = 0;
+  let detectedZone = null;
+  if (coords && zones.length > 0) {
+    const result = detectZoneAndTransportCost(coords, zones);
+    detectedZone = result.zone;
+    transportCost = result.transportCost;
+  }
+
+  // Guardar zona detectada en contexto carrito
+  React.useEffect(() => {
+    if (detectedZone) setCartZone(detectedZone);
+  }, [detectedZone, setCartZone]);
+
+  // Buscar coordenadas cuando la dirección cambia
+  React.useEffect(() => {
+    if (formData.street && formData.number && formData.city) {
+      geocode(formData.street, formData.number, formData.city);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.street, formData.number, formData.city]);
+
+  // Actualizar dirección en contexto carrito si cambia en la reserva
+  React.useEffect(() => {
+    setAddress({ street: formData.street, number: formData.number, city: formData.city });
+  }, [formData.street, formData.number, formData.city, setAddress]);
+
 
   const [availabilities, setAvailabilities] = useState<{ date: string; hour: string }[]>([]);
   const [availableDateStrings, setAvailableDateStrings] = useState<string[]>([]); // YYYY-MM-DD
@@ -138,25 +165,10 @@ export default function Reservation() {
   };
 
   const subtotal = calculateCartSubtotal(cartItems);
-  const total = subtotal;
+  const total = subtotal + (transportCost || 0);
 
   function handleInputChange(field: string, value: string | number) {
     setFormData((prev) => ({ ...prev, [field]: value.toString() }));
-    // Si se modifica calle o altura, reiniciar resultado de zona
-    if (field === 'street' || field === 'number') {
-      setZoneResult(null);
-      setZoneError(null);
-      if (geocodeTimeout) clearTimeout(geocodeTimeout);
-      // Solo buscar si ambos campos tienen valor
-      const streetVal = field === 'street' ? value.toString() : formData.street;
-      const numberVal = field === 'number' ? value.toString() : formData.number;
-      if (streetVal && numberVal) {
-        const timeout = setTimeout(() => {
-          geocode(streetVal, numberVal, formData.city);
-        }, 700); // debounce
-        setGeocodeTimeout(timeout);
-      }
-    }
   }
 
   useEffect(() => {
@@ -186,14 +198,11 @@ export default function Reservation() {
       }
       const activeZone = matchingZones.find(z => z.is_active);
       if (activeZone) {
-        setZoneResult({ name: activeZone.name, is_active: true });
-        setZoneError(null);
+        setCartZone({ name: activeZone.name, is_active: true });
       } else if (matchingZones.length > 0) {
-        setZoneResult({ name: matchingZones[0].name, is_active: false });
-        setZoneError(null);
+        setCartZone({ name: matchingZones[0].name, is_active: false });
       } else {
-        setZoneResult(null);
-        setZoneError('No se encontró una zona para esta dirección.');
+        setCartZone(null);
       }
     }
   }, [coords, zones]);
@@ -217,12 +226,12 @@ export default function Reservation() {
           event_date: selectedDateString || '',
           event_time: formData.eventTime,
           event_address: fullAddress,
-          zone_id: null,
+          zone_id: detectedZone ? detectedZone.id : null,
           adult_count: formData.adultCount,
           child_count: formData.childCount,
           comments: formData.comments,
           subtotal,
-          transport_cost: 0,
+          transport_cost: transportCost,
           total,
           status: 'pending_payment'
         })
@@ -273,6 +282,9 @@ export default function Reservation() {
   if (!user || cartItems.length === 0) {
     return null;
   }
+
+  // Justo antes del render, filtrar horas duplicadas:
+  const uniqueAvailableHours = Array.from(new Set(availableHours));
 
   return (
     <div className="min-h-screen bg-background">
@@ -363,19 +375,19 @@ export default function Reservation() {
                       <Select
                         value={formData.eventTime}
                         onValueChange={(value) => handleInputChange('eventTime', value)}
-                        disabled={!selectedDateString || availableHours.length === 0}
+                        disabled={!selectedDateString || uniqueAvailableHours.length === 0}
                       >
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full" id="eventTime">
                           <SelectValue placeholder={
                             !selectedDateString
                               ? "Selecciona una fecha primero"
-                              : availableHours.length === 0
+                              : uniqueAvailableHours.length === 0
                                 ? "No hay horas disponibles"
                                 : "Selecciona una hora"
                           } />
                         </SelectTrigger>
                         <SelectContent>
-                          {availableHours.map((hour) => (
+                          {uniqueAvailableHours.map((hour) => (
                             <SelectItem key={hour} value={hour}>{hour}</SelectItem>
                           ))}
                         </SelectContent>
@@ -384,7 +396,7 @@ export default function Reservation() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="eventAddress">
+                    <Label htmlFor="street">
                       <MapPin className="inline h-4 w-4 mr-1" />
                       Dirección de la fiesta
                     </Label>
@@ -420,11 +432,10 @@ export default function Reservation() {
                     {/* Resultado de zona */}
                     {geocodeLoading && <span className="text-sm text-muted-foreground">Buscando zona...</span>}
                     {geocodeError && <span className="text-sm text-destructive">{geocodeError}</span>}
-                    {zoneError && <span className="text-sm text-destructive">{zoneError}</span>}
-                    {zoneResult && (
+                    {cartZone && (
                       <div className="text-sm">
-                        Zona detectada: <b>{zoneResult.name}</b> {zoneResult.is_active ? <span className="text-green-600">(Habilitada)</span> : <span className="text-red-600">(No habilitada)</span>}
-                        {!zoneResult.is_active && <div className="text-red-600 font-semibold">Esta zona no está habilitada para reservas.</div>}
+                        Zona detectada: <b>{cartZone.name}</b> {cartZone.is_active ? <span className="text-green-600">(Habilitada)</span> : <span className="text-red-600">(No habilitada)</span>}
+                        {!cartZone.is_active && <div className="text-red-600 font-semibold">Esta zona no está habilitada para reservas.</div>}
                       </div>
                     )}
                   </div>
@@ -436,24 +447,17 @@ export default function Reservation() {
                         Cantidad de niños
                       </Label>
                       <div className="flex items-center gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleInputChange('adultCount', Math.max(1, formData.adultCount - 1))}
-                          disabled={formData.adultCount <= 1}
-                        >
-                          -
-                        </Button>
-                        <span className="w-12 text-center font-medium">{formData.adultCount}</span>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleInputChange('adultCount', formData.adultCount + 1)}
-                        >
-                          +
-                        </Button>
+                        <Input
+                          type="number"
+                          id="adultCount"
+                          min={1}
+                          className="w-16 text-center"
+                          value={formData.adultCount}
+                          onChange={e => {
+                            const value = Math.max(1, parseInt(e.target.value) || 1);
+                            handleInputChange('adultCount', value);
+                          }}
+                        />
                       </div>
                     </div>
 
@@ -463,24 +467,17 @@ export default function Reservation() {
                         Cantidad de adultos
                       </Label>
                       <div className="flex items-center gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleInputChange('childCount', Math.max(0, formData.childCount - 1))}
-                          disabled={formData.childCount <= 0}
-                        >
-                          -
-                        </Button>
-                        <span className="w-12 text-center font-medium">{formData.childCount}</span>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleInputChange('childCount', formData.childCount + 1)}
-                        >
-                          +
-                        </Button>
+                        <Input
+                          type="number"
+                          id="childCount"
+                          min={0}
+                          className="w-16 text-center"
+                          value={formData.childCount}
+                          onChange={e => {
+                            const value = Math.max(0, parseInt(e.target.value) || 0);
+                            handleInputChange('childCount', value);
+                          }}
+                        />
                       </div>
                     </div>
                   </div>
@@ -505,7 +502,7 @@ export default function Reservation() {
                 type="submit"
                 className="w-full"
                 size="lg"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !cartZone || !cartZone.is_active}
               >
                 {isSubmitting ? 'Creando reserva...' : 'Confirmar Reserva'}
               </Button>
@@ -560,7 +557,10 @@ export default function Reservation() {
                       <span>{formatPrice(subtotal)}</span>
                     </div>
                     
-
+                    <div className="flex justify-between text-sm">
+                      <span>Costo traslado y montaje:</span>
+                      <span>{formatPrice(transportCost)}</span>
+                    </div>
                     
                     <Separator />
                     

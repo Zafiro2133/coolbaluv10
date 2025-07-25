@@ -8,14 +8,49 @@ import { useCartItems, useUpdateCartItem, useRemoveFromCart, calculateItemTotal,
 import { useAuth } from '@/contexts/AuthContext';
 import { Minus, Plus, Trash2, ShoppingBag, Truck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useGeocode, detectZoneAndTransportCost } from '@/hooks/use-geocode';
+import { useZones } from '@/hooks/useAdmin';
 
 export const CartDrawer = () => {
-  const { isCartOpen, closeCart } = useCartContext();
+  const { isCartOpen, closeCart, address, setAddress, zone, setZone } = useCartContext();
   const { user } = useAuth();
   const { data: cartItems = [], isLoading } = useCartItems();
   const updateCartItem = useUpdateCartItem();
   const removeFromCart = useRemoveFromCart();
   const navigate = useNavigate();
+  const { geocode, coords, loading: geocodeLoading, error: geocodeError } = useGeocode();
+  const { data: zones = [] } = useZones();
+
+  // Detectar zona y costo de traslado
+  let transportCost = 0;
+  let detectedZone = null;
+  if (coords && zones.length > 0) {
+    const result = detectZoneAndTransportCost(coords, zones);
+    detectedZone = result.zone;
+    transportCost = result.transportCost;
+  }
+
+  // Guardar zona detectada en contexto
+  React.useEffect(() => {
+    if (detectedZone) setZone(detectedZone);
+  }, [detectedZone, setZone]);
+
+  // Sumar costo de traslado al total
+  const subtotal = calculateCartSubtotal(cartItems);
+  const total = subtotal + (transportCost || 0);
+
+  // Manejar cambios de dirección
+  const handleAddressChange = (field: string, value: string) => {
+    setAddress({ ...address, [field]: value });
+  };
+
+  // Buscar coordenadas cuando la dirección cambia
+  React.useEffect(() => {
+    if (address.street && address.number && address.city) {
+      geocode(address.street, address.number, address.city);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address.street, address.number, address.city]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('es-AR', {
@@ -44,7 +79,7 @@ export const CartDrawer = () => {
     navigate('/reservation');
   };
 
-  const total = calculateCartSubtotal(cartItems);
+  const showAddressForm = !address.street || !address.number;
 
   if (!user) {
     return (
@@ -85,6 +120,31 @@ export const CartDrawer = () => {
             Revisa tus productos antes de reservar
           </SheetDescription>
         </SheetHeader>
+        {showAddressForm && (
+          <div className="space-y-2 mb-4">
+            <h4 className="font-medium">Dirección para calcular traslado y montaje</h4>
+            <input
+              className="input input-bordered w-full"
+              placeholder="Calle"
+              value={address.street}
+              onChange={e => handleAddressChange('street', e.target.value)}
+            />
+            <input
+              className="input input-bordered w-full"
+              placeholder="Número"
+              value={address.number}
+              onChange={e => handleAddressChange('number', e.target.value)}
+            />
+            <input
+              className="input input-bordered w-full"
+              placeholder="Ciudad"
+              value={address.city}
+              onChange={e => handleAddressChange('city', e.target.value)}
+            />
+            {geocodeLoading && <span>Buscando zona...</span>}
+            {geocodeError && <span className="text-red-500">{geocodeError}</span>}
+          </div>
+        )}
 
         <div className="flex-1 overflow-y-auto space-y-4 py-4">
           {isLoading ? (
@@ -217,6 +277,10 @@ export const CartDrawer = () => {
 
         {cartItems.length > 0 && (
           <div className="border-t pt-4 space-y-4">
+            <div className="flex justify-between items-center text-sm">
+              <span>Costo traslado y montaje:</span>
+              <span>{formatPrice(transportCost)}</span>
+            </div>
             <div className="flex justify-between items-center text-lg font-bold">
               <span>Total:</span>
               <span className="text-primary">{formatPrice(total)}</span>
@@ -226,6 +290,7 @@ export const CartDrawer = () => {
               onClick={handleCheckout}
               className="w-full"
               size="lg"
+              disabled={!detectedZone}
             >
               Continuar con la Reserva
             </Button>
