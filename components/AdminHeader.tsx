@@ -40,7 +40,7 @@ export const AdminHeader = ({ currentSection }: AdminHeaderProps) => {
   };
 
   return (
-    <header className="w-full bg-card border-b border-border px-6 py-4 sticky top-0 z-40 backdrop-blur-sm bg-card/95">
+    <header className="w-full bg-card/95 border-b border-border px-6 py-4 sticky top-0 z-40 backdrop-blur-sm">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4 flex-1 min-w-0">
           <SidebarTrigger className="lg:hidden" />
