@@ -146,6 +146,28 @@ export default function AdminAvailabilityPicker() {
         </Button>
       </div>
       <h3 className="font-semibold mb-2">Disponibilidades guardadas:</h3>
+      {disponibilidades.length > 0 && (
+        <Button
+          variant="destructive"
+          className="mb-2"
+          onClick={async () => {
+            setLoading(true);
+            const ids = disponibilidades.map(d => d.id);
+            if (ids.length === 0) {
+              setLoading(false);
+              return;
+            }
+            const { error } = await supabase
+              .from('availabilities')
+              .delete()
+              .in('id', ids);
+            if (!error) setDisponibilidades([]);
+            setLoading(false);
+          }}
+        >
+          Eliminar todas las disponibilidades
+        </Button>
+      )}
       {loading && <p>Cargando...</p>}
       <ul className="space-y-2">
         {disponibilidades.map(d => (

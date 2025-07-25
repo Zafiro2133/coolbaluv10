@@ -78,12 +78,14 @@ export const ProductCard = ({ product, onDetails, onReserve }: ProductCardProps)
         {/* Content */}
         <div className="p-6">
           <div className="flex items-start justify-between mb-3">
-            <h3 className="text-xl font-bold text-foreground">{product.name}</h3>
-            {product.category && (
-              <Badge variant="outline" className="text-xs ml-2">
-                {product.category.name}
-              </Badge>
-            )}
+            <div className="flex items-center gap-2">
+              <h3 className="text-xl font-bold text-foreground">{product.name}</h3>
+              {product.category && (
+                <Badge variant="outline" className="text-xs ml-2">
+                  {product.category.name}
+                </Badge>
+              )}
+            </div>
           </div>
           <p className="text-muted-foreground mb-4 leading-relaxed line-clamp-2">
             {product.description || 'Sin descripción disponible'}
