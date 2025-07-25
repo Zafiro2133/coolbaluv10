@@ -27,6 +27,7 @@
     }
   },
   "include": [
+    "vite-env.d.ts",
     "components",
     "contexts",
     "hooks",

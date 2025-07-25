@@ -27,6 +27,7 @@ import {
   SidebarProvider,
   useSidebar,
 } from '@/components/ui/sidebar';
+import ZoneManager from '../components/admin/ZoneManager';
 
 const adminMenuItems = [
   { 
@@ -59,6 +60,13 @@ const adminMenuItems = [
     title: 'Disponibilidades',
     icon: Clock,
     description: 'Fechas y horarios disponibles'
+  },
+  // Nueva sección para zonas no cubiertas
+  {
+    id: 'zones',
+    title: 'Zonas no cubiertas',
+    icon: MapPin,
+    description: 'Gestión de zonas y barrios peligrosos'
   },
 ];
 
@@ -120,11 +128,13 @@ const AdminPanel = () => {
         return <ReservationManagement />;
       case 'catalog':
         return <CatalogManagement />;
-
       case 'users':
         return <UserManagement />;
       case 'availabilities':
         return <AdminAvailabilities />;
+      // Mostrar ZoneManager para la nueva sección
+      case 'zones':
+        return <ZoneManager />;
       default:
         return <AdminDashboard />;
     }
