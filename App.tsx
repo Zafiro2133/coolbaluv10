@@ -14,6 +14,7 @@ import AdminPanel from './pages/AdminPanel';
 import AdminAvailabilities from './pages/AdminAvailabilities';
 import FAQ from './pages/FAQ';
 import NotFound from './pages/NotFound';
+import DebugPage from './pages/Debug';
 
 const App = () => {
   useFixSelectElements();
@@ -29,6 +30,7 @@ const App = () => {
         <Route path="/profile" element={<Profile />} />
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/admin/availabilities" element={<AdminAvailabilities />} />
+        <Route path="/debug" element={<DebugPage />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

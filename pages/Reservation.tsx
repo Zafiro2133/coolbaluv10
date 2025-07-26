@@ -82,9 +82,11 @@ export default function Reservation() {
         .from('availabilities')
         .select('*');
       if (!error && data) {
+        console.log('Disponibilidades cargadas:', data);
         setAvailabilities(data);
         // Extraer fechas únicas como strings
         const uniqueDateStrings = Array.from(new Set(data.map((d: any) => d.date)));
+        console.log('Fechas disponibles:', uniqueDateStrings);
         setAvailableDateStrings(uniqueDateStrings);
       }
       setLoadingAvailabilities(false);
@@ -95,18 +97,33 @@ export default function Reservation() {
   // Actualizar horas disponibles cuando cambia la fecha seleccionada
   React.useEffect(() => {
     if (selectedDateString) {
-      const hours = availabilities
-        .filter(a => a.date === selectedDateString)
+      console.log('Fecha seleccionada:', selectedDateString);
+      console.log('Todas las disponibilidades:', availabilities);
+      const filteredAvailabilities = availabilities.filter(a => a.date === selectedDateString);
+      console.log('Disponibilidades para esta fecha:', filteredAvailabilities);
+      
+      const hours = filteredAvailabilities
         .map(a => {
-          // Forzar formato HH:mm
+          // Procesar hora que viene de PostgreSQL TIME
           let h = a.hour;
-          if (/^\d{1,2}$/.test(h)) return h.padStart(2, '0') + ':00';
-          if (/^\d{1,2}:[0-5]\d$/.test(h)) {
-            const [hh, mm] = h.split(':');
-            return hh.padStart(2, '0') + ':' + mm;
+          console.log('Hora original:', h, 'Tipo:', typeof h);
+          
+          // Si es un string, extraer solo HH:mm
+          if (typeof h === 'string') {
+            // PostgreSQL TIME viene como "HH:MM:SS", extraer solo "HH:MM"
+            if (h.includes(':')) {
+              const parts = h.split(':');
+              return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+            }
+            // Si es solo un número, agregar ":00"
+            if (/^\d{1,2}$/.test(h)) {
+              return h.padStart(2, '0') + ':00';
+            }
           }
+          
           return h;
         });
+      console.log('Horas procesadas:', hours);
       setAvailableHours(hours);
       // Si la hora seleccionada ya no está disponible, resetear
       if (!hours.includes(formData.eventTime)) {
@@ -314,6 +331,7 @@ export default function Reservation() {
                               const month = (date.getMonth() + 1).toString().padStart(2, '0');
                               const day = date.getDate().toString().padStart(2, '0');
                               const dateString = `${year}-${month}-${day}`;
+                              console.log('Verificando fecha:', dateString, 'Disponible:', availableDateStrings.includes(dateString));
                               return !availableDateStrings.includes(dateString);
                             }}
                             initialFocus

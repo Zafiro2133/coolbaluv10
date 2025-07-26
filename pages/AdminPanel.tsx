@@ -4,7 +4,6 @@ import { AdminHeader } from '@/components/AdminHeader';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { ReservationManagement } from '@/components/admin/ReservationManagement';
 import { CatalogManagement } from '@/components/admin/CatalogManagement';
-
 import { UserManagement } from '@/components/admin/UserManagement';
 import { 
   LayoutDashboard, 

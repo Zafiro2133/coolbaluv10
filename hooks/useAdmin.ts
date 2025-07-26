@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/services/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect } from 'react';
+import { authenticatedQuery } from '@/utils/supabaseUtils';
 
 export type UserRole = 'admin' | 'customer';
 
@@ -70,26 +71,57 @@ export const useUserRole = () => {
     queryKey: ['user-role', user?.id],
     queryFn: async () => {
       if (!user) return null;
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching user role:', error);
-        throw new Error(error.message);
+      
+      console.log('Fetching user role for user:', user.id);
+      
+      try {
+        const { data, error } = await supabase
+          .from('user_roles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (error) {
+          console.error('Supabase error fetching user role:', error);
+          
+          // Si es un error de "no encontrado", no es crítico
+          if (error.code === 'PGRST116') {
+            console.debug('No user role found for user:', user.id);
+            return null;
+          }
+          
+          // Para otros errores, verificar si es un problema de permisos
+          if (error.code === '406' || error.message.includes('406')) {
+            console.error('Error 406 - Possible RLS policy issue or missing headers');
+            throw new Error('Error de permisos: Verificar políticas RLS y headers de autenticación');
+          }
+          
+          throw new Error(error.message);
+        }
+        
+        if (!data) {
+          console.debug('No user role found for user:', user.id);
+        } else {
+          console.debug('User role for', user.id, ':', data.role);
+        }
+        
+        return data as UserRoleData | null;
+      } catch (error) {
+        console.error('Error in useUserRole:', error);
+        throw error;
       }
-      if (!data) {
-        console.debug('No user role found for user:', user.id);
-      } else {
-        console.debug('User role for', user.id, ':', data.role);
-      }
-      return data as UserRoleData | null;
     },
     enabled: !!user,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     refetchOnMount: true,
+    retry: (failureCount, error) => {
+      // No reintentar en errores de permisos
+      if (error.message.includes('Error de permisos')) {
+        return false;
+      }
+      return failureCount < 3;
+    },
   });
 };
 

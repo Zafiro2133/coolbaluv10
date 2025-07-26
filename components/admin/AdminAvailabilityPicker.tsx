@@ -21,7 +21,11 @@ function getDatesInRange(start: Date, end: Date): string[] {
   const dates = [];
   let current = new Date(start);
   while (current <= end) {
-    dates.push(current.toISOString().split('T')[0]);
+    // Usar fecha local en lugar de UTC para evitar problemas de zona horaria
+    const year = current.getFullYear();
+    const month = (current.getMonth() + 1).toString().padStart(2, '0');
+    const day = current.getDate().toString().padStart(2, '0');
+    dates.push(`${year}-${month}-${day}`);
     current.setDate(current.getDate() + 1);
   }
   return dates;
@@ -55,22 +59,32 @@ export default function AdminAvailabilityPicker() {
     const start = rango.from;
     const end = rango.to ?? rango.from;
     const fechas = getDatesInRange(start, end);
+    console.log('Fechas generadas:', fechas);
+    console.log('Horas seleccionadas:', horasSeleccionadas);
     // Evitar duplicados
     const nuevas: { date: string; hour: string }[] = [];
     for (const date of fechas) {
       for (const hour of horasSeleccionadas) {
-        if (!disponibilidades.some(d => d.date === date && d.hour === hour)) {
-          nuevas.push({ date, hour });
+        // Asegurar que la hora tenga el formato correcto para PostgreSQL TIME
+        const formattedHour = hour.includes(':') ? hour : hour + ':00';
+        if (!disponibilidades.some(d => d.date === date && d.hour === formattedHour)) {
+          nuevas.push({ date, hour: formattedHour });
         }
       }
     }
+    console.log('Nuevas disponibilidades a insertar:', nuevas);
     if (nuevas.length === 0) return;
     setLoading(true);
     const { data, error } = await supabase
       .from('availabilities')
       .insert(nuevas)
       .select();
-    if (!error && data) setDisponibilidades(prev => [...prev, ...data]);
+    if (!error && data) {
+      console.log('Disponibilidades insertadas:', data);
+      setDisponibilidades(prev => [...prev, ...data]);
+    } else {
+      console.error('Error al insertar disponibilidades:', error);
+    }
     setLoading(false);
   };
 
