@@ -156,6 +156,7 @@ const Auth = () => {
                     <Label htmlFor="firstName">Nombre</Label>
                     <Input
                       id="firstName"
+                      name="firstName"
                       type="text"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
@@ -166,6 +167,7 @@ const Auth = () => {
                     <Label htmlFor="lastName">Apellido</Label>
                     <Input
                       id="lastName"
+                      name="lastName"
                       type="text"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
@@ -179,6 +181,7 @@ const Auth = () => {
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -191,6 +194,7 @@ const Auth = () => {
                 <div className="relative">
                   <Input
                     id="password"
+                    name="password"
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}

@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import ZoneMap from "./ZoneMap";
 import { supabase } from "../../services/supabase/client";
 import { useToast } from "../../hooks/use-toast";
-import { Dialog as Modal, DialogContent as ModalContent, DialogHeader as ModalHeader, DialogTitle as ModalTitle, DialogFooter as ModalFooter, DialogClose as ModalClose } from "../ui/dialog";
+import { Dialog as Modal, DialogContent as ModalContent, DialogHeader as ModalHeader, DialogTitle as ModalTitle, DialogFooter as ModalFooter, DialogClose as ModalClose, DialogDescription } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
@@ -150,6 +150,7 @@ const ZoneManager: React.FC = () => {
                   <input
                     type="checkbox"
                     id="isActive"
+                    name="isActive"
                     checked={isActive}
                     onChange={e => setIsActive(e.target.checked)}
                     disabled={loading}
@@ -213,6 +214,7 @@ const ZoneManager: React.FC = () => {
           {/* Modal de detalles/edición de zona */}
           <Modal open={!!selectedZone} onOpenChange={open => { if (!open) setSelectedZone(null); }}>
             <ModalContent className="pb-16">
+              <DialogDescription className="sr-only"> </DialogDescription>
               <ModalHeader>
                 <ModalTitle>Detalles de la zona</ModalTitle>
               </ModalHeader>
@@ -245,7 +247,7 @@ const ZoneManager: React.FC = () => {
                     <Input type="number" min="0" value={editZone?.transport_cost ?? ''} onChange={e => setEditZone((z: any) => ({ ...z, transport_cost: e.target.value }))} disabled={editLoading} />
                   </div>
                   <div className="flex items-center gap-2">
-                    <input type="checkbox" id="editIsActive" checked={!!editZone?.is_active} onChange={e => setEditZone((z: any) => ({ ...z, is_active: e.target.checked }))} disabled={editLoading} />
+                    <input type="checkbox" id="editIsActive" name="editIsActive" checked={!!editZone?.is_active} onChange={e => setEditZone((z: any) => ({ ...z, is_active: e.target.checked }))} disabled={editLoading} />
                     <label htmlFor="editIsActive" className="select-none cursor-pointer">Zona habilitada</label>
                   </div>
                   {/* En el modal de detalles/edición de zona: */}

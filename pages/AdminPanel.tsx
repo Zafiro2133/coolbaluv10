@@ -29,6 +29,40 @@ import {
 } from '@/components/ui/sidebar';
 import ZoneManager from '../components/admin/ZoneManager';
 
+// Agregar sección de configuración general
+function GeneralSettings() {
+  const [cost, setCost] = useState(() => {
+    const saved = localStorage.getItem('transportCost');
+    return saved ? Number(saved) : 0;
+  });
+  const [input, setInput] = useState(cost.toString());
+  const handleSave = () => {
+    localStorage.setItem('transportCost', input);
+    setCost(Number(input));
+  };
+  return (
+    <div className="max-w-md space-y-4">
+      <h2 className="text-lg font-semibold">Configuración General</h2>
+      <div className="space-y-2">
+        <label htmlFor="transportCost" className="block text-sm font-medium">
+          Costo fijo de traslado y montaje (ARS)
+        </label>
+        <input
+          type="number"
+          id="transportCost"
+          name="transportCost"
+          className="input input-bordered w-full"
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          min={0}
+        />
+      </div>
+      <button className="btn btn-primary mt-2" onClick={handleSave}>Guardar</button>
+      <div className="text-sm text-muted-foreground">Este costo se mostrará fijo en el carrito y se sumará al total.</div>
+    </div>
+  );
+}
+
 const adminMenuItems = [
   { 
     id: 'dashboard', 
@@ -67,6 +101,12 @@ const adminMenuItems = [
     title: 'Zonas no cubiertas',
     icon: MapPin,
     description: 'Gestión de zonas y barrios peligrosos'
+  },
+  {
+    id: 'settings',
+    title: 'Configuración',
+    icon: LayoutDashboard, // Usa un icono adecuado si tienes otro
+    description: 'Configuración general del sistema'
   },
 ];
 
@@ -135,6 +175,8 @@ const AdminPanel = () => {
       // Mostrar ZoneManager para la nueva sección
       case 'zones':
         return <ZoneManager />;
+      case 'settings':
+        return <GeneralSettings />;
       default:
         return <AdminDashboard />;
     }

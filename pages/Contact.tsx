@@ -159,6 +159,8 @@ export const Contact = () => {
                     <div>
                       <label className="text-sm font-medium mb-2 block">Nombre</label>
                       <Input 
+                        id="contactNombre"
+                        name="contactNombre"
                         placeholder="Tu nombre" 
                         value={formData.nombre}
                         onChange={(e) => handleInputChange('nombre', e.target.value)}
@@ -168,6 +170,8 @@ export const Contact = () => {
                     <div>
                       <label className="text-sm font-medium mb-2 block">Apellido</label>
                       <Input 
+                        id="contactApellido"
+                        name="contactApellido"
                         placeholder="Tu apellido" 
                         value={formData.apellido}
                         onChange={(e) => handleInputChange('apellido', e.target.value)}
@@ -178,6 +182,8 @@ export const Contact = () => {
                   <div>
                     <label className="text-sm font-medium mb-2 block">Email</label>
                     <Input 
+                      id="contactEmail"
+                      name="contactEmail"
                       type="email" 
                       placeholder="tu@email.com" 
                       value={formData.email}
@@ -188,6 +194,8 @@ export const Contact = () => {
                   <div>
                     <label className="text-sm font-medium mb-2 block">Teléfono</label>
                     <Input 
+                      id="contactTelefono"
+                      name="contactTelefono"
                       placeholder="Tu teléfono" 
                       value={formData.telefono}
                       onChange={(e) => handleInputChange('telefono', e.target.value)}

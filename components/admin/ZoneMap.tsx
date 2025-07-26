@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { MapContainer, TileLayer, useMap, Polygon } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -15,6 +15,21 @@ let DefaultIcon = L.icon({
 L.Marker.prototype.options.icon = DefaultIcon;
 
 const rosarioCenter: [number, number] = [-32.9587, -60.6939];
+
+// Función para corregir elementos select generados por Leaflet
+const fixLeafletSelectElements = () => {
+  // Buscar elementos select dentro del contenedor del mapa
+  const mapContainer = document.querySelector('.leaflet-container');
+  if (mapContainer) {
+    const selectElements = mapContainer.querySelectorAll('select');
+    selectElements.forEach((select, index) => {
+      if (!select.id && !select.name) {
+        select.id = `leaflet-select-${index}`;
+        select.name = `leaflet-select-${index}`;
+      }
+    });
+  }
+};
 
 // Nuevo componente controlador para lógica de Leaflet
 interface ZoneMapControllerProps {
@@ -70,6 +85,11 @@ const ZoneMapController: React.FC<ZoneMapControllerProps> = ({ onPolygonDrawn })
     };
     map.on(L.Draw.Event.CREATED, onCreated);
 
+    // Corregir elementos select después de que se agreguen los controles
+    setTimeout(() => {
+      fixLeafletSelectElements();
+    }, 100);
+
     // Limpieza al desmontar
     return () => {
       map.off(L.Draw.Event.CREATED, onCreated);
@@ -91,6 +111,16 @@ interface ZoneMapProps {
 }
 
 const ZoneMap: React.FC<ZoneMapProps> = ({ onPolygonDrawn, polygonCoords }) => {
+  // Efecto para corregir elementos select cuando el componente se monta
+  useEffect(() => {
+    // Corregir elementos select después de que el mapa se renderice
+    const timer = setTimeout(() => {
+      fixLeafletSelectElements();
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="w-full h-96 rounded overflow-hidden">
       <MapContainer

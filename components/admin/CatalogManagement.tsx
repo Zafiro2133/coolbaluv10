@@ -191,6 +191,7 @@ function ProductManagement() {
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
+              <DialogDescription className="sr-only"> </DialogDescription>
               <DialogHeader>
                 <DialogTitle>Crear Nuevo Producto</DialogTitle>
                 <DialogDescription>
@@ -286,6 +287,7 @@ function ProductManagement() {
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-2xl">
+                          <DialogDescription className="sr-only"> </DialogDescription>
                           <DialogHeader>
                             <DialogTitle>Editar Producto</DialogTitle>
                           </DialogHeader>
@@ -432,6 +434,7 @@ function CategoryManagement() {
               </Button>
             </DialogTrigger>
             <DialogContent>
+              <DialogDescription className="sr-only"> </DialogDescription>
               <DialogHeader>
                 <DialogTitle>Crear Nueva Categoría</DialogTitle>
               </DialogHeader>
@@ -491,6 +494,7 @@ function CategoryManagement() {
                       </Button>
                     </DialogTrigger>
                     <DialogContent>
+                      <DialogDescription className="sr-only"> </DialogDescription>
                       <DialogHeader>
                         <DialogTitle>Editar Categoría</DialogTitle>
                       </DialogHeader>
@@ -561,8 +565,10 @@ function ProductForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="text-sm font-medium">Nombre *</label>
+          <label htmlFor="productName" className="text-sm font-medium">Nombre *</label>
           <Input
+            id="productName"
+            name="productName"
             value={formData.name}
             onChange={(e) => setFormData({...formData, name: e.target.value})}
             required
@@ -570,12 +576,12 @@ function ProductForm({
         </div>
         
         <div>
-          <label className="text-sm font-medium">Categoría *</label>
+          <label htmlFor="productCategory" className="text-sm font-medium">Categoría *</label>
           <Select 
             value={formData.category_id} 
             onValueChange={(value) => setFormData({...formData, category_id: value})}
           >
-            <SelectTrigger>
+            <SelectTrigger id="productCategory">
               <SelectValue placeholder="Seleccionar categoría" />
             </SelectTrigger>
             <SelectContent>
@@ -590,8 +596,10 @@ function ProductForm({
       </div>
 
       <div>
-        <label className="text-sm font-medium">Descripción</label>
+        <label htmlFor="productDescription" className="text-sm font-medium">Descripción</label>
         <Textarea
+          id="productDescription"
+          name="productDescription"
           value={formData.description}
           onChange={(e) => setFormData({...formData, description: e.target.value})}
           rows={3}
@@ -600,8 +608,10 @@ function ProductForm({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="text-sm font-medium">Precio Base *</label>
+          <label htmlFor="productBasePrice" className="text-sm font-medium">Precio Base *</label>
           <Input
+            id="productBasePrice"
+            name="productBasePrice"
             type="number"
             value={formData.base_price}
             onChange={(e) => setFormData({...formData, base_price: Number(e.target.value)})}
@@ -610,8 +620,10 @@ function ProductForm({
         </div>
         
         <div>
-          <label className="text-sm font-medium">% Hora Extra</label>
+          <label htmlFor="productExtraHourPercentage" className="text-sm font-medium">% Hora Extra</label>
           <Input
+            id="productExtraHourPercentage"
+            name="productExtraHourPercentage"
             type="number"
             value={formData.extra_hour_percentage}
             onChange={(e) => setFormData({...formData, extra_hour_percentage: Number(e.target.value)})}
@@ -621,8 +633,10 @@ function ProductForm({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="text-sm font-medium">URL de Imagen</label>
+          <label htmlFor="productImageUrl" className="text-sm font-medium">URL de Imagen</label>
           <Input
+            id="productImageUrl"
+            name="productImageUrl"
             value={formData.image_url}
             onChange={(e) => setFormData({...formData, image_url: e.target.value})}
             placeholder="https://..."
@@ -630,8 +644,10 @@ function ProductForm({
         </div>
         
         <div>
-          <label className="text-sm font-medium">Orden de Visualización</label>
+          <label htmlFor="productDisplayOrder" className="text-sm font-medium">Orden de Visualización</label>
           <Input
+            id="productDisplayOrder"
+            name="productDisplayOrder"
             type="number"
             value={formData.display_order}
             onChange={(e) => setFormData({...formData, display_order: Number(e.target.value)})}
@@ -673,8 +689,10 @@ function CategoryForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="text-sm font-medium">Nombre *</label>
+        <label htmlFor="categoryName" className="text-sm font-medium">Nombre *</label>
         <Input
+          id="categoryName"
+          name="categoryName"
           value={formData.name}
           onChange={(e) => setFormData({...formData, name: e.target.value})}
           required
@@ -682,8 +700,10 @@ function CategoryForm({
       </div>
 
       <div>
-        <label className="text-sm font-medium">Descripción</label>
+        <label htmlFor="categoryDescription" className="text-sm font-medium">Descripción</label>
         <Textarea
+          id="categoryDescription"
+          name="categoryDescription"
           value={formData.description}
           onChange={(e) => setFormData({...formData, description: e.target.value})}
           rows={3}
@@ -692,8 +712,10 @@ function CategoryForm({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="text-sm font-medium">URL de Imagen</label>
+          <label htmlFor="categoryImageUrl" className="text-sm font-medium">URL de Imagen</label>
           <Input
+            id="categoryImageUrl"
+            name="categoryImageUrl"
             value={formData.image_url}
             onChange={(e) => setFormData({...formData, image_url: e.target.value})}
             placeholder="https://..."
@@ -701,8 +723,10 @@ function CategoryForm({
         </div>
         
         <div>
-          <label className="text-sm font-medium">Orden de Visualización</label>
+          <label htmlFor="categoryDisplayOrder" className="text-sm font-medium">Orden de Visualización</label>
           <Input
+            id="categoryDisplayOrder"
+            name="categoryDisplayOrder"
             type="number"
             value={formData.display_order}
             onChange={(e) => setFormData({...formData, display_order: Number(e.target.value)})}

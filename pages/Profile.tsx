@@ -12,6 +12,7 @@ import { supabase } from '@/services/supabase/client';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { getUserReservations } from '@/services/supabase/reservations';
 
 interface UserProfile {
   id: string;
@@ -37,6 +38,7 @@ interface Reservation {
   transport_cost: number;
   comments?: string;
   created_at: string;
+  phone: string;
   reservation_items?: Array<{
     id: string;
     product_name: string;
@@ -99,14 +101,7 @@ export default function Profile() {
       }
 
       // Fetch user reservations
-      const { data: reservationsData, error: reservationsError } = await supabase
-        .from('reservations')
-        .select(`
-          *,
-          reservation_items(*)
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+      const { data: reservationsData, error: reservationsError } = await getUserReservations(user.id);
 
       if (reservationsError) throw reservationsError;
 
@@ -278,6 +273,7 @@ export default function Profile() {
                       <Label htmlFor="first_name">Nombre</Label>
                       <Input
                         id="first_name"
+                        name="first_name"
                         value={formData.first_name}
                         onChange={(e) => setFormData({...formData, first_name: e.target.value})}
                         disabled={!isEditing}
@@ -289,6 +285,7 @@ export default function Profile() {
                       <Label htmlFor="last_name">Apellido</Label>
                       <Input
                         id="last_name"
+                        name="last_name"
                         value={formData.last_name}
                         onChange={(e) => setFormData({...formData, last_name: e.target.value})}
                         disabled={!isEditing}
@@ -303,6 +300,7 @@ export default function Profile() {
                       <Mail className="h-4 w-4 text-muted-foreground" />
                       <Input
                         id="email"
+                        name="email"
                         value={user.email || ''}
                         disabled
                         className="bg-muted"
@@ -319,6 +317,7 @@ export default function Profile() {
                       <Phone className="h-4 w-4 text-muted-foreground" />
                       <Input
                         id="phone"
+                        name="phone"
                         value={formData.phone}
                         onChange={(e) => setFormData({...formData, phone: e.target.value})}
                         disabled={!isEditing}
@@ -333,6 +332,7 @@ export default function Profile() {
                       <MapPin className="h-4 w-4 text-muted-foreground" />
                       <Input
                         id="address"
+                        name="address"
                         value={formData.address}
                         onChange={(e) => setFormData({...formData, address: e.target.value})}
                         disabled={!isEditing}
@@ -413,6 +413,9 @@ export default function Profile() {
                                 <MapPin className="h-3 w-3" />
                                 {reservation.event_address}
                               </p>
+                              <div className="mb-2">
+                                <span className="font-medium">Teléfono:</span> {reservation.phone}
+                              </div>
                               <p>
                                 <span className="font-medium">Invitados:</span> {reservation.adult_count + reservation.child_count}
                                 ({reservation.adult_count} adultos, {reservation.child_count} niños)

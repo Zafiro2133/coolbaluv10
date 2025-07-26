@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Calendar } from '../ui/calendar';
 import { supabase } from '@/services/supabase/client';
 import { Button } from '../ui/button';
+import { Label } from '../ui/label';
+import { Input } from '../ui/input';
 import type { DateRange } from 'react-day-picker';
 
 interface Availability {
@@ -105,23 +107,37 @@ export default function AdminAvailabilityPicker() {
     <div className="p-4 bg-white rounded shadow max-w-md mx-auto">
       <h2 className="text-xl font-bold mb-4">Configurar fechas y horarios disponibles</h2>
       <div className="flex flex-col gap-4 mb-6">
-        <Calendar
-          mode="range"
-          selected={rango}
-          onSelect={setRango}
-          className="rounded-md border"
-        />
         <div>
-          <label className="block mb-1 font-medium">Horas:</label>
+          <Label htmlFor="calendar-range" className="block mb-2 font-medium">
+            Seleccionar rango de fechas:
+          </Label>
+          <Calendar
+            id="calendar-range"
+            mode="range"
+            selected={rango}
+            onSelect={setRango}
+            className="rounded-md border"
+          />
+        </div>
+        <div>
+          <Label htmlFor="horaInput" className="block mb-2 font-medium">
+            Agregar hora personalizada:
+          </Label>
           <div className="flex gap-2 mb-2">
-            <input
+            <Input
               type="time"
+              id="horaInput"
+              name="horaInput"
               value={horaInput}
               onChange={e => setHoraInput(e.target.value)}
               className="border rounded px-2 py-1"
               step="900"
             />
-            <Button type="button" onClick={agregarHoraPersonalizada} disabled={!horaInput || horasSeleccionadas.includes(horaInput)}>
+            <Button 
+              type="button" 
+              onClick={agregarHoraPersonalizada} 
+              disabled={!horaInput || horasSeleccionadas.includes(horaInput)}
+            >
               Agregar hora
             </Button>
           </div>
@@ -133,6 +149,7 @@ export default function AdminAvailabilityPicker() {
                   type="button"
                   className="ml-1 text-red-500 hover:text-red-700"
                   onClick={() => eliminarHoraSeleccionada(h)}
+                  aria-label={`Eliminar hora ${h}`}
                 >
                   ×
                 </button>
@@ -145,6 +162,7 @@ export default function AdminAvailabilityPicker() {
           Agregar disponibilidades
         </Button>
       </div>
+      
       <h3 className="font-semibold mb-2">Disponibilidades guardadas:</h3>
       {disponibilidades.length > 0 && (
         <Button

@@ -214,6 +214,8 @@ export function UserManagement() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
+              id="userSearch"
+              name="userSearch"
               placeholder="Buscar usuarios..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -222,7 +224,7 @@ export function UserManagement() {
           </div>
           
           <Select value={roleFilter} onValueChange={setRoleFilter}>
-            <SelectTrigger className="md:w-48">
+            <SelectTrigger id="userRoleFilter" className="md:w-48">
               <SelectValue placeholder="Filtrar por rol" />
             </SelectTrigger>
             <SelectContent>
@@ -361,6 +363,7 @@ export function UserManagement() {
                             </Button>
                           </DialogTrigger>
                           <DialogContent className="max-w-2xl">
+                            <DialogDescription className="sr-only"> </DialogDescription>
                             <DialogHeader>
                               <DialogTitle>Detalles del Usuario</DialogTitle>
                               <DialogDescription>
@@ -382,7 +385,7 @@ export function UserManagement() {
                             updateUserRole(user.user_id, newRole)
                           }
                         >
-                          <SelectTrigger className="w-32 h-8">
+                          <SelectTrigger id={`userRoleSelect-${user.user_id}`} className="w-32 h-8">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -571,7 +574,7 @@ function UserDetails({
               onRoleUpdate(user.user_id, newRole)
             }
           >
-            <SelectTrigger className="w-48">
+            <SelectTrigger id="userRoleChange" className="w-48">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

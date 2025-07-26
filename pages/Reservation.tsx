@@ -11,19 +11,15 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCartItems, calculateItemTotal, calculateCartSubtotal, useClearCart } from '@/hooks/useCart';
-import { useGeocode, detectZoneAndTransportCost } from '@/hooks/use-geocode';
-import { useZones } from '@/hooks/useAdmin';
-import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
-import { point } from '@turf/helpers';
-
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/services/supabase/client';
-import { CalendarDays, Clock, MapPin, Users, MessageSquare, CreditCard, AlertCircle, Calendar as CalendarIcon, ArrowLeft } from 'lucide-react';
+import { CalendarDays, Clock, MapPin, Users, MessageSquare, CreditCard, AlertCircle, Calendar as CalendarIcon, ArrowLeft, Phone } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/utils/utils';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { useCartContext } from '@/contexts/CartContext';
+import { createReservation, createReservationItems } from '@/services/supabase/reservations';
 
 // Utilidad para validar si un objeto es un Polygon o MultiPolygon GeoJSON
 function isGeoJsonPolygon(obj: any): obj is { type: 'Polygon' | 'MultiPolygon'; coordinates: any } {
@@ -36,63 +32,36 @@ export default function Reservation() {
   const { toast } = useToast();
   const { data: cartItems = [] } = useCartItems();
   const clearCart = useClearCart();
-  const { geocode, coords, loading: geocodeLoading, error: geocodeError } = useGeocode();
-  const { data: zones = [], isLoading: zonesLoading } = useZones();
-  const { address, setAddress, zone: cartZone, setZone: setCartZone } = useCartContext();
 
-  // Usar dirección del carrito como valor inicial
+  // Obtener costo fijo de traslado y montaje
+  const transportCost = Number(localStorage.getItem('transportCost')) || 0;
+
+  const subtotal = calculateCartSubtotal(cartItems);
+  const total = subtotal + transportCost;
+
+  // Usar valores vacíos para dirección (ya no se usa para zona)
   const [formData, setFormData] = useState({
     eventDate: null as Date | null,
     eventTime: '',
-    street: address.street,
-    number: address.number,
-    city: address.city,
+    street: '',
+    number: '',
+    city: '',
+    phone: '',
     adultCount: 1,
     childCount: 0,
     comments: ''
   });
-
-  // Detectar zona y costo de traslado
-  let transportCost = 0;
-  let detectedZone = null;
-  if (coords && zones.length > 0) {
-    const result = detectZoneAndTransportCost(coords, zones);
-    detectedZone = result.zone;
-    transportCost = result.transportCost;
-  }
-
-  // Guardar zona detectada en contexto carrito
-  React.useEffect(() => {
-    if (detectedZone) setCartZone(detectedZone);
-  }, [detectedZone, setCartZone]);
-
-  // Buscar coordenadas cuando la dirección cambia
-  React.useEffect(() => {
-    if (formData.street && formData.number && formData.city) {
-      geocode(formData.street, formData.number, formData.city);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.street, formData.number, formData.city]);
-
-  // Actualizar dirección en contexto carrito si cambia en la reserva
-  React.useEffect(() => {
-    setAddress({ street: formData.street, number: formData.number, city: formData.city });
-  }, [formData.street, formData.number, formData.city, setAddress]);
-
 
   const [availabilities, setAvailabilities] = useState<{ date: string; hour: string }[]>([]);
   const [availableDateStrings, setAvailableDateStrings] = useState<string[]>([]); // YYYY-MM-DD
   const [availableHours, setAvailableHours] = useState<string[]>([]);
   const [loadingAvailabilities, setLoadingAvailabilities] = useState(true);
   const [selectedDateString, setSelectedDateString] = useState<string | null>(null); // YYYY-MM-DD
-
-
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!user) {
       navigate('/auth');
-      return;
     }
     
     if (cartItems.length === 0) {
@@ -128,7 +97,16 @@ export default function Reservation() {
     if (selectedDateString) {
       const hours = availabilities
         .filter(a => a.date === selectedDateString)
-        .map(a => a.hour);
+        .map(a => {
+          // Forzar formato HH:mm
+          let h = a.hour;
+          if (/^\d{1,2}$/.test(h)) return h.padStart(2, '0') + ':00';
+          if (/^\d{1,2}:[0-5]\d$/.test(h)) {
+            const [hh, mm] = h.split(':');
+            return hh.padStart(2, '0') + ':' + mm;
+          }
+          return h;
+        });
       setAvailableHours(hours);
       // Si la hora seleccionada ya no está disponible, resetear
       if (!hours.includes(formData.eventTime)) {
@@ -164,85 +142,60 @@ export default function Reservation() {
     }).format(price);
   };
 
-  const subtotal = calculateCartSubtotal(cartItems);
-  const total = subtotal + (transportCost || 0);
-
   function handleInputChange(field: string, value: string | number) {
     setFormData((prev) => ({ ...prev, [field]: value.toString() }));
   }
 
-  useEffect(() => {
-    if (coords && zones.length > 0) {
-      const pt = point([coords.lon, coords.lat]);
-      const matchingZones = [];
-      for (const zone of zones) {
-        if (zone.coordinates) {
-          try {
-            let coordinates = zone.coordinates;
-            if (typeof coordinates === 'string') {
-              coordinates = JSON.parse(coordinates);
-            }
-            let feature: any;
-            if (isGeoJsonPolygon(coordinates)) {
-              feature = { type: 'Feature', geometry: coordinates, properties: {} };
-            } else if (Array.isArray(coordinates)) {
-              feature = { type: 'Feature', geometry: { type: 'Polygon', coordinates }, properties: {} };
-            } else {
-              continue;
-            }
-            if (booleanPointInPolygon(pt, feature)) {
-              matchingZones.push(zone);
-            }
-          } catch (e) { /* ignorar error de formato */ }
-        }
-      }
-      const activeZone = matchingZones.find(z => z.is_active);
-      if (activeZone) {
-        setCartZone({ name: activeZone.name, is_active: true });
-      } else if (matchingZones.length > 0) {
-        setCartZone({ name: matchingZones[0].name, is_active: false });
-      } else {
-        setCartZone(null);
-      }
-    }
-  }, [coords, zones]);
-
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-
-
     if (!user) return;
 
     setIsSubmitting(true);
+    if (!formData.eventTime) {
+      setIsSubmitting(false);
+      toast({
+        title: 'Falta horario',
+        description: 'Debes seleccionar un horario para el evento',
+        variant: 'destructive',
+      });
+      return;
+    }
+    const validTime = /^([01]\d|2[0-3]):([0-5]\d)$/.test(formData.eventTime);
+    if (!validTime) {
+      setIsSubmitting(false);
+      toast({
+        title: 'Horario inválido',
+        description: 'Selecciona un horario válido para el evento (formato HH:mm)',
+        variant: 'destructive',
+      });
+      return;
+    }
     try {
       const fullAddress = `${formData.street} ${formData.number}, ${formData.city}`;
       // Usar selectedDateString para guardar la fecha exacta seleccionada
-      const { data: reservation, error: reservationError } = await supabase
-        .from('reservations')
-        .insert({
-          user_id: user.id,
-          event_date: selectedDateString || '',
-          event_time: formData.eventTime,
-          event_address: fullAddress,
-          zone_id: detectedZone ? detectedZone.id : null,
-          adult_count: formData.adultCount,
-          child_count: formData.childCount,
-          comments: formData.comments,
-          subtotal,
-          transport_cost: transportCost,
-          total,
-          status: 'pending_payment'
-        })
-        .select()
-        .single();
+      const reservationData = {
+        user_id: user.id,
+        event_date: selectedDateString || '',
+        event_time: formData.eventTime,
+        event_address: fullAddress,
+        zone_id: null, // No se usa zona
+        phone: formData.phone,
+        adult_count: formData.adultCount,
+        child_count: formData.childCount,
+        comments: formData.comments,
+        subtotal,
+        transport_cost: transportCost, // Nuevo campo
+        total,
+        status: 'pending_payment'
+      };
 
-      if (reservationError) throw reservationError;
+      const { data, error } = await createReservation(reservationData);
+      if (error) throw error;
 
       // Create reservation items
       const reservationItems = cartItems.map(item => ({
-        reservation_id: reservation.id,
+        reservation_id: data.id, // Usar el ID de la reserva creada
         product_id: item.product_id,
         product_name: item.product?.name || '',
         product_price: item.product?.base_price || 0,
@@ -252,9 +205,7 @@ export default function Reservation() {
         item_total: calculateItemTotal(item)
       }));
 
-      const { error: itemsError } = await supabase
-        .from('reservation_items')
-        .insert(reservationItems);
+      const { error: itemsError } = await createReservationItems(reservationItems);
 
       if (itemsError) throw itemsError;
 
@@ -325,13 +276,17 @@ export default function Reservation() {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 gap-4">
                     <div className="space-y-2">
-                      <Label>
+                      <Label htmlFor="eventDatePicker">
                         <CalendarDays className="inline h-4 w-4 mr-1" />
                         Fecha del evento
                       </Label>
+                      <label htmlFor="eventDatePicker" className="text-sm font-medium sr-only">
+                        Fecha del evento
+                      </label>
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button
+                            id="eventDatePicker"
                             variant="outline"
                             className={cn(
                               "w-full justify-start text-left font-normal min-h-[40px]",
@@ -368,16 +323,19 @@ export default function Reservation() {
                       </Popover>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="eventTime">
+                      <Label htmlFor="eventTimeSelect">
                         <Clock className="inline h-4 w-4 mr-1" />
                         Hora del evento
                       </Label>
+                      <label htmlFor="eventTimeSelect" className="text-sm font-medium sr-only">
+                        Hora del evento
+                      </label>
                       <Select
                         value={formData.eventTime}
                         onValueChange={(value) => handleInputChange('eventTime', value)}
                         disabled={!selectedDateString || uniqueAvailableHours.length === 0}
                       >
-                        <SelectTrigger className="w-full" id="eventTime">
+                        <SelectTrigger className="w-full" id="eventTimeSelect">
                           <SelectValue placeholder={
                             !selectedDateString
                               ? "Selecciona una fecha primero"
@@ -386,11 +344,13 @@ export default function Reservation() {
                                 : "Selecciona una hora"
                           } />
                         </SelectTrigger>
-                        <SelectContent>
-                          {uniqueAvailableHours.map((hour) => (
-                            <SelectItem key={hour} value={hour}>{hour}</SelectItem>
-                          ))}
-                        </SelectContent>
+                        {uniqueAvailableHours.length > 0 && (
+                          <SelectContent>
+                            {uniqueAvailableHours.map((hour) => (
+                              <SelectItem key={hour} value={hour}>{hour}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        )}
                       </Select>
                     </div>
                   </div>
@@ -402,8 +362,13 @@ export default function Reservation() {
                     </Label>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                       <div>
+                        <label htmlFor="street" className="text-sm font-medium sr-only">
+                          Calle
+                        </label>
                         <Input
                           id="street"
+                          name="street"
+                          autoComplete="street-address"
                           placeholder="Calle (ej: San Martín)"
                           value={formData.street?.toString() ?? ''}
                           onChange={(e) => handleInputChange('street', e.target.value)}
@@ -411,8 +376,13 @@ export default function Reservation() {
                         />
                       </div>
                       <div>
+                        <label htmlFor="number" className="text-sm font-medium sr-only">
+                          Altura
+                        </label>
                         <Input
                           id="number"
+                          name="number"
+                          autoComplete="address-line2"
                           placeholder="Altura (ej: 1234)"
                           value={formData.number?.toString() ?? ''}
                           onChange={(e) => handleInputChange('number', e.target.value)}
@@ -420,8 +390,13 @@ export default function Reservation() {
                         />
                       </div>
                       <div>
+                        <label htmlFor="city" className="text-sm font-medium sr-only">
+                          Ciudad
+                        </label>
                         <Input
                           id="city"
+                          name="city"
+                          autoComplete="address-level2"
                           placeholder="Ciudad"
                           value={formData.city?.toString() ?? ''}
                           onChange={(e) => handleInputChange('city', e.target.value)}
@@ -430,26 +405,27 @@ export default function Reservation() {
                       </div>
                     </div>
                     {/* Resultado de zona */}
-                    {geocodeLoading && <span className="text-sm text-muted-foreground">Buscando zona...</span>}
-                    {geocodeError && <span className="text-sm text-destructive">{geocodeError}</span>}
-                    {cartZone && (
-                      <div className="text-sm">
-                        Zona detectada: <b>{cartZone.name}</b> {cartZone.is_active ? <span className="text-green-600">(Habilitada)</span> : <span className="text-red-600">(No habilitada)</span>}
-                        {!cartZone.is_active && <div className="text-red-600 font-semibold">Esta zona no está habilitada para reservas.</div>}
-                      </div>
-                    )}
+                    {/* No hay lógica de zona, solo se muestra la dirección */}
+                    <div className="text-sm">
+                      Dirección de la fiesta: <b>{`${formData.street} ${formData.number}, ${formData.city}`}</b>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="adultCount">
                         <Users className="inline h-4 w-4 mr-1" />
-                        Cantidad de niños
+                        Cantidad de adultos
                       </Label>
                       <div className="flex items-center gap-2">
+                        <label htmlFor="adultCount" className="text-sm font-medium sr-only">
+                          Cantidad de adultos
+                        </label>
                         <Input
                           type="number"
                           id="adultCount"
+                          name="adultCount"
+                          autoComplete="off"
                           min={1}
                           className="w-16 text-center"
                           value={formData.adultCount}
@@ -464,12 +440,17 @@ export default function Reservation() {
                     <div className="space-y-2">
                       <Label htmlFor="childCount">
                         <Users className="inline h-4 w-4 mr-1" />
-                        Cantidad de adultos
+                        Cantidad de niños
                       </Label>
                       <div className="flex items-center gap-2">
+                        <label htmlFor="childCount" className="text-sm font-medium sr-only">
+                          Cantidad de niños
+                        </label>
                         <Input
                           type="number"
                           id="childCount"
+                          name="childCount"
+                          autoComplete="off"
                           min={0}
                           className="w-16 text-center"
                           value={formData.childCount}
@@ -483,12 +464,38 @@ export default function Reservation() {
                   </div>
 
                   <div className="space-y-2">
+                    <Label htmlFor="phone">
+                      <Phone className="inline h-4 w-4 mr-1" />
+                      Teléfono de contacto
+                    </Label>
+                    <label htmlFor="phone" className="text-sm font-medium sr-only">
+                      Teléfono de contacto
+                    </label>
+                    <Input
+                      id="phone"
+                      name="phone"
+                      autoComplete="tel"
+                      placeholder="Teléfono de contacto"
+                      value={formData.phone}
+                      onChange={(e) => handleInputChange('phone', e.target.value)}
+                      required
+                      type="tel"
+                      pattern="[0-9\s\-\(\)\+]+"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
                     <Label htmlFor="comments">
                       <MessageSquare className="inline h-4 w-4 mr-1" />
                       Comentarios especiales
                     </Label>
+                    <label htmlFor="comments" className="text-sm font-medium sr-only">
+                      Comentarios especiales
+                    </label>
                     <Textarea
                       id="comments"
+                      name="comments"
+                      autoComplete="off"
                       placeholder="Contanos si hay algo especial que necesitás para la fiesta..."
                       value={formData.comments}
                       onChange={(e) => handleInputChange('comments', e.target.value)}
@@ -498,11 +505,13 @@ export default function Reservation() {
                 </CardContent>
               </Card>
 
+              {/* Mensaje de error si la zona no es válida */}
+              {/* No hay lógica de zona, solo se muestra la dirección */}
               <Button
                 type="submit"
                 className="w-full"
                 size="lg"
-                disabled={isSubmitting || !cartZone || !cartZone.is_active}
+                disabled={isSubmitting}
               >
                 {isSubmitting ? 'Creando reserva...' : 'Confirmar Reserva'}
               </Button>

@@ -87,30 +87,49 @@ export function ReservationManagement() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <h2 className="text-2xl font-bold">Gestión de Reservas</h2>
         <div className="flex flex-col gap-2 md:flex-row md:items-center">
-          <Input
-            placeholder="Buscar por dirección o cliente..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="md:w-64"
-          />
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="md:w-48">
-              <SelectValue placeholder="Filtrar por estado" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los estados</SelectItem>
-              <SelectItem value="pending_payment">Pendiente Pago</SelectItem>
-              <SelectItem value="confirmed">Confirmada</SelectItem>
-              <SelectItem value="cancelled">Cancelada</SelectItem>
-              <SelectItem value="completed">Completada</SelectItem>
-            </SelectContent>
-          </Select>
-          <Input
-            type="date"
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-            className="md:w-48"
-          />
+          <div className="space-y-1">
+            <label htmlFor="reservationSearch" className="text-sm font-medium sr-only">
+              Buscar reservas
+            </label>
+            <Input
+              id="reservationSearch"
+              name="reservationSearch"
+              placeholder="Buscar por dirección o cliente..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="md:w-64"
+            />
+          </div>
+          <div className="space-y-1">
+            <label htmlFor="reservationStatusFilter" className="text-sm font-medium sr-only">
+              Filtrar por estado
+            </label>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger id="reservationStatusFilter" className="md:w-48">
+                <SelectValue placeholder="Filtrar por estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los estados</SelectItem>
+                <SelectItem value="pending_payment">Pendiente Pago</SelectItem>
+                <SelectItem value="confirmed">Confirmada</SelectItem>
+                <SelectItem value="cancelled">Cancelada</SelectItem>
+                <SelectItem value="completed">Completada</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <label htmlFor="reservationDateFilter" className="text-sm font-medium sr-only">
+              Filtrar por fecha
+            </label>
+            <Input
+              id="reservationDateFilter"
+              name="reservationDateFilter"
+              type="date"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="md:w-48"
+            />
+          </div>
         </div>
       </div>
 
@@ -185,6 +204,7 @@ export function ReservationManagement() {
                             </Button>
                           </DialogTrigger>
                           <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                            <DialogDescription className="sr-only"> </DialogDescription>
                             <DialogHeader>
                               <DialogTitle>Detalles de la Reserva</DialogTitle>
                               <DialogDescription>
@@ -267,8 +287,8 @@ function ReservationDetails({
           <div>
             <span className="font-medium">Nombre:</span> {reservation.user_profile?.first_name} {reservation.user_profile?.last_name}
           </div>
-          <div>
-            <span className="font-medium">Teléfono:</span> {reservation.user_profile?.phone || 'No proporcionado'}
+          <div className="mb-2">
+            <span className="font-medium">Teléfono:</span> {reservation.phone}
           </div>
         </div>
       </div>
