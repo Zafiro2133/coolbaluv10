@@ -1,14 +1,15 @@
 import { useState } from 'react';
-import { useReservations, useUpdateReservationStatus } from '@/hooks/useAdmin';
+import { useReservations, useUpdateReservationStatus, useSystemSetting } from '@/hooks/useAdmin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar, Clock, MapPin, Users, Eye, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, Eye, CheckCircle, XCircle, AlertCircle, CalendarDays, MessageSquare, CreditCard, ArrowLeft, Phone, CloudRain, DollarSign, TrendingUp, Filter, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -17,11 +18,15 @@ export function ReservationManagement() {
   const [dateFilter, setDateFilter] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedReservation, setSelectedReservation] = useState<any>(null);
+  const [showFilters, setShowFilters] = useState(false);
   
   const { data: reservations, isLoading } = useReservations({
     status: statusFilter === 'all' ? undefined : statusFilter,
     startDate: dateFilter || undefined,
   });
+  
+  const { data: extraHourCostSetting } = useSystemSetting('extra_hour_cost');
+  const extraHourCost = extraHourCostSetting ? Number(extraHourCostSetting.setting_value) : 5000;
   
   const updateStatusMutation = useUpdateReservationStatus();
   const { toast } = useToast();
@@ -68,10 +73,28 @@ export function ReservationManagement() {
     const matchesSearch = searchTerm === '' || 
       reservation.event_address.toLowerCase().includes(searchTerm.toLowerCase()) ||
       reservation.user_profile?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reservation.user_profile?.last_name?.toLowerCase().includes(searchTerm.toLowerCase());
+      reservation.user_profile?.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      reservation.user_profile?.phone?.includes(searchTerm);
     
     return matchesSearch;
   }) || [];
+
+  // Calcular estadísticas
+  const stats = {
+    total: filteredReservations.length,
+    pending: filteredReservations.filter(r => r.status === 'pending_payment').length,
+    confirmed: filteredReservations.filter(r => r.status === 'confirmed').length,
+    completed: filteredReservations.filter(r => r.status === 'paid').length, // Cambiado de 'completed' a 'paid'
+    cancelled: filteredReservations.filter(r => r.status === 'cancelled').length,
+    totalRevenue: filteredReservations
+      .filter(r => r.status === 'confirmed')
+      .reduce((sum, r) => sum + Number(r.total), 0),
+    totalExtraHours: filteredReservations.reduce((sum, r) => sum + Number(r.extra_hours || 0), 0),
+    extraHoursRevenue: filteredReservations.reduce((sum, r) => {
+      const extraHoursCost = (r.extra_hours || 0) * extraHourCost;
+      return sum + extraHoursCost;
+    }, 0),
+  };
 
   if (isLoading) {
     return (
@@ -84,54 +107,171 @@ export function ReservationManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <h2 className="text-2xl font-bold">Gestión de Reservas</h2>
-        <div className="flex flex-col gap-2 md:flex-row md:items-center">
-          <div className="space-y-1">
-            <label htmlFor="reservationSearch" className="text-sm font-medium sr-only">
-              Buscar reservas
-            </label>
-            <Input
-              id="reservationSearch"
-              name="reservationSearch"
-              placeholder="Buscar por dirección o cliente..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="md:w-64"
-            />
-          </div>
-          <div className="space-y-1">
-            <label htmlFor="reservationStatusFilter" className="text-sm font-medium sr-only">
-              Filtrar por estado
-            </label>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger id="reservationStatusFilter" className="md:w-48">
-                <SelectValue placeholder="Filtrar por estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los estados</SelectItem>
-                <SelectItem value="pending_payment">Pendiente Pago</SelectItem>
-                <SelectItem value="confirmed">Confirmada</SelectItem>
-                <SelectItem value="cancelled">Cancelada</SelectItem>
-                <SelectItem value="completed">Completada</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1">
-            <label htmlFor="reservationDateFilter" className="text-sm font-medium sr-only">
-              Filtrar por fecha
-            </label>
-            <Input
-              id="reservationDateFilter"
-              name="reservationDateFilter"
-              type="date"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="md:w-48"
-            />
-          </div>
-        </div>
+      {/* Header con estadísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Reservas</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.total}</div>
+            <p className="text-xs text-muted-foreground">
+              Reservas filtradas
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pendientes</CardTitle>
+            <AlertCircle className="h-4 w-4 text-amber-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-amber-600">{stats.pending}</div>
+            <p className="text-xs text-muted-foreground">
+              Esperando pago
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Confirmadas</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">{stats.confirmed}</div>
+            <p className="text-xs text-muted-foreground">
+              Eventos confirmados
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Ingresos</CardTitle>
+            <DollarSign className="h-4 w-4 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-primary">
+              ${stats.totalRevenue.toLocaleString()}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Solo confirmadas
+            </p>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Estadísticas de horas extra */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Estadísticas de Horas Extra
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">{stats.totalExtraHours}</div>
+              <p className="text-sm text-muted-foreground">Horas extra totales</p>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">
+                ${stats.extraHoursRevenue.toLocaleString()}
+              </div>
+              <p className="text-sm text-muted-foreground">Ingresos por horas extra</p>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">
+                ${extraHourCost.toLocaleString()}
+              </div>
+              <p className="text-sm text-muted-foreground">Costo por hora extra</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Filtros mejorados */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Filtros y Búsqueda
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Búsqueda */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por dirección, cliente o teléfono..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            {/* Filtros expandibles */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                {showFilters ? 'Ocultar' : 'Mostrar'} Filtros
+              </Button>
+              
+              {(statusFilter !== 'all' || dateFilter) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setStatusFilter('all');
+                    setDateFilter('');
+                  }}
+                >
+                  Limpiar filtros
+                </Button>
+              )}
+            </div>
+
+            {showFilters && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+                <div className="space-y-2">
+                  <Label htmlFor="reservationStatusFilter">Estado</Label>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger id="reservationStatusFilter">
+                      <SelectValue placeholder="Filtrar por estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los estados</SelectItem>
+                      <SelectItem value="pending_payment">Pendiente Pago</SelectItem>
+                      <SelectItem value="confirmed">Confirmada</SelectItem>
+                      <SelectItem value="paid">Pagada</SelectItem>
+                      <SelectItem value="cancelled">Cancelada</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="reservationDateFilter">Fecha del evento</Label>
+                  <Input
+                    id="reservationDateFilter"
+                    type="date"
+                    value={dateFilter}
+                    onChange={(e) => setDateFilter(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -181,6 +321,26 @@ export function ReservationManagement() {
                           <Users className="h-4 w-4" />
                           {reservation.adult_count + reservation.child_count} personas
                         </div>
+                        <div className="flex items-center gap-1 text-sm">
+                          <Clock className="h-4 w-4" />
+                          {3 + reservation.extra_hours}h duración
+                          {reservation.extra_hours > 0 && (
+                            <div className="flex items-center gap-1">
+                              <span className="text-muted-foreground">(+{reservation.extra_hours}h extra)</span>
+                              <Badge variant="outline" className="text-xs">
+                                +${(reservation.extra_hours * extraHourCost).toLocaleString()}
+                              </Badge>
+                            </div>
+                          )}
+                        </div>
+                        {reservation.rain_reschedule && (
+                          <div className="flex items-center gap-1 text-sm">
+                            <CloudRain className="h-4 w-4" />
+                            {reservation.rain_reschedule === 'no' ? 'Sin reprogramación' :
+                             reservation.rain_reschedule === 'indoor' ? 'Lugar techado' :
+                             reservation.rain_reschedule === 'reschedule' ? 'Reprogramar' : 'No especificado'}
+                          </div>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -215,6 +375,7 @@ export function ReservationManagement() {
                               <ReservationDetails 
                                 reservation={selectedReservation}
                                 onStatusUpdate={handleStatusUpdate}
+                                extraHourCost={extraHourCost}
                               />
                             )}
                           </DialogContent>
@@ -273,11 +434,26 @@ export function ReservationManagement() {
 
 function ReservationDetails({ 
   reservation, 
-  onStatusUpdate 
+  onStatusUpdate,
+  extraHourCost
 }: { 
   reservation: any; 
   onStatusUpdate: (id: string, status: string) => void;
+  extraHourCost: number;
 }) {
+  const getRainRescheduleLabel = (value: string) => {
+    switch (value) {
+      case 'no':
+        return 'No reprogramar';
+      case 'indoor':
+        return 'Lugar techado disponible';
+      case 'reschedule':
+        return 'Reprogramar automáticamente';
+      default:
+        return 'No especificado';
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Información del Cliente */}
@@ -311,6 +487,29 @@ function ReservationDetails({
           </div>
           <div>
             <span className="font-medium">Niños:</span> {reservation.child_count}
+          </div>
+          <div>
+            <span className="font-medium">Duración del evento:</span> {3 + reservation.extra_hours}h total
+            {reservation.extra_hours > 0 && (
+              <div className="mt-1">
+                <span className="text-muted-foreground">(3h base + {reservation.extra_hours}h extra)</span>
+                <div className="flex items-center gap-2 mt-1">
+                  <Badge variant="outline" className="text-xs">
+                    Costo extra: ${(reservation.extra_hours * extraHourCost).toLocaleString()}
+                  </Badge>
+                  <Badge variant="outline" className="text-xs">
+                    ${extraHourCost.toLocaleString()}/hora
+                  </Badge>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="col-span-2">
+            <span className="font-medium flex items-center gap-1">
+              <CloudRain className="h-4 w-4" />
+              En caso de lluvia:
+            </span>
+            <span className="text-muted-foreground">{getRainRescheduleLabel(reservation.rain_reschedule || 'no')}</span>
           </div>
           {reservation.comments && (
             <div className="col-span-2">

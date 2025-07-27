@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { User, Calendar, MapPin, Phone, Mail, Edit, Save, X, Package, Clock, ArrowLeft } from 'lucide-react';
+import { User, Calendar, MapPin, Phone, Mail, Edit, Save, X, Package, Clock, ArrowLeft, CloudRain } from 'lucide-react';
 import { supabase } from '@/services/supabase/client';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -37,6 +37,8 @@ interface Reservation {
   subtotal: number;
   transport_cost: number;
   comments?: string;
+  rain_reschedule?: string;
+  extra_hours: number;
   created_at: string;
   phone: string;
   reservation_items?: Array<{
@@ -186,6 +188,19 @@ export default function Profile() {
         {config.label}
       </Badge>
     );
+  };
+
+  const getRainRescheduleLabel = (value: string) => {
+    switch (value) {
+      case 'no':
+        return 'No reprogramar';
+      case 'indoor':
+        return 'Lugar techado disponible';
+      case 'reschedule':
+        return 'Reprogramar automáticamente';
+      default:
+        return 'No especificado';
+    }
   };
 
   if (isLoading) {
@@ -420,9 +435,20 @@ export default function Profile() {
                                 <span className="font-medium">Invitados:</span> {reservation.adult_count + reservation.child_count}
                                 ({reservation.adult_count} adultos, {reservation.child_count} niños)
                               </p>
+                              {reservation.extra_hours > 0 && (
+                                <p>
+                                  <span className="font-medium">Horas extra del evento:</span> +{reservation.extra_hours}h
+                                </p>
+                              )}
                               {reservation.comments && (
                                 <p>
                                   <span className="font-medium">Comentarios:</span> {reservation.comments}
+                                </p>
+                              )}
+                              {reservation.rain_reschedule && (
+                                <p className="flex items-center gap-1">
+                                  <CloudRain className="h-3 w-3" />
+                                  <span className="font-medium">En caso de lluvia:</span> {getRainRescheduleLabel(reservation.rain_reschedule)}
                                 </p>
                               )}
                             </div>

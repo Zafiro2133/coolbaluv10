@@ -11,13 +11,86 @@ import {
   ArrowUp
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useSystemSettings } from "@/hooks/useAdmin";
 
 export const Footer = () => {
+  const { data: systemSettings, isLoading } = useSystemSettings();
+  
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const currentYear = new Date().getFullYear();
+
+  // Obtener configuraciones del sistema
+  const getSetting = (key: string) => {
+    if (!systemSettings) return null;
+    return systemSettings.find(setting => setting.setting_key === key);
+  };
+
+  const companyName = getSetting('company_name')?.setting_value || 'Coolbalu';
+  const contactPhone = getSetting('contact_phone')?.setting_value || '+54 341 2770608';
+  const contactEmail = getSetting('contact_email')?.setting_value || 'contactocoolbalu@gmail.com';
+  const businessHours = getSetting('business_hours')?.setting_value;
+
+  // Parsear horarios de negocio
+  const parseBusinessHours = () => {
+    if (!businessHours) {
+      return {
+        monday: { open: '09:00', close: '18:00' },
+        tuesday: { open: '09:00', close: '18:00' },
+        wednesday: { open: '09:00', close: '18:00' },
+        thursday: { open: '09:00', close: '18:00' },
+        friday: { open: '09:00', close: '18:00' },
+        saturday: { open: '10:00', close: '16:00' },
+        sunday: { open: null, close: null }
+      };
+    }
+
+    try {
+      return JSON.parse(businessHours);
+    } catch (error) {
+      console.error('Error parsing business hours:', error);
+      return {
+        monday: { open: '09:00', close: '18:00' },
+        tuesday: { open: '09:00', close: '18:00' },
+        wednesday: { open: '09:00', close: '18:00' },
+        thursday: { open: '09:00', close: '18:00' },
+        friday: { open: '09:00', close: '18:00' },
+        saturday: { open: '10:00', close: '16:00' },
+        sunday: { open: null, close: null }
+      };
+    }
+  };
+
+  const hours = parseBusinessHours();
+
+  const formatHours = (day: string) => {
+    const dayHours = hours[day as keyof typeof hours];
+    if (!dayHours || !dayHours.open || !dayHours.close) {
+      return 'Cerrado';
+    }
+    return `${dayHours.open} - ${dayHours.close}`;
+  };
+
+  // Mostrar skeleton mientras carga
+  if (isLoading) {
+    return (
+      <footer className="bg-card border-t border-border">
+        <div className="container mx-auto px-6 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="space-y-4">
+                <div className="h-6 bg-muted animate-pulse rounded" />
+                <div className="h-4 bg-muted animate-pulse rounded" />
+                <div className="h-4 bg-muted animate-pulse rounded w-3/4" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </footer>
+    );
+  }
 
   return (
     <footer className="bg-card border-t border-border">
@@ -27,7 +100,7 @@ export const Footer = () => {
           
           {/* Company Info */}
           <div className="space-y-4">
-            <h3 className="text-xl font-bold text-foreground">Coolbalu</h3>
+            <h3 className="text-xl font-bold text-foreground">{companyName}</h3>
             <p className="text-muted-foreground text-sm leading-relaxed">
               Llegamos con la diversión para los más chicos. Tenemos la mejor calidad en alquiler de juegos inflables para fiestas infantiles.
             </p>
@@ -68,20 +141,20 @@ export const Footer = () => {
               
               <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 text-primary flex-shrink-0" />
-                <span className="text-muted-foreground">+54 341 2770608</span>
+                <span className="text-muted-foreground">{contactPhone}</span>
               </div>
               
               <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 text-primary flex-shrink-0" />
-                <span className="text-muted-foreground">contactocoolbalu@gmail.com</span>
+                <span className="text-muted-foreground">{contactEmail}</span>
               </div>
               
               <div className="flex items-start gap-3">
                 <Clock className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                 <div className="text-muted-foreground">
-                  <p>Lun - Vie: 9:00 - 18:00</p>
-                  <p>Sáb: 9:00 - 21:00</p>
-                  <p>Dom: 9:00 - 21:00</p>
+                  <p>Lun - Vie: {formatHours('monday')}</p>
+                  <p>Sáb: {formatHours('saturday')}</p>
+                  <p>Dom: {formatHours('sunday')}</p>
                 </div>
               </div>
             </div>
@@ -143,7 +216,7 @@ export const Footer = () => {
       <div className="container mx-auto px-6 py-6">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex flex-col md:flex-row items-center gap-4 text-sm text-muted-foreground">
-            <p>© {currentYear} Coolbalu. Todos los derechos reservados.</p>
+            <p>© {currentYear} {companyName}. Todos los derechos reservados.</p>
             <div className="flex gap-4">
               <button className="hover:text-primary transition-colors">
                 Términos y Condiciones

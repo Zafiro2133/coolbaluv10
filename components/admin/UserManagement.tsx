@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Users, UserCheck, UserX, Search, Eye, Shield, Calendar, Mail, Phone, MapPin } from 'lucide-react';
+import { Users, UserCheck, UserX, Search, Eye, Shield, Calendar, Mail, Phone, MapPin, CloudRain } from 'lucide-react';
 import { supabase } from '@/services/supabase/client';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -452,6 +452,19 @@ function UserDetails({
     return user.user_roles?.[0]?.role || 'customer';
   };
 
+  const getRainRescheduleLabel = (value: string) => {
+    switch (value) {
+      case 'no':
+        return 'No reprogramar';
+      case 'indoor':
+        return 'Lugar techado';
+      case 'reschedule':
+        return 'Reprogramar';
+      default:
+        return 'No especificado';
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Información Personal */}
@@ -542,6 +555,17 @@ function UserDetails({
                       <p className="text-sm text-muted-foreground">
                         {reservation.event_address}
                       </p>
+                      {reservation.extra_hours > 0 && (
+                        <p className="text-sm text-muted-foreground">
+                          +{reservation.extra_hours}h extra
+                        </p>
+                      )}
+                      {reservation.rain_reschedule && (
+                        <p className="text-sm text-muted-foreground flex items-center gap-1">
+                          <CloudRain className="h-3 w-3" />
+                          {getRainRescheduleLabel(reservation.rain_reschedule)}
+                        </p>
+                      )}
                       <Badge variant="outline" className="mt-1">
                         {reservation.status}
                       </Badge>

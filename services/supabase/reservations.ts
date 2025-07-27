@@ -39,22 +39,53 @@ export async function getReservationsAdmin(filters?: {
   startDate?: string;
   endDate?: string;
 }) {
-  let query = supabase
-    .from('reservations')
-    .select(`*, user_profile:profiles!reservations_user_id_profiles_fkey(user_id, first_name, last_name, phone), reservation_items(*)`)
-    .order('created_at', { ascending: false });
+  try {
+    // Consulta simple sin JOIN complejo
+    let query = supabase
+      .from('reservations')
+      .select(`*, reservation_items(*)`)
+      .order('created_at', { ascending: false });
 
-  if (filters?.status && filters.status !== 'all') {
-    query = query.eq('status', filters.status);
+    if (filters?.status && filters.status !== 'all') {
+      query = query.eq('status', filters.status);
+    }
+    if (filters?.startDate) {
+      query = query.gte('event_date', filters.startDate);
+    }
+    if (filters?.endDate) {
+      query = query.lte('event_date', filters.endDate);
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('Error en getReservationsAdmin:', error);
+      throw error;
+    }
+    
+    // Si necesitamos datos de profiles, los obtenemos por separado
+    if (data && data.length > 0) {
+      const userIds = [...new Set(data.map(r => r.user_id))];
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('user_id, first_name, last_name, phone')
+        .in('user_id', userIds);
+      
+      // Combinar los datos
+      const profilesMap = new Map(profilesData?.map(p => [p.user_id, p]) || []);
+      const enrichedData = data.map(reservation => ({
+        ...reservation,
+        user_profile: profilesMap.get(reservation.user_id) || null
+      }));
+      
+      return { data: enrichedData, error: null };
+    }
+    
+    return { data, error };
+  } catch (error) {
+    console.error('Error en getReservationsAdmin:', error);
+    throw error;
   }
-  if (filters?.startDate) {
-    query = query.gte('event_date', filters.startDate);
-  }
-  if (filters?.endDate) {
-    query = query.lte('event_date', filters.endDate);
-  }
-  const { data, error } = await query;
-  return { data, error };
 }
 
 // Actualizar estado de una reserva

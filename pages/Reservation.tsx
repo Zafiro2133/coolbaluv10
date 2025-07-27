@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCartItems, calculateItemTotal, calculateCartSubtotal, useClearCart } from '@/hooks/useCart';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/services/supabase/client';
-import { CalendarDays, Clock, MapPin, Users, MessageSquare, CreditCard, AlertCircle, Calendar as CalendarIcon, ArrowLeft, Phone } from 'lucide-react';
+import { CalendarDays, Clock, MapPin, Users, MessageSquare, CreditCard, AlertCircle, Calendar as CalendarIcon, ArrowLeft, Phone, CloudRain } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/utils/utils';
@@ -37,8 +37,7 @@ export default function Reservation() {
   const transportCost = Number(localStorage.getItem('transportCost')) || 0;
 
   const subtotal = calculateCartSubtotal(cartItems);
-  const total = subtotal + transportCost;
-
+  
   // Usar valores vacíos para dirección (ya no se usa para zona)
   const [formData, setFormData] = useState({
     eventDate: null as Date | null,
@@ -49,8 +48,19 @@ export default function Reservation() {
     phone: '',
     adultCount: 1,
     childCount: 0,
-    comments: ''
+    comments: '',
+    rainReschedule: 'no', // Nuevo campo para reprogramación por lluvia
+    extraHours: 3 // Nuevo campo para duración del evento (mínimo 3 horas)
   });
+
+  // Calcular costo de horas extra del evento (20% del subtotal por hora extra)
+  // formData.extraHours son las horas totales que el usuario ingresa
+  const extraHoursCost = useMemo(() => {
+    const hoursBeyondStandard = Math.max(0, formData.extraHours - 3);
+    return hoursBeyondStandard > 0 ? subtotal * 0.2 * hoursBeyondStandard : 0;
+  }, [formData.extraHours, subtotal]);
+  
+  const total = subtotal + transportCost + extraHoursCost;
 
   const [availabilities, setAvailabilities] = useState<{ date: string; hour: string }[]>([]);
   const [availableDateStrings, setAvailableDateStrings] = useState<string[]>([]); // YYYY-MM-DD
@@ -201,6 +211,8 @@ export default function Reservation() {
         adult_count: formData.adultCount,
         child_count: formData.childCount,
         comments: formData.comments,
+        rain_reschedule: formData.rainReschedule, // Nuevo campo
+        extra_hours: formData.extraHours, // Horas extra del evento
         subtotal,
         transport_cost: transportCost, // Nuevo campo
         total,
@@ -208,11 +220,18 @@ export default function Reservation() {
       };
 
       const { data, error } = await createReservation(reservationData);
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating reservation:', error);
+        throw new Error(`Error al crear la reserva: ${error.message || 'Error desconocido'}`);
+      }
+
+      if (!data || !data.id) {
+        throw new Error('No se pudo crear la reserva: ID no generado');
+      }
 
       // Create reservation items
       const reservationItems = cartItems.map(item => ({
-        reservation_id: data.id, // Usar el ID de la reserva creada
+        reservation_id: data.id,
         product_id: item.product_id,
         product_name: item.product?.name || '',
         product_price: item.product?.base_price || 0,
@@ -224,7 +243,10 @@ export default function Reservation() {
 
       const { error: itemsError } = await createReservationItems(reservationItems);
 
-      if (itemsError) throw itemsError;
+      if (itemsError) {
+        console.error('Error creating reservation items:', itemsError);
+        throw new Error(`Error al crear los ítems de la reserva: ${itemsError.message || 'Error desconocido'}`);
+      }
 
       // Clear cart
       await clearCart.mutateAsync();
@@ -237,9 +259,10 @@ export default function Reservation() {
       navigate('/');
     } catch (error) {
       console.error('Error creating reservation:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido al crear la reserva';
       toast({
         title: "Error al crear reserva",
-        description: "Ocurrió un error. Intenta nuevamente.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -370,6 +393,35 @@ export default function Reservation() {
                           </SelectContent>
                         )}
                       </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="eventExtraHours">
+                        <Clock className="inline h-4 w-4 mr-1" />
+                        Duración del evento
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <label htmlFor="eventExtraHours" className="text-sm font-medium sr-only">
+                          Horas extra del evento
+                        </label>
+                        <Input
+                          type="number"
+                          id="eventExtraHours"
+                          name="eventExtraHours"
+                          autoComplete="off"
+                          min={3}
+                          max={8}
+                          className="w-20 text-center"
+                          value={formData.extraHours}
+                          onChange={e => {
+                            const value = Math.max(3, Math.min(8, parseInt(e.target.value) || 3));
+                            handleInputChange('extraHours', value);
+                          }}
+                        />
+                        <span className="text-sm text-muted-foreground">horas</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        La duración estándar es 3 horas (incluidas en el precio). Agrega horas extra si querés extender la diversión. Duración total: {formData.extraHours} horas.
+                      </p>
                     </div>
                   </div>
 
@@ -520,6 +572,44 @@ export default function Reservation() {
                       rows={3}
                     />
                   </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="rainReschedule">
+                      <AlertCircle className="inline h-4 w-4 mr-1" />
+                      ¿Qué hacer si llueve?
+                    </Label>
+                    <Select
+                      value={formData.rainReschedule}
+                      onValueChange={(value) => handleInputChange('rainReschedule', value)}
+                    >
+                      <SelectTrigger className="w-full" id="rainReschedule">
+                        <SelectValue placeholder="Selecciona una opción" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="no">
+                          <div className="flex flex-col">
+                            <span className="font-medium">No reprogramar</span>
+                            <span className="text-xs text-muted-foreground">El evento se realiza igual aunque llueva</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="indoor">
+                          <div className="flex flex-col">
+                            <span className="font-medium">Lugar techado disponible</span>
+                            <span className="text-xs text-muted-foreground">Tengo un espacio cubierto para el evento</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="reschedule">
+                          <div className="flex flex-col">
+                            <span className="font-medium">Reprogramar automáticamente</span>
+                            <span className="text-xs text-muted-foreground">Si llueve, reprogramamos para otra fecha</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Te contactaremos 24h antes si hay pronóstico de lluvia
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
 
@@ -537,6 +627,72 @@ export default function Reservation() {
 
             {/* Order Summary */}
             <div className="space-y-6">
+              {/* Resumen del Evento */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CalendarDays className="h-5 w-5" />
+                    Resumen del Evento
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {formData.eventDate && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">Fecha:</span>
+                      <span>{format(formData.eventDate, 'dd MMMM yyyy', { locale: es })}</span>
+                    </div>
+                  )}
+                  {formData.eventTime && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">Hora:</span>
+                      <span>{formData.eventTime}</span>
+                    </div>
+                  )}
+                  {formData.extraHours > 0 && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">Duración:</span>
+                      <span>{formData.extraHours} horas totales</span>
+                      {formData.extraHours > 3 && (
+                        <span className="text-muted-foreground">({formData.extraHours - 3}h extra)</span>
+                      )}
+                    </div>
+                  )}
+                  {formData.street && formData.number && formData.city && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">Dirección:</span>
+                      <span>{`${formData.street} ${formData.number}, ${formData.city}`}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-sm">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">Invitados:</span>
+                    <span>{formData.adultCount + formData.childCount} personas ({formData.adultCount} adultos, {formData.childCount} niños)</span>
+                  </div>
+                  {formData.rainReschedule && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <CloudRain className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">En caso de lluvia:</span>
+                      <span>
+                        {formData.rainReschedule === 'no' ? 'No reprogramar' :
+                         formData.rainReschedule === 'indoor' ? 'Lugar techado disponible' :
+                         formData.rainReschedule === 'reschedule' ? 'Reprogramar automáticamente' : 'No especificado'}
+                      </span>
+                    </div>
+                  )}
+                  {formData.comments && (
+                    <div className="flex items-start gap-2 text-sm">
+                      <MessageSquare className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <span className="font-medium">Comentarios:</span>
+                      <span className="text-muted-foreground">{formData.comments}</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
               <Card>
                 <CardHeader>
                   <CardTitle>Resumen de la Reserva</CardTitle>
@@ -576,6 +732,27 @@ export default function Reservation() {
                     </div>
                   ))}
 
+                  {formData.extraHours > 0 && (
+                    <div className="flex items-start gap-3 p-3 border rounded-lg bg-blue-50">
+                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex-shrink-0 flex items-center justify-center">
+                        <Clock className="h-5 w-5 text-blue-600" />
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm text-blue-900">Duración del evento</h4>
+                        <div className="flex gap-2 text-xs text-blue-700 mt-1">
+                          <span>{formData.extraHours} horas totales</span>
+                          {formData.extraHours > 3 && (
+                            <span>• {formData.extraHours - 3}h extra (cobradas)</span>
+                          )}
+                        </div>
+                        <p className="text-sm font-medium text-blue-900 mt-1">
+                          {formData.extraHours > 3 ? formatPrice(extraHoursCost) : 'Incluido en el precio base'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <Separator />
 
                   <div className="space-y-2">
@@ -583,6 +760,13 @@ export default function Reservation() {
                       <span>Subtotal productos:</span>
                       <span>{formatPrice(subtotal)}</span>
                     </div>
+                    
+                    {extraHoursCost > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span>Duración del evento (+{formData.extraHours - 3}h):</span>
+                        <span>{formatPrice(extraHoursCost)}</span>
+                      </div>
+                    )}
                     
                     <div className="flex justify-between text-sm">
                       <span>Costo traslado y montaje:</span>

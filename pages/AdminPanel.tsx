@@ -5,13 +5,15 @@ import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { ReservationManagement } from '@/components/admin/ReservationManagement';
 import { CatalogManagement } from '@/components/admin/CatalogManagement';
 import { UserManagement } from '@/components/admin/UserManagement';
+import { SystemConfiguration } from '@/components/admin/SystemConfiguration';
 import { 
   LayoutDashboard, 
   Calendar, 
   Package, 
   MapPin,
   Users,
-  Clock
+  Clock,
+  Settings
 } from 'lucide-react';
 import AdminAvailabilities from './AdminAvailabilities';
 import { 
@@ -28,39 +30,7 @@ import {
 } from '@/components/ui/sidebar';
 import ZoneManager from '../components/admin/ZoneManager';
 
-// Agregar sección de configuración general
-function GeneralSettings() {
-  const [cost, setCost] = useState(() => {
-    const saved = localStorage.getItem('transportCost');
-    return saved ? Number(saved) : 0;
-  });
-  const [input, setInput] = useState(cost.toString());
-  const handleSave = () => {
-    localStorage.setItem('transportCost', input);
-    setCost(Number(input));
-  };
-  return (
-    <div className="max-w-md space-y-4">
-      <h2 className="text-lg font-semibold">Configuración General</h2>
-      <div className="space-y-2">
-        <label htmlFor="transportCost" className="block text-sm font-medium">
-          Costo fijo de traslado y montaje (ARS)
-        </label>
-        <input
-          type="number"
-          id="transportCost"
-          name="transportCost"
-          className="input input-bordered w-full"
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          min={0}
-        />
-      </div>
-      <button className="btn btn-primary mt-2" onClick={handleSave}>Guardar</button>
-      <div className="text-sm text-muted-foreground">Este costo se mostrará fijo en el carrito y se sumará al total.</div>
-    </div>
-  );
-}
+
 
 const adminMenuItems = [
   { 
@@ -104,7 +74,7 @@ const adminMenuItems = [
   {
     id: 'settings',
     title: 'Configuración',
-    icon: LayoutDashboard, // Usa un icono adecuado si tienes otro
+    icon: Settings,
     description: 'Configuración general del sistema'
   },
 ];
@@ -175,7 +145,7 @@ const AdminPanel = () => {
       case 'zones':
         return <ZoneManager />;
       case 'settings':
-        return <GeneralSettings />;
+        return <SystemConfiguration />;
       default:
         return <AdminDashboard />;
     }

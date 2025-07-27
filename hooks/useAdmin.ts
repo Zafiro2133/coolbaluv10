@@ -23,6 +23,8 @@ export interface ReservationWithDetails {
   adult_count: number;
   child_count: number;
   comments?: string;
+  rain_reschedule?: string;
+  extra_hours: number;
   subtotal: number;
   transport_cost: number;
   total: number;
@@ -141,13 +143,10 @@ export const useReservations = (filters?: {
   return useQuery({
     queryKey: ['admin-reservations', filters],
     queryFn: async () => {
+      // Consulta simple sin JOIN problemático
       let query = supabase
         .from('reservations')
-        .select(`
-          *,
-          user_profile:profiles!reservations_user_id_profiles_fkey(user_id, first_name, last_name, phone),
-          reservation_items(*)
-        `)
+        .select(`*, reservation_items(*)`)
         .order('created_at', { ascending: false });
 
       if (filters?.status && filters.status !== 'all') {
@@ -166,13 +165,24 @@ export const useReservations = (filters?: {
 
       if (error) throw new Error(error.message);
 
-      const normalized = (data || []).map((r) => ({
-        ...r,
-        reservation_items: Array.isArray(r.reservation_items) ? r.reservation_items : [],
-        // zone eliminado temporalmente
-      }));
+      // Obtener datos de profiles por separado si hay reservas
+      let enrichedData = data || [];
+      if (data && data.length > 0) {
+        const userIds = [...new Set(data.map((r: any) => r.user_id))];
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, first_name, last_name, phone')
+          .in('user_id', userIds);
+        
+        const profilesMap = new Map(profilesData?.map((p: any) => [p.user_id, p]) || []);
+        enrichedData = data.map((r: any) => ({
+          ...r,
+          user_profile: profilesMap.get(r.user_id) || null,
+          reservation_items: Array.isArray(r.reservation_items) ? r.reservation_items : [],
+        }));
+      }
 
-      return normalized as ReservationWithDetails[];
+      return enrichedData as unknown as ReservationWithDetails[];
     },
   });
 };
@@ -473,5 +483,105 @@ export const useZones = () => {
       return data || [];
     },
     refetchOnWindowFocus: false,
+  });
+};
+
+// System Settings Management
+export interface SystemSetting {
+  id: string;
+  setting_key: string;
+  setting_value: string;
+  setting_type: 'string' | 'number' | 'boolean' | 'json';
+  description: string;
+  is_public: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// Obtener todas las configuraciones del sistema
+export const useSystemSettings = () => {
+  return useQuery({
+    queryKey: ['system-settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('system_settings' as any)
+        .select('*')
+        .order('setting_key');
+      
+      if (error) throw new Error(error.message);
+      return (data as unknown) as SystemSetting[];
+    },
+    refetchOnWindowFocus: false,
+  });
+};
+
+// Obtener una configuración específica
+export const useSystemSetting = (settingKey: string) => {
+  return useQuery({
+    queryKey: ['system-setting', settingKey],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('system_settings' as any)
+        .select('*')
+        .eq('setting_key', settingKey)
+        .single();
+      
+      if (error) throw new Error(error.message);
+      return (data as unknown) as SystemSetting;
+    },
+    enabled: !!settingKey,
+  });
+};
+
+// Actualizar configuración del sistema
+export const useUpdateSystemSetting = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ 
+      settingKey, 
+      settingValue 
+    }: {
+      settingKey: string;
+      settingValue: string;
+    }) => {
+      const { data, error } = await supabase
+        .from('system_settings' as any)
+        .update({ 
+          setting_value: settingValue,
+          updated_at: new Date().toISOString()
+        })
+        .eq('setting_key', settingKey)
+        .select()
+        .single();
+
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['system-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['system-setting'] });
+    },
+  });
+};
+
+// Crear nueva configuración del sistema
+export const useCreateSystemSetting = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (settingData: Omit<SystemSetting, 'id' | 'created_at' | 'updated_at'>) => {
+      const { data, error } = await supabase
+        .from('system_settings' as any)
+        .insert(settingData)
+        .select()
+        .single();
+
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['system-settings'] });
+    },
   });
 };
