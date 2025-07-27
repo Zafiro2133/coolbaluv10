@@ -163,11 +163,8 @@ export const useClearCart = () => {
 export const calculateItemTotal = (cartItem: CartItem) => {
   if (!cartItem.product) return 0;
   
-  const { base_price, extra_hour_percentage } = cartItem.product;
-  const baseTotal = base_price * cartItem.quantity;
-  const extraHoursCost = (baseTotal * extra_hour_percentage / 100) * cartItem.extra_hours;
-  
-  return baseTotal + extraHoursCost;
+  const { base_price } = cartItem.product;
+  return base_price * cartItem.quantity;
 };
 
 export const calculateCartTotal = (cartItems: CartItem[]) => {

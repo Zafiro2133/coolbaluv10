@@ -30,7 +30,6 @@ export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetails
   const addToCart = useAddToCart();
   const { toast } = useToast();
   const [quantity, setQuantity] = useState(1);
-  const [extraHours, setExtraHours] = useState(0);
 
   if (!product) return null;
 
@@ -43,19 +42,11 @@ export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetails
   };
 
   const calculateTotal = () => {
-    const basePrice = product.base_price * quantity;
-    const extraCost = extraHours > 0
-      ? basePrice * (product.extra_hour_percentage || 0) / 100 * extraHours
-      : 0;
-    return basePrice + extraCost;
+    return product.base_price * quantity;
   };
 
   const calculateSubtotal = () => {
-    const basePrice = product.base_price * quantity;
-    const extraCost = extraHours > 0 
-      ? basePrice * (product.extra_hour_percentage || 0) / 100 * extraHours
-      : 0;
-    return basePrice + extraCost;
+    return product.base_price * quantity;
   };
 
   const handleAddToCart = async () => {
@@ -71,8 +62,7 @@ export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetails
     try {
       await addToCart.mutateAsync({ 
         productId: product.id, 
-        quantity, 
-        extraHours 
+        quantity
       });
       toast({
         title: "Producto agregado",
@@ -143,11 +133,6 @@ export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetails
                   <Image className="h-16 w-16 text-muted-foreground" />
                 </div>
               )}
-              {product.extra_hour_percentage > 0 && (
-                <Badge variant="default" className="absolute top-3 right-3">
-                  +${Math.round(product.base_price * (product.extra_hour_percentage / 100)).toLocaleString()}/hora extra
-                </Badge>
-              )}
             </div>
 
             {/* Features */}
@@ -187,17 +172,14 @@ export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetails
             <div className="space-y-4">
               <div>
                 <h3 className="text-lg font-semibold mb-2">Precio</h3>
-                <div className="text-3xl font-bold text-primary">
-                  {formatPrice(product.base_price)}
-                  <span className="text-sm text-muted-foreground font-normal ml-2">
-                    por 3 horas
-                  </span>
-                </div>
-                {product.extra_hour_percentage > 0 && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Horas adicionales: +${Math.round(product.base_price * (product.extra_hour_percentage / 100)).toLocaleString()} por hora
+                <div>
+                  <div className="text-3xl font-bold text-primary">
+                    {formatPrice(product.base_price)}
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                    Precio base por 3 horas de evento. Puedes agregar más horas a tu fiesta una vez continúes al formulario de reserva.
                   </p>
-                )}
+                </div>
               </div>
 
               {/* Quantity Selector */}
@@ -223,31 +205,6 @@ export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetails
                     </Button>
                   </div>
                 </div>
-
-                {/* Extra Hours Selector */}
-                {product.extra_hour_percentage > 0 && (
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">Horas extra:</span>
-                    <div className="flex items-center gap-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setExtraHours(Math.max(0, extraHours - 1))}
-                        disabled={extraHours <= 0}
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <span className="font-medium w-8 text-center">{extraHours}</span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setExtraHours(extraHours + 1)}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
               </div>
 
               <Separator />
@@ -258,16 +215,6 @@ export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetails
                   <span>Subtotal ({quantity} unidad{quantity > 1 ? 'es' : ''}):</span>
                   <span>{formatPrice(calculateSubtotal())}</span>
                 </div>
-                {extraHours > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span>Horas extra ({extraHours}h):</span>
-                    <span>
-                      {formatPrice(
-                        product.base_price * quantity * (product.extra_hour_percentage || 0) / 100 * extraHours
-                      )}
-                    </span>
-                  </div>
-                )}
 
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total:</span>

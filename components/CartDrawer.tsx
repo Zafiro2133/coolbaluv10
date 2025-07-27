@@ -36,11 +36,6 @@ export const CartDrawer = () => {
     updateCartItem.mutate({ itemId, quantity });
   };
 
-  const handleExtraHoursChange = (itemId: string, extraHours: number) => {
-    if (extraHours < 0) return;
-    updateCartItem.mutate({ itemId, extraHours });
-  };
-
   const handleRemoveItem = (itemId: string) => {
     removeFromCart.mutate(itemId);
   };
@@ -170,33 +165,6 @@ export const CartDrawer = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                    >
-                      <Plus className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Extra Hours Control */}
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    Horas extra (+{item.product?.extra_hour_percentage || 0}%):
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleExtraHoursChange(item.id, item.extra_hours - 1)}
-                      disabled={item.extra_hours <= 0}
-                    >
-                      <Minus className="h-3 w-3" />
-                    </Button>
-                    <span className="text-sm font-medium w-8 text-center">
-                      {item.extra_hours}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleExtraHoursChange(item.id, item.extra_hours + 1)}
                     >
                       <Plus className="h-3 w-3" />
                     </Button>
