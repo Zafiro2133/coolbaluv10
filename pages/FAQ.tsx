@@ -31,7 +31,7 @@ export const FAQ = () => {
       questions: [
         {
           question: "¿Cómo funciona el proceso de reserva?",
-          answer: "Nuestro proceso es simple: 1) Explorá el catálogo y agregá productos al carrito, 2) Validá tu dirección para calcular el traslado, 3) Completá los datos del evento y confirmá la reserva, 4) Recibí las instrucciones de pago y disfrutá tu evento."
+          answer: "Nuestro proceso es simple: 1) Explorá el catálogo y agregá productos al carrito, 2) Ingresá tu dirección y el sistema validará si está dentro del área de cobertura, 3) Completá los datos del evento incluyendo horas extra en el formulario final, 4) Confirmá la reserva y recibí las instrucciones de pago."
         },
         {
           question: "¿Puedo modificar mi reserva después de confirmarla?",
@@ -39,20 +39,20 @@ export const FAQ = () => {
         },
         {
           question: "¿Qué información necesito para hacer una reserva?",
-          answer: "Necesitás: dirección exacta del evento, fecha y horario, cantidad de adultos y niños, y tus datos de contacto. El sistema te guía paso a paso."
+          answer: "Necesitás: dirección exacta del evento, fecha y horario, cantidad de adultos y niños y tus datos de contacto. El sistema te guía paso a paso."
         }
       ]
     },
     {
-      category: "Inflables y Carrito",
+      category: "Productos y Carrito",
       questions: [
         {
           question: "¿Cómo funciona el carrito de compras?",
-          answer: "Podés agregar múltiples productos, especificar cantidades y horas extra. El carrito calcula automáticamente los precios y te permite revisar todo antes de confirmar."
+          answer: "Podés agregar múltiples productos (inflables, mobiliario, catering) al carrito especificando cantidades. El carrito calcula automáticamente los precios base y te permite revisar todo antes de proceder al formulario de reserva."
         },
         {
-          question: "¿Qué son las horas extra y cómo se calculan?",
-          answer: "Cada inflable incluye 3 horas de uso. Las horas extra se cobran con un porcentaje adicional sobre el precio base. El sistema calcula automáticamente el costo."
+          question: "¿Qué son las horas extra y cómo se agregan?",
+          answer: "Cada producto ofrece 3 horas de uso. Las horas extra se agregan en el formulario de reserva al final, donde podés especificar cuántas horas adicionales necesitás para cada inflable. El sistema calcula automáticamente el costo adicional."
         },
         {
           question: "¿Puedo guardar productos para más tarde?",
@@ -65,11 +65,11 @@ export const FAQ = () => {
       questions: [
         {
           question: "¿En qué áreas brindan servicio?",
-          answer: "Trabajamos en Rosario y alrededores. Consultá con nosotros si tu evento está en nuestra área de cobertura."
+          answer: "Trabajamos en Rosario y alrededores. Validá tu dirección para saber si estás dentro del área de cobertura. El costo de traslado e instalación es fijo."
         },
         {
           question: "¿Qué incluye el servicio?",
-          answer: "Incluye: traslado de inflables, instalación profesional, supervisión durante el evento, retiro y limpieza. Todo está incluido en el precio."
+          answer: "Incluye: traslado de productos, instalación profesional, retiro y limpieza. Todo está incluido en el precio base."
         }
       ]
     },
@@ -111,12 +111,12 @@ export const FAQ = () => {
       category: "Calidad y Seguridad",
       questions: [
         {
-          question: "¿Los inflables están sanitizados?",
-          answer: "Sí, todos nuestros inflables se sanitizan antes de cada uso. Seguimos protocolos estrictos de limpieza y desinfección."
+          question: "¿Los productos están sanitizados?",
+          answer: "Sí, todos nuestros productos se sanitizan antes de cada uso. Seguimos protocolos estrictos de limpieza y desinfección."
         },
         {
           question: "¿Qué medidas de seguridad tienen?",
-          answer: "Todos nuestros inflables cumplen normas de seguridad."
+          answer: "Todos nuestros inflables cumplen normas de seguridad y contamos con personal capacitado para supervisar durante el evento."
         }
       ]
     }
@@ -145,98 +145,11 @@ export const FAQ = () => {
               Preguntas Frecuentes
             </h1>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Encontrá respuestas a las preguntas más comunes sobre nuestro servicio de inflables para fiestas infantiles
+              Encontrá respuestas a las preguntas más comunes sobre nuestro servicio de inflables, mobiliario y catering para fiestas infantiles
             </p>
           </div>
 
-          {/* Proceso Detallado */}
-          <Card className="mb-12">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <HelpCircle className="h-5 w-5" />
-                Proceso Detallado de Reserva
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-1">
-                      1
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-2 flex items-center gap-2">
-                        <ShoppingCart className="h-4 w-4" />
-                        Selección de Inflables
-                      </h4>
-                      <ul className="text-sm text-muted-foreground space-y-1">
-                        <li>• Explorá nuestro catálogo de inflables organizado por categorías</li>
-                        <li>• Agregá inflables al carrito con cantidad y horas extra</li>
-                        <li>• Revisá el carrito y ajustá según necesites</li>
-                        <li>• Podés guardar inflables para más tarde</li>
-                      </ul>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-4">
-                    <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-1">
-                      2
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-2 flex items-center gap-2">
-                        <MapPin className="h-4 w-4" />
-                        Validación de Dirección
-                      </h4>
-                      <ul className="text-sm text-muted-foreground space-y-1">
-                        <li>• Ingresá la dirección de la fiesta</li>
-                        <li>• El sistema detecta automáticamente la zona</li>
-                        <li>• Te muestra el costo de traslado e instalación</li>
-                        <li>• Validá que esté en nuestra zona de cobertura</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-1">
-                      3
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-2 flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        Completar Reserva
-                      </h4>
-                      <ul className="text-sm text-muted-foreground space-y-1">
-                        <li>• Elegí fecha y horario de la fiesta</li>
-                        <li>• Especificá cantidad de niños</li>
-                        <li>• Agregá comentarios especiales si necesitás</li>
-                        <li>• Revisá el resumen final antes de confirmar</li>
-                      </ul>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-4">
-                    <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-1">
-                      4
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-2 flex items-center gap-2">
-                        <CreditCard className="h-4 w-4" />
-                        Confirmación y Pago
-                      </h4>
-                      <ul className="text-sm text-muted-foreground space-y-1">
-                        <li>• Recibí las instrucciones de pago por email</li>
-                        <li>• Confirmá tu reserva enviando el comprobante</li>
-                        <li>• Te contactamos para coordinar la entrega</li>
-                        <li>• ¡Listo para que los chicos disfruten!</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          
 
           {/* FAQ Accordion */}
           <div className="space-y-8">

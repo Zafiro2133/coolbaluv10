@@ -63,7 +63,7 @@ const Index = () => {
               </div>
               <h3 className="text-xl font-semibold mb-3">Explorá</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                Navegá nuestro catálogo de juegos inflables y agregá al carrito los que más te gusten. Podés ver detalles, precios y disponibilidad.
+                Navegá nuestro catálogo organizado por categorías. Agregá inflables, mobiliario y/o catering al carrito con la cantidad que necesites.
               </p>
             </div>
             
@@ -71,9 +71,9 @@ const Index = () => {
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-3xl font-bold text-primary">2</span>
               </div>
-              <h3 className="text-xl font-semibold mb-3">Completá</h3>
+              <h3 className="text-xl font-semibold mb-3">Configurá</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                Ingresá la dirección de la fiesta y nosotros nos encargamos del traslado e instalación en Rosario y alrededores.
+                Revisá tu carrito y ajustá cantidades. El sistema calcula automáticamente el costo base incluyendo traslado e instalación.
               </p>
             </div>
             
@@ -83,7 +83,7 @@ const Index = () => {
               </div>
               <h3 className="text-xl font-semibold mb-3">Reservá</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                Completá los datos, elegí fecha y horario. Confirmá tu reserva y recibí las instrucciones de pago.
+                Elegí fecha disponible, horario y duración del evento. Completá dirección, datos de contacto y comentarios especiales.
               </p>
             </div>
             
@@ -91,9 +91,9 @@ const Index = () => {
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-3xl font-bold text-primary">4</span>
               </div>
-              <h3 className="text-xl font-semibold mb-3">Disfrutá</h3>
+              <h3 className="text-xl font-semibold mb-3">Confirmá</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                Nos encargamos de todo: instalación y retiro. Vos solo te preocupás por que los chicos disfruten de la fiesta.
+                Recibí tu reserva con estado "Pendiente Pago". Enviá el comprobante de pago y nosotros confirmamos la instalación.
               </p>
             </div>
           </div>
@@ -122,132 +122,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* System Features Section */}
-      <section className="py-16 px-6">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-foreground mb-4">
-            Características del Sistema
-          </h2>
-          <p className="text-muted-foreground text-center mb-12 max-w-3xl mx-auto">
-            Nuestra plataforma está diseñada para hacer tu experiencia lo más simple y transparente posible
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="p-6 border-2 border-primary/10 hover:border-primary/30 transition-colors">
-              <CardContent className="p-0">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <ShoppingCart className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">Carrito Inteligente</h3>
-                    <p className="text-sm text-muted-foreground">
-                      • Agregá múltiples productos con cantidades personalizadas<br/>
-                      • Calculá horas extra automáticamente<br/>
-                      • Revisá tu pedido antes de confirmar<br/>
-                      • Guardá productos para más tarde
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
-            <Card className="p-6 border-2 border-primary/10 hover:border-primary/30 transition-colors">
-              <CardContent className="p-0">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <MapPin className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">Servicio Completo</h3>
-                    <p className="text-sm text-muted-foreground">
-                      • Ingresá la dirección de la fiesta<br/>
-                      • Traslado e instalación incluidos<br/>
-                      • Supervisión durante el evento<br/>
-                      • Cobertura en Rosario y alrededores
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6 border-2 border-primary/10 hover:border-primary/30 transition-colors">
-              <CardContent className="p-0">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Clock className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">Reserva Flexible</h3>
-                    <p className="text-sm text-muted-foreground">
-                      • Elegí fecha y horario de la fiesta<br/>
-                      • Especificá cantidad de niños<br/>
-                      • Agregá comentarios especiales si necesitás<br/>
-                      • Modificá tu reserva hasta 24h antes
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6 border-2 border-primary/10 hover:border-primary/30 transition-colors">
-              <CardContent className="p-0">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Shield className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">Pago Seguro</h3>
-                    <p className="text-sm text-muted-foreground">
-                      • Instrucciones claras de pago<br/>
-                      • Confirmación por email<br/>
-                      • Comprobante requerido<br/>
-                      • Reserva confirmada al instante
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6 border-2 border-primary/10 hover:border-primary/30 transition-colors">
-              <CardContent className="p-0">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Truck className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">Servicio Completo</h3>
-                    <p className="text-sm text-muted-foreground">
-                      • Instalación profesional incluida<br/>
-                      • Retiro automático al finalizar<br/>
-                      • Limpieza y sanitización
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6 border-2 border-primary/10 hover:border-primary/30 transition-colors">
-              <CardContent className="p-0">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Star className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">Seguimiento</h3>
-                    <p className="text-sm text-muted-foreground">
-                      • Historial de fiestas en tu perfil<br/>
-                      • Estado de tu pedido en tiempo real<br/>
-                      • Notificaciones por email<br/>
-                      • Soporte personalizado
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
 
       {/* Features Section */}
       <section className="py-16 px-6">
