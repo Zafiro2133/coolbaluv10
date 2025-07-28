@@ -137,7 +137,7 @@ export const Contact = () => {
               Contactanos
             </h1>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Tenés alguna pregunta sobre nuestros servicios para fiestas infantiles? Estamos acá para ayudarte. Contactanos y te responderemos a la brevedad.
+              ¿Tenés alguna pregunta sobre nuestros servicios para fiestas infantiles? Estamos acá para ayudarte. Contactanos y te responderemos a la brevedad.
             </p>
           </div>
 

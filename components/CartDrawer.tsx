@@ -53,13 +53,13 @@ export const CartDrawer = () => {
           <SheetHeader>
             <SheetTitle>Carrito de Compras</SheetTitle>
             <SheetDescription>
-              Inicia sesión para agregar productos al carrito
+              Iniciá sesión para agregar productos al carrito
             </SheetDescription>
           </SheetHeader>
           <div className="flex flex-col items-center justify-center h-64">
             <ShoppingBag className="h-16 w-16 text-muted-foreground mb-4" />
             <p className="text-muted-foreground text-center mb-4">
-              Necesitas iniciar sesión para usar el carrito
+              Necesitás iniciar sesión para usar el carrito
             </p>
             <Button onClick={() => navigate('/auth')}>
               Iniciar Sesión
@@ -82,7 +82,7 @@ export const CartDrawer = () => {
             )}
           </SheetTitle>
           <SheetDescription>
-            Revisa tus productos antes de reservar
+            Revisá tus productos antes de reservar
           </SheetDescription>
         </SheetHeader>
 

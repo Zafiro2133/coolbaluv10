@@ -93,7 +93,7 @@ const NotFound = () => {
             {/* Helpful Links */}
             <div className="mt-8 pt-6 border-t border-border">
               <p className="text-sm text-muted-foreground mb-3">
-                ¿Necesitas ayuda? Prueba con:
+                ¿Necesitás ayuda? Probá con:
               </p>
               <div className="flex flex-wrap gap-2 justify-center">
                 <Button 

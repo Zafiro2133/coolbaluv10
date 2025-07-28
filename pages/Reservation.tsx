@@ -79,7 +79,7 @@ export default function Reservation() {
       navigate('/');
       toast({
         title: "Carrito vacío",
-        description: "Agrega productos al carrito antes de hacer una reserva",
+        description: "Agregá productos al carrito antes de hacer una reserva",
         variant: "destructive",
       });
     }
@@ -184,7 +184,7 @@ export default function Reservation() {
       setIsSubmitting(false);
       toast({
         title: 'Falta horario',
-        description: 'Debes seleccionar un horario para el evento',
+        description: 'Tenés que seleccionar un horario para el evento',
         variant: 'destructive',
       });
       return;
@@ -194,7 +194,7 @@ export default function Reservation() {
       setIsSubmitting(false);
       toast({
         title: 'Horario inválido',
-        description: 'Selecciona un horario válido para el evento (formato HH:mm)',
+        description: 'Seleccioná un horario válido para el evento (formato HH:mm)',
         variant: 'destructive',
       });
       return;
@@ -421,7 +421,7 @@ export default function Reservation() {
                         <span className="text-sm text-muted-foreground">horas</span>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        La duración estándar es 3 horas (incluidas en el precio). Agrega horas extra si querés extender la diversión. Duración total: {formData.extraHours} horas.
+                        La duración estándar es 3 horas (incluidas en el precio). Agregá horas extra si querés extender la diversión. Duración total: {formData.extraHours} horas.
                       </p>
                     </div>
                   </div>
@@ -511,11 +511,11 @@ export default function Reservation() {
                     <div className="space-y-2">
                       <Label htmlFor="childCount">
                         <Users className="inline h-4 w-4 mr-1" />
-                        Cantidad de niños
+                        Cantidad de pibes
                       </Label>
                       <div className="flex items-center gap-2">
                         <label htmlFor="childCount" className="text-sm font-medium sr-only">
-                          Cantidad de niños
+                          Cantidad de pibes
                         </label>
                         <Input
                           type="number"
@@ -584,7 +584,7 @@ export default function Reservation() {
                       onValueChange={(value) => handleInputChange('rainReschedule', value)}
                     >
                       <SelectTrigger className="w-full" id="rainReschedule">
-                        <SelectValue placeholder="Selecciona una opción" />
+                        <SelectValue placeholder="Seleccioná una opción" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="no">
@@ -693,7 +693,7 @@ export default function Reservation() {
                   <div className="flex items-center gap-2 text-sm">
                     <Users className="h-4 w-4 text-muted-foreground" />
                     <span className="font-medium">Invitados:</span>
-                    <span>{formData.adultCount + formData.childCount} personas ({formData.adultCount} adultos, {formData.childCount} niños)</span>
+                    <span>{formData.adultCount + formData.childCount} personas ({formData.adultCount} adultos, {formData.childCount} pibes)</span>
                   </div>
                   {formData.rainReschedule && (
                     <div className="flex items-center gap-2 text-sm">

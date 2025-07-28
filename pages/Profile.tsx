@@ -235,7 +235,7 @@ export default function Profile() {
               <div>
                 <h1 className="text-3xl font-bold">Mi Perfil</h1>
                 <p className="text-muted-foreground">
-                  Gestiona tu información personal y revisa tu historial
+                  Gestioná tu información personal y revisá tu historial
                 </p>
               </div>
             </div>
@@ -433,7 +433,7 @@ export default function Profile() {
                               </div>
                               <p>
                                 <span className="font-medium">Invitados:</span> {reservation.adult_count + reservation.child_count}
-                                ({reservation.adult_count} adultos, {reservation.child_count} niños)
+                                ({reservation.adult_count} adultos, {reservation.child_count} pibes)
                               </p>
                               {reservation.extra_hours > 0 && (
                                 <p>

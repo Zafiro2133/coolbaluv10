@@ -53,7 +53,7 @@ const Index = () => {
             ¿Cómo Funciona?
           </h2>
           <p className="text-muted-foreground mb-12 max-w-3xl mx-auto text-lg">
-            Nuestro proceso es simple y transparente. Te guiamos paso a paso para que la fiesta de tus chicos sea perfecta.
+            Nuestro proceso es simple y transparente. Te guiamos paso a paso para que la fiesta de tus pibes sea perfecta.
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
@@ -189,7 +189,7 @@ const Index = () => {
                   <div>
                     <h3 className="text-lg font-semibold mb-2">Experiencia Premium</h3>
                     <p className="text-muted-foreground">
-                    Nuestro equipo profesional se encarga de todo para que vos te relajes y los chicos disfruten al máximo.
+                    Nuestro equipo profesional se encarga de todo para que vos te relajes y los pibes disfruten al máximo.
                     </p>
                   </div>
                 </div>
@@ -207,7 +207,7 @@ const Index = () => {
               Nuestros Productos
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
-              Lleamos con la diversión
+              Llevamos la diversión
             </p>
           </div>
 

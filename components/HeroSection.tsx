@@ -14,7 +14,7 @@ export const HeroSection = () => {
       </h1>
       
       <p className="text-lg text-muted-foreground mb-8 max-w-sm leading-relaxed">
-        Alquila juegos inflables, mobiliario y servicios de catering en Rosario y alrededores para hacer de tu celebración un momento inolvidable.
+        Alquilá juegos inflables, mobiliario y servicios de catering en Rosario y alrededores para hacer de tu celebración un momento inolvidable.
       </p>
       
       <div className="flex flex-col gap-4 w-full max-w-xs">

@@ -34,12 +34,12 @@ export const FAQ = () => {
           answer: "Nuestro proceso es simple: 1) Explorá el catálogo y agregá productos al carrito, 2) Ingresá tu dirección y el sistema validará si está dentro del área de cobertura, 3) Completá los datos del evento incluyendo horas extra en el formulario final, 4) Confirmá la reserva y recibí las instrucciones de pago."
         },
         {
-          question: "¿Puedo modificar mi reserva después de confirmarla?",
+          question: "¿Podés modificar tu reserva después de confirmarla?",
           answer: "Sí, podés modificar tu reserva hasta 24 horas antes del evento. Contactanos por WhatsApp o email para hacer los cambios necesarios."
         },
         {
-          question: "¿Qué información necesito para hacer una reserva?",
-          answer: "Necesitás: dirección exacta del evento, fecha y horario, cantidad de adultos y niños y tus datos de contacto. El sistema te guía paso a paso."
+          question: "¿Qué información necesitás para hacer una reserva?",
+          answer: "Necesitás: dirección exacta del evento, fecha y horario, cantidad de adultos y pibes y tus datos de contacto. El sistema te guía paso a paso."
         }
       ]
     },
@@ -55,7 +55,7 @@ export const FAQ = () => {
           answer: "Cada producto ofrece 3 horas de uso. Las horas extra se agregan en el formulario de reserva al final, donde podés especificar cuántas horas adicionales necesitás para cada inflable. El sistema calcula automáticamente el costo adicional."
         },
         {
-          question: "¿Puedo guardar productos para más tarde?",
+          question: "¿Podés guardar productos para más tarde?",
           answer: "Sí, el carrito guarda tus productos mientras navegás. Solo necesitás iniciar sesión para mantener tu carrito entre sesiones."
         }
       ]
@@ -81,11 +81,11 @@ export const FAQ = () => {
           answer: "Aceptamos transferencias bancarias y efectivo. Te enviamos las instrucciones de pago por email después de confirmar la reserva."
         },
         {
-          question: "¿Cuándo debo pagar?",
+          question: "¿Cuándo tenés que pagar?",
           answer: "El pago se realiza después de confirmar la reserva. Te damos las instrucciones por email y necesitamos el comprobante para proceder."
         },
         {
-          question: "¿Qué pasa si no puedo pagar a tiempo?",
+          question: "¿Qué pasa si no podés pagar a tiempo?",
           answer: "Contactanos inmediatamente si tenés problemas con el pago. Podemos reprogramar la fiesta según disponibilidad."
         }
       ]
@@ -102,7 +102,7 @@ export const FAQ = () => {
           answer: "Si hay mal tiempo, podés reprogramar sin costo hasta 24 horas antes. Nos adaptamos a las condiciones climáticas."
         },
         {
-          question: "¿Necesito estar presente durante la instalación?",
+          question: "¿Necesitás estar presente durante la instalación?",
           answer: "No es necesario, pero es recomendable para coordinar detalles. Podés dejarnos instrucciones si no vas a estar."
         }
       ]

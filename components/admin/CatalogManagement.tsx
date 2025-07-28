@@ -668,7 +668,7 @@ function ProductForm({
               onValueChange={(value) => setFormData({...formData, category_id: value})}
             >
               <SelectTrigger id="productCategory" className="h-10">
-                <SelectValue placeholder="Seleccionar categoría" />
+                <SelectValue placeholder="Seleccioná categoría" />
               </SelectTrigger>
               <SelectContent>
                 {categories.map((category) => (

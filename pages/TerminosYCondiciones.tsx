@@ -5,7 +5,7 @@ export default function TerminosYCondiciones() {
     <main className="max-w-2xl mx-auto px-4 py-8 sm:py-12">
       <header className="mb-8">
         <h1 className="text-3xl font-bold mb-2 text-center">Términos y Condiciones</h1>
-        <p className="text-gray-600 text-center">Por favor, lea atentamente antes de confirmar su reserva.</p>
+        <p className="text-gray-600 text-center">Por favor, leé atentamente antes de confirmar tu reserva.</p>
       </header>
       <section aria-labelledby="terminos-title">
         <ol className="list-decimal space-y-4 pl-6 text-base sm:text-lg">
