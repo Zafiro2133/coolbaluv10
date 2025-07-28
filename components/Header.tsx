@@ -136,6 +136,15 @@ export const Header = () => {
               <HelpCircle className="h-5 w-5" />
               <span className="hidden sm:inline">Preguntas Frecuentes</span>
             </Button>
+            {/* Enlace a Términos y Condiciones */}
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => navigate('/TerminosYCondiciones')}
+              className="rounded-full flex items-center gap-2 px-3"
+            >
+              <span className="hidden sm:inline">Términos y Condiciones</span>
+            </Button>
             
             <Button 
               variant="ghost" 

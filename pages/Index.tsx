@@ -265,6 +265,18 @@ const Index = () => {
         </div>
       </section>
 
+      <footer className="mt-12 text-center text-xs text-muted-foreground">
+        {/* Otros enlaces o información */}
+        <a
+          href="/TerminosYCondiciones"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-primary"
+        >
+          Términos y Condiciones
+        </a>
+      </footer>
+
       <ProductDetailsModal
         product={selectedProduct}
         isOpen={selectedProductId !== null}

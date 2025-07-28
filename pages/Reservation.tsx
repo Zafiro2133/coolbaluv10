@@ -68,6 +68,7 @@ export default function Reservation() {
   const [loadingAvailabilities, setLoadingAvailabilities] = useState(true);
   const [selectedDateString, setSelectedDateString] = useState<string | null>(null); // YYYY-MM-DD
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -615,11 +616,33 @@ export default function Reservation() {
 
               {/* Mensaje de error si la zona no es válida */}
               {/* No hay lógica de zona, solo se muestra la dirección */}
+              <div className="flex items-start gap-2 mb-2">
+                <input
+                  id="accept-terms"
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={e => setAcceptedTerms(e.target.checked)}
+                  required
+                  className="mt-1"
+                />
+                <label htmlFor="accept-terms" className="text-sm select-none">
+                  Acepto los{' '}
+                  <a
+                    href="/TerminosYCondiciones"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline text-primary hover:text-primary/80"
+                  >
+                    Términos y Condiciones
+                  </a>
+                  .
+                </label>
+              </div>
               <Button
                 type="submit"
                 className="w-full"
                 size="lg"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !acceptedTerms}
               >
                 {isSubmitting ? 'Creando reserva...' : 'Confirmar Reserva'}
               </Button>

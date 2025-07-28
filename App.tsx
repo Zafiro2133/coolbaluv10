@@ -15,6 +15,7 @@ import AdminAvailabilities from './pages/AdminAvailabilities';
 import FAQ from './pages/FAQ';
 import NotFound from './pages/NotFound';
 import DebugPage from './pages/Debug';
+import TerminosYCondiciones from './pages/TerminosYCondiciones';
 
 const App = () => {
   useFixSelectElements();
@@ -32,6 +33,7 @@ const App = () => {
         <Route path="/admin/availabilities" element={<AdminAvailabilities />} />
         <Route path="/debug" element={<DebugPage />} />
         <Route path="/faq" element={<FAQ />} />
+        <Route path="/TerminosYCondiciones" element={<TerminosYCondiciones />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>

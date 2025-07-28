@@ -218,9 +218,9 @@ export const Footer = () => {
           <div className="flex flex-col md:flex-row items-center gap-4 text-sm text-muted-foreground">
             <p>© {currentYear} {companyName}. Todos los derechos reservados.</p>
             <div className="flex gap-4">
-              <button className="hover:text-primary transition-colors">
+              <Link to="/TerminosYCondiciones" className="hover:text-primary transition-colors">
                 Términos y Condiciones
-              </button>
+              </Link>
               <button className="hover:text-primary transition-colors">
                 Política de Privacidad
               </button>
