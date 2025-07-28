@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { uploadProductImage, deleteFile } from '@/services/supabase/storage';
+import { supabase } from '@/services/supabase/client';
 import { 
   Upload, 
   X, 
@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/utils';
 
-interface ImageUploadProps {
+interface SimpleImageUploadProps {
   currentImageUrl?: string | null;
   productId?: string;
   onImageUploaded: (imageUrl: string) => void;
@@ -24,14 +24,14 @@ interface ImageUploadProps {
   disabled?: boolean;
 }
 
-export function ImageUpload({
+export function SimpleImageUpload({
   currentImageUrl,
   productId,
   onImageUploaded,
   onImageRemoved,
   className,
   disabled = false
-}: ImageUploadProps) {
+}: SimpleImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null);
@@ -39,26 +39,10 @@ export function ImageUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // Función para manejar la selección de archivo
+  // Función simplificada para manejar la selección de archivo
   const handleFileSelect = useCallback(async (file: File) => {
-    // Validaciones
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
+    // Validaciones básicas
     const maxSize = 5 * 1024 * 1024; // 5MB
-
-    // Verificar extensión del archivo
-    const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
-    if (!allowedExtensions.includes(fileExtension)) {
-      setError(`Extensión de archivo no permitida: ${fileExtension}. Solo se permiten: .jpg, .jpeg, .png, .webp`);
-      return;
-    }
-
-    // Verificar tipo MIME
-    if (!allowedTypes.includes(file.type)) {
-      setError(`Tipo de archivo no permitido: ${file.type}. Solo se permiten: JPG, PNG, WEBP`);
-      console.warn('Tipo MIME detectado:', file.type, 'Archivo:', file.name);
-      return;
-    }
 
     if (file.size > maxSize) {
       setError('El archivo es demasiado grande. Tamaño máximo: 5MB');
@@ -89,57 +73,75 @@ export function ImageUpload({
         });
       }, 100);
 
-      // Forzar el tipo MIME correcto basado en la extensión
-      const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
-      let correctMimeType = file.type;
-      
-      // Corregir tipo MIME si es incorrecto
-      if (fileExtension === '.png') {
-        correctMimeType = 'image/png';
-      } else if (fileExtension === '.jpg' || fileExtension === '.jpeg') {
-        correctMimeType = 'image/jpeg';
-      } else if (fileExtension === '.webp') {
-        correctMimeType = 'image/webp';
+      // Verificar autenticación
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('Usuario no autenticado');
       }
 
-      // Crear un nuevo archivo con el tipo MIME correcto
-      const correctedFile = new File([file], file.name, { type: correctMimeType });
+      // Generar nombre de archivo
+      const timestamp = Date.now();
+      const randomId = Math.random().toString(36).substring(2, 15);
+      const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `${productId || 'temp'}/${timestamp}-${randomId}.${extension}`;
       
-      console.log('Subiendo archivo:', {
-        originalType: file.type,
-        correctedType: correctMimeType,
-        fileName: file.name,
-        size: file.size
+      console.log('🚀 Subiendo imagen:', {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        path: fileName
       });
-      
-      // Subir archivo a Supabase
-      const result = await uploadProductImage(correctedFile, productId);
+
+      // Crear un nuevo archivo con tipo MIME forzado
+      const correctedFile = new File([file], file.name, { 
+        type: 'image/jpeg' // Forzar tipo MIME válido
+      });
+
+      // Subir archivo directamente
+      const { data, error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(fileName, correctedFile, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: 'image/jpeg' // Forzar contentType
+        });
 
       clearInterval(progressInterval);
       setUploadProgress(100);
 
-      if (result.success && result.url) {
-        // Si hay una imagen anterior, eliminarla
-        if (currentImageUrl && currentImageUrl !== result.url) {
-          try {
-            const oldPath = currentImageUrl.split('/').slice(-2).join('/'); // Obtener path del archivo
-            await deleteFile(oldPath, 'product-images');
-          } catch (deleteError) {
-            console.warn('No se pudo eliminar la imagen anterior:', deleteError);
-          }
-        }
-
-        setPreviewUrl(result.url);
-        onImageUploaded(result.url);
-        
-        toast({
-          title: "Imagen subida exitosamente",
-          description: "La imagen del producto ha sido actualizada.",
-        });
-      } else {
-        console.error('Error completo del resultado:', result);
-        throw new Error(result.error || 'Error desconocido al subir la imagen');
+      if (uploadError) {
+        console.error('❌ Error al subir imagen:', uploadError);
+        throw new Error(`Error al subir imagen: ${uploadError.message}`);
       }
+
+      // Generar URL pública
+      const { data: urlData } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(fileName);
+
+      console.log('✅ Imagen subida exitosamente:', {
+        path: data.path,
+        url: urlData.publicUrl
+      });
+
+      // Si hay una imagen anterior, eliminarla
+      if (currentImageUrl && currentImageUrl !== urlData.publicUrl) {
+        try {
+          const oldPath = currentImageUrl.split('/').slice(-2).join('/');
+          await supabase.storage.from('product-images').remove([oldPath]);
+        } catch (deleteError) {
+          console.warn('No se pudo eliminar la imagen anterior:', deleteError);
+        }
+      }
+
+      setPreviewUrl(urlData.publicUrl);
+      onImageUploaded(urlData.publicUrl);
+      
+      toast({
+        title: "Imagen subida exitosamente",
+        description: "La imagen del producto ha sido actualizada.",
+      });
+
     } catch (error) {
       console.error('Error al subir imagen:', error);
       setError(error instanceof Error ? error.message : 'Error al subir la imagen');
@@ -179,7 +181,7 @@ export function ImageUpload({
     try {
       if (currentImageUrl) {
         const path = currentImageUrl.split('/').slice(-2).join('/');
-        await deleteFile(path, 'product-images');
+        await supabase.storage.from('product-images').remove([path]);
       }
       
       setPreviewUrl(null);
@@ -212,7 +214,7 @@ export function ImageUpload({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/jpg,image/png,image/webp"
+        accept="image/*"
         onChange={(e) => {
           const file = e.target.files?.[0];
           if (file) {
@@ -314,7 +316,7 @@ export function ImageUpload({
                       Arrastra una imagen aquí o haz clic para seleccionar
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      JPG, PNG, WEBP • Máximo 5MB
+                      Cualquier formato de imagen • Máximo 5MB
                     </p>
                   </div>
                   <Button

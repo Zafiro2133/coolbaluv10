@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Package, Plus, Edit, Trash2, DollarSign, Tag, Eye, EyeOff, Copy, Trash } from 'lucide-react';
 import { supabase } from '@/services/supabase/client';
+import { CloudinaryImageUpload } from '@/components/ui/cloudinary-image-upload';
 
 interface Category {
   id: string;
@@ -31,6 +32,7 @@ interface Product {
   is_active: boolean;
   display_order?: number;
   extra_hour_percentage?: number;
+  image_url?: string | null;
   categories?: Category;
 }
 
@@ -268,9 +270,25 @@ function ProductManagement() {
                 <TableRow key={product.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded bg-muted flex items-center justify-center">
-                        <Package className="h-6 w-6 text-muted-foreground" />
-                      </div>
+                      {product.image_url ? (
+                        <div className="w-12 h-12 rounded overflow-hidden bg-muted flex items-center justify-center">
+                          <img
+                            src={product.image_url}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              target.nextElementSibling?.classList.remove('hidden');
+                            }}
+                          />
+                          <Package className="h-6 w-6 text-muted-foreground hidden" />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 rounded bg-muted flex items-center justify-center">
+                          <Package className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                      )}
                       <div>
                         <div className="font-medium">{product.name}</div>
                         {product.description && (
@@ -574,6 +592,7 @@ function ProductForm({
     extra_hour_percentage: product?.extra_hour_percentage || 15,
     display_order: product?.display_order || 0,
     is_active: product?.is_active ?? true,
+    image_url: product?.image_url || null,
   });
 
   const [categories, setCategories] = useState<Category[]>([]);
@@ -747,6 +766,21 @@ function ProductForm({
             />
           </div>
         </div>
+      </div>
+
+      {/* Imagen del Producto */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 pb-2 border-b">
+          <Package className="h-5 w-5 text-primary" />
+          <h3 className="text-lg font-semibold">Imagen del Producto</h3>
+        </div>
+        
+        <CloudinaryImageUpload
+          currentImageUrl={formData.image_url}
+          onImageUploaded={(imageUrl) => setFormData({...formData, image_url: imageUrl})}
+          onImageRemoved={() => setFormData({...formData, image_url: null})}
+          disabled={isSubmitting}
+        />
       </div>
 
       {/* Form Actions */}

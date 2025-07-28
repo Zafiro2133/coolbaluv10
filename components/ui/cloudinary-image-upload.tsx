@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { uploadProductImage, deleteFile } from '@/services/supabase/storage';
 import { 
   Upload, 
   X, 
@@ -14,24 +13,23 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { cn } from '@/utils';
+import { cloudinaryConfig, cloudinaryUploadUrl, validateImageFile } from '@/config/cloudinary';
 
-interface ImageUploadProps {
+interface CloudinaryImageUploadProps {
   currentImageUrl?: string | null;
-  productId?: string;
   onImageUploaded: (imageUrl: string) => void;
   onImageRemoved?: () => void;
   className?: string;
   disabled?: boolean;
 }
 
-export function ImageUpload({
+export function CloudinaryImageUpload({
   currentImageUrl,
-  productId,
   onImageUploaded,
   onImageRemoved,
   className,
   disabled = false
-}: ImageUploadProps) {
+}: CloudinaryImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null);
@@ -39,29 +37,34 @@ export function ImageUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  // Función para subir imagen a Cloudinary
+  const uploadToCloudinary = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', cloudinaryConfig.uploadPreset);
+    formData.append('folder', cloudinaryConfig.folder);
+    formData.append('api_key', cloudinaryConfig.apiKey);
+
+    const response = await fetch(cloudinaryUploadUrl, { 
+      method: 'POST', 
+      body: formData 
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Error al subir imagen');
+    }
+
+    const data = await response.json();
+    return data.secure_url;
+  };
+
   // Función para manejar la selección de archivo
   const handleFileSelect = useCallback(async (file: File) => {
-    // Validaciones
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
-    const maxSize = 5 * 1024 * 1024; // 5MB
-
-    // Verificar extensión del archivo
-    const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
-    if (!allowedExtensions.includes(fileExtension)) {
-      setError(`Extensión de archivo no permitida: ${fileExtension}. Solo se permiten: .jpg, .jpeg, .png, .webp`);
-      return;
-    }
-
-    // Verificar tipo MIME
-    if (!allowedTypes.includes(file.type)) {
-      setError(`Tipo de archivo no permitido: ${file.type}. Solo se permiten: JPG, PNG, WEBP`);
-      console.warn('Tipo MIME detectado:', file.type, 'Archivo:', file.name);
-      return;
-    }
-
-    if (file.size > maxSize) {
-      setError('El archivo es demasiado grande. Tamaño máximo: 5MB');
+    // Validaciones usando la configuración centralizada
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
@@ -89,57 +92,28 @@ export function ImageUpload({
         });
       }, 100);
 
-      // Forzar el tipo MIME correcto basado en la extensión
-      const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
-      let correctMimeType = file.type;
-      
-      // Corregir tipo MIME si es incorrecto
-      if (fileExtension === '.png') {
-        correctMimeType = 'image/png';
-      } else if (fileExtension === '.jpg' || fileExtension === '.jpeg') {
-        correctMimeType = 'image/jpeg';
-      } else if (fileExtension === '.webp') {
-        correctMimeType = 'image/webp';
-      }
-
-      // Crear un nuevo archivo con el tipo MIME correcto
-      const correctedFile = new File([file], file.name, { type: correctMimeType });
-      
-      console.log('Subiendo archivo:', {
-        originalType: file.type,
-        correctedType: correctMimeType,
-        fileName: file.name,
+      console.log('🚀 Subiendo imagen a Cloudinary:', {
+        name: file.name,
+        type: file.type,
         size: file.size
       });
-      
-      // Subir archivo a Supabase
-      const result = await uploadProductImage(correctedFile, productId);
+
+      // Subir a Cloudinary
+      const imageUrl = await uploadToCloudinary(file);
 
       clearInterval(progressInterval);
       setUploadProgress(100);
 
-      if (result.success && result.url) {
-        // Si hay una imagen anterior, eliminarla
-        if (currentImageUrl && currentImageUrl !== result.url) {
-          try {
-            const oldPath = currentImageUrl.split('/').slice(-2).join('/'); // Obtener path del archivo
-            await deleteFile(oldPath, 'product-images');
-          } catch (deleteError) {
-            console.warn('No se pudo eliminar la imagen anterior:', deleteError);
-          }
-        }
+      console.log('✅ Imagen subida exitosamente:', imageUrl);
 
-        setPreviewUrl(result.url);
-        onImageUploaded(result.url);
-        
-        toast({
-          title: "Imagen subida exitosamente",
-          description: "La imagen del producto ha sido actualizada.",
-        });
-      } else {
-        console.error('Error completo del resultado:', result);
-        throw new Error(result.error || 'Error desconocido al subir la imagen');
-      }
+      setPreviewUrl(imageUrl);
+      onImageUploaded(imageUrl);
+      
+      toast({
+        title: "Imagen subida exitosamente",
+        description: "La imagen del producto ha sido actualizada.",
+      });
+
     } catch (error) {
       console.error('Error al subir imagen:', error);
       setError(error instanceof Error ? error.message : 'Error al subir la imagen');
@@ -154,7 +128,7 @@ export function ImageUpload({
       setIsUploading(false);
       setUploadProgress(0);
     }
-  }, [currentImageUrl, productId, onImageUploaded, toast]);
+  }, [currentImageUrl, onImageUploaded, toast]);
 
   // Función para manejar el drop de archivos
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -173,31 +147,17 @@ export function ImageUpload({
   }, []);
 
   // Función para eliminar imagen
-  const handleRemoveImage = useCallback(async () => {
+  const handleRemoveImage = useCallback(() => {
     if (disabled || isUploading) return;
 
-    try {
-      if (currentImageUrl) {
-        const path = currentImageUrl.split('/').slice(-2).join('/');
-        await deleteFile(path, 'product-images');
-      }
-      
-      setPreviewUrl(null);
-      onImageRemoved?.();
-      
-      toast({
-        title: "Imagen eliminada",
-        description: "La imagen del producto ha sido eliminada.",
-      });
-    } catch (error) {
-      console.error('Error al eliminar imagen:', error);
-      toast({
-        title: "Error al eliminar imagen",
-        description: "No se pudo eliminar la imagen.",
-        variant: "destructive",
-      });
-    }
-  }, [currentImageUrl, disabled, isUploading, onImageRemoved, toast]);
+    setPreviewUrl(null);
+    onImageRemoved?.();
+    
+    toast({
+      title: "Imagen eliminada",
+      description: "La imagen del producto ha sido eliminada.",
+    });
+  }, [disabled, isUploading, onImageRemoved, toast]);
 
   // Función para abrir selector de archivos
   const handleClick = useCallback(() => {

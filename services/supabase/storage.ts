@@ -36,9 +36,18 @@ const DEFAULT_CONFIG: StorageConfig = {
  * Valida un archivo antes de subirlo
  */
 export const validateFile = (file: File, config: StorageConfig = DEFAULT_CONFIG): string | null => {
+  // Validar extensión del archivo
+  const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+  const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
+  
+  if (!allowedExtensions.includes(fileExtension)) {
+    return `Extensión de archivo no permitida: ${fileExtension}. Tipos permitidos: ${allowedExtensions.join(', ')}`;
+  }
+
   // Validar tipo de archivo
   if (config.allowedTypes && !config.allowedTypes.includes(file.type)) {
-    return `Tipo de archivo no permitido. Tipos permitidos: ${config.allowedTypes.join(', ')}`;
+    console.warn('Tipo MIME detectado:', file.type, 'Archivo:', file.name, 'Extensión:', fileExtension);
+    return `Tipo de archivo no permitido: ${file.type}. Tipos permitidos: ${config.allowedTypes.join(', ')}`;
   }
 
   // Validar tamaño
@@ -117,8 +126,8 @@ export const uploadFile = async (
       .from(config.bucket)
       .upload(fileName, file, {
         cacheControl: '3600',
-        upsert: false
-        // No especificar contentType - Supabase detectará automáticamente el tipo MIME
+        upsert: false,
+        contentType: file.type // Forzar el tipo MIME correcto
       });
 
     if (error) {
@@ -255,13 +264,75 @@ export const deleteMultipleFiles = async (
  * Sube una imagen de producto
  */
 export const uploadProductImage = async (file: File, productId?: string): Promise<UploadResult> => {
-  const config: StorageConfig = {
-    ...DEFAULT_CONFIG,
-    bucket: 'product-images',
-    folder: productId || 'temp'
-  };
-  
-  return uploadFile(file, config);
+  try {
+    // Verificar autenticación
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return {
+        url: '',
+        path: '',
+        success: false,
+        error: 'Usuario no autenticado'
+      };
+    }
+
+    // Generar nombre de archivo
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(2, 15);
+    const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const fileName = `${productId || 'temp'}/${timestamp}-${randomId}.${extension}`;
+    
+    console.log('🚀 Subiendo imagen:', {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      path: fileName
+    });
+
+    // Subir archivo directamente sin validaciones adicionales
+    const { data, error } = await supabase.storage
+      .from('product-images')
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: file.type
+      });
+
+    if (error) {
+      console.error('❌ Error al subir imagen:', error);
+      return {
+        url: '',
+        path: '',
+        success: false,
+        error: `Error al subir imagen: ${error.message}`
+      };
+    }
+
+    // Generar URL pública
+    const { data: urlData } = supabase.storage
+      .from('product-images')
+      .getPublicUrl(fileName);
+
+    console.log('✅ Imagen subida exitosamente:', {
+      path: data.path,
+      url: urlData.publicUrl
+    });
+
+    return {
+      url: urlData.publicUrl,
+      path: data.path,
+      success: true
+    };
+
+  } catch (error) {
+    console.error('❌ Error inesperado al subir imagen:', error);
+    return {
+      url: '',
+      path: '',
+      success: false,
+      error: `Error inesperado: ${error instanceof Error ? error.message : 'Error desconocido'}`
+    };
+  }
 };
 
 /**
