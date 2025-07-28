@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/services/supabase/client';
 
 export interface Category {
@@ -10,6 +10,14 @@ export interface Category {
   display_order: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface ProductImage {
+  id?: string;
+  image_url: string;
+  display_order: number;
+  is_primary: boolean;
+  file?: File;
 }
 
 export interface Product {
@@ -25,6 +33,7 @@ export interface Product {
   created_at: string;
   updated_at: string;
   category?: Category;
+  images?: ProductImage[];
 }
 
 export const useCategories = () => {
@@ -121,6 +130,63 @@ export const useAdminProducts = (categoryId?: string) => {
       }
 
       return data as Product[];
+    },
+  });
+};
+
+// Hook para obtener imágenes de un producto
+export const useProductImages = (productId: string) => {
+  return useQuery({
+    queryKey: ['product-images', productId],
+    queryFn: async () => {
+      if (!productId) return [];
+      
+      // Use raw SQL query since product_images table might not be in types
+      const { data, error } = await supabase
+        .rpc('get_product_images', { product_uuid: productId });
+
+      if (error) {
+        console.error('Error fetching product images:', error);
+        return [];
+      }
+
+      return data || [];
+    },
+    enabled: !!productId,
+  });
+};
+
+// Hook para guardar imágenes de un producto
+export const useSaveProductImages = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ productId, images }: { productId: string; images: ProductImage[] }) => {
+      // Delete existing images
+      await supabase
+        .rpc('delete_product_images', { product_uuid: productId });
+
+      // Insert new images
+      if (images.length > 0) {
+        const { error } = await supabase
+          .rpc('insert_product_images', { 
+            product_uuid: productId, 
+            images_data: images.map(img => ({
+              image_url: img.image_url,
+              display_order: img.display_order,
+              is_primary: img.is_primary
+            }))
+          });
+
+        if (error) throw new Error(error.message);
+      }
+
+      return { success: true };
+    },
+    onSuccess: (_, { productId }) => {
+      queryClient.invalidateQueries({ queryKey: ['product-images', productId] });
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
     },
   });
 };

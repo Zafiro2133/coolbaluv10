@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Image } from "lucide-react";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Image, ChevronLeft, ChevronRight } from "lucide-react";
 import { Product } from '@/hooks/useProducts';
 import { useAddToCart } from '@/hooks/useCart';
 import { useAuth } from '@/contexts/AuthContext';
@@ -58,15 +59,37 @@ export const ProductCard = ({ product, onDetails, onReserve }: ProductCardProps)
     <Card className="w-full rounded-2xl shadow-md overflow-hidden bg-card">
       <CardContent className="p-0">
         {/* Product Image */}
-        <div className="w-full h-48 bg-muted flex items-center justify-center border-b border-border relative">
+        <div className="w-full h-48 bg-muted border-b border-border relative">
           {product.image_url ? (
-            <img
-              src={product.image_url}
-              alt={product.name}
-              className="w-full h-full object-cover"
-            />
+            product.images && product.images.length > 1 ? (
+              <Carousel className="w-full h-full">
+                <CarouselContent>
+                  {product.images.map((image, index) => (
+                    <CarouselItem key={index}>
+                      <div className="w-full h-48">
+                        <img
+                          src={image.image_url}
+                          alt={`${product.name} - Imagen ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="left-2 h-8 w-8" />
+                <CarouselNext className="right-2 h-8 w-8" />
+              </Carousel>
+            ) : (
+              <img
+                src={product.image_url}
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
+            )
           ) : (
-            <Image className="h-12 w-12 text-muted-foreground" />
+            <div className="w-full h-full flex items-center justify-center">
+              <Image className="h-12 w-12 text-muted-foreground" />
+            </div>
           )}
         </div>
         

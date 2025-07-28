@@ -16,7 +16,7 @@ import { supabase } from '@/services/supabase/client';
 import { CalendarDays, Clock, MapPin, Users, MessageSquare, CreditCard, AlertCircle, Calendar as CalendarIcon, ArrowLeft, Phone, CloudRain } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { cn } from '@/utils/utils';
+import { cn } from '@/utils';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { useCartContext } from '@/contexts/CartContext';
 import { createReservation, createReservationItems } from '@/services/supabase/reservations';

@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/services/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect } from 'react';
-import { authenticatedQuery } from '@/utils/supabaseUtils';
+import { authenticatedQuery } from '@/utils';
 
 export type UserRole = 'admin' | 'customer';
 
@@ -346,6 +346,26 @@ export const useDeleteProduct = () => {
         .from('products')
         .delete()
         .eq('id', productId);
+
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+    },
+  });
+};
+
+export const useDeleteAllProducts = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      // Usar consulta SQL directa para eliminar todos los productos
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .filter('id', 'not.is', null); // Eliminar todos los productos
 
       if (error) throw new Error(error.message);
     },

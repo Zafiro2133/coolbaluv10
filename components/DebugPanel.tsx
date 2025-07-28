@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { debugAuthStatus, debugRequestHeaders } from '@/utils/debugUtils';
+import { debugAuthStatus, debugRequestHeaders } from '@/utils';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function DebugPanel() {

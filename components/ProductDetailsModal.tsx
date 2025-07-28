@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent } from '@/components/ui/card';
 import { Image, Star, Clock, Users, Truck, Shield, Plus, Minus } from 'lucide-react';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Product } from '@/hooks/useProducts';
 import { useAddToCart } from '@/hooks/useCart';
 import { useAuth } from '@/contexts/AuthContext';
@@ -123,11 +124,31 @@ export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetails
           <div className="space-y-4">
             <div className="w-full h-64 lg:h-80 bg-muted rounded-lg overflow-hidden relative">
               {product.image_url ? (
-                <img
-                  src={product.image_url}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
+                product.images && product.images.length > 1 ? (
+                  <Carousel className="w-full h-full">
+                    <CarouselContent>
+                      {product.images.map((image, index) => (
+                        <CarouselItem key={index}>
+                          <div className="w-full h-64 lg:h-80">
+                            <img
+                              src={image.image_url}
+                              alt={`${product.name} - Imagen ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        </CarouselItem>
+                      ))}
+                    </CarouselContent>
+                    <CarouselPrevious className="left-2 h-8 w-8" />
+                    <CarouselNext className="right-2 h-8 w-8" />
+                  </Carousel>
+                ) : (
+                  <img
+                    src={product.image_url}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                )
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <Image className="h-16 w-16 text-muted-foreground" />
