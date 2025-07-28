@@ -364,6 +364,94 @@ export const debounce = <T extends (...args: any[]) => any>(
   };
 };
 
+/**
+ * Función utilitaria para obtener la URL correcta de una imagen de producto
+ * @param imageUrl - La URL de la imagen almacenada en la base de datos
+ * @returns La URL completa para acceder a la imagen
+ */
+export const getProductImageUrl = (imageUrl: string | null | undefined): string => {
+  if (!imageUrl) {
+    return '';
+  }
+
+  // Si la URL ya es completa (comienza con http/https), la devolvemos tal como está
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+
+  // Si es una URL relativa de Supabase Storage, la construimos correctamente
+  const supabaseUrl = (import.meta as any).env.VITE_SUPABASE_URL as string;
+  
+  // Si la URL ya incluye el bucket, solo agregamos la URL base
+  if (imageUrl.includes('product-images/')) {
+    return `${supabaseUrl}/storage/v1/object/public/${imageUrl}`;
+  }
+
+  // Si es solo el nombre del archivo, construimos la ruta completa
+  return `${supabaseUrl}/storage/v1/object/public/product-images/${imageUrl}`;
+};
+
+/**
+ * Función para verificar si una URL de imagen es válida y accesible
+ * @param imageUrl - La URL de la imagen a verificar
+ * @returns Promise<boolean> - true si la imagen es accesible, false en caso contrario
+ */
+export const isImageUrlValid = async (imageUrl: string): Promise<boolean> => {
+  if (!imageUrl) return false;
+  
+  try {
+    const response = await fetch(imageUrl, { method: 'HEAD' });
+    return response.ok;
+  } catch (error) {
+    console.error('Error verificando URL de imagen:', error);
+    return false;
+  }
+};
+
+/**
+ * Función para limpiar URLs de imágenes que contienen 'temp/'
+ * @param imageUrl - La URL de la imagen
+ * @returns string - URL limpia o cadena vacía si contiene 'temp/'
+ */
+export const cleanTempImageUrl = (imageUrl: string | null | undefined): string => {
+  if (!imageUrl) return '';
+  
+  // Si la URL contiene 'temp/', la consideramos inválida
+  if (imageUrl.includes('temp/')) {
+    console.warn('URL de imagen contiene carpeta temp/, considerada inválida:', imageUrl);
+    return '';
+  }
+  
+  return imageUrl;
+};
+
+/**
+ * Función utilitaria para obtener la URL correcta de una imagen de categoría
+ * @param imageUrl - La URL de la imagen almacenada en la base de datos
+ * @returns La URL completa para acceder a la imagen
+ */
+export const getCategoryImageUrl = (imageUrl: string | null | undefined): string => {
+  if (!imageUrl) {
+    return '';
+  }
+
+  // Si la URL ya es completa (comienza con http/https), la devolvemos tal como está
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+
+  // Si es una URL relativa de Supabase Storage, la construimos correctamente
+  const supabaseUrl = (import.meta as any).env.VITE_SUPABASE_URL as string;
+  
+  // Si la URL ya incluye el bucket, solo agregamos la URL base
+  if (imageUrl.includes('category-images/')) {
+    return `${supabaseUrl}/storage/v1/object/public/${imageUrl}`;
+  }
+
+  // Si es solo el nombre del archivo, construimos la ruta completa
+  return `${supabaseUrl}/storage/v1/object/public/category-images/${imageUrl}`;
+};
+
 // ============================================================================
 // FUNCIONES DE DEBUG (solo para desarrollo)
 // ============================================================================

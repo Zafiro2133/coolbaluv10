@@ -85,7 +85,8 @@ VITE_SUPABASE_ANON_KEY=tu_clave_anonima
 1. Crea un proyecto en Supabase
 2. Ejecuta las migraciones en orden cronológico desde `supabase/migrations/`
 3. Ejecuta el script de configuración: `supabase/scripts/setup-database.sql`
-4. Verifica que todas las políticas y configuraciones estén aplicadas
+4. **Configura el Storage S3** (ver sección específica más abajo)
+5. Verifica que todas las políticas y configuraciones estén aplicadas
 
 ### 5. **Ejecuta el proyecto:**
 ```bash
@@ -134,6 +135,51 @@ El sistema implementa Row Level Security (RLS) con políticas granulares:
 - **Configuración de precios**
 - **Mensajes del sistema**
 
+## Configuración del Storage S3
+
+### Endpoint Configurado
+- **URL**: `https://rwgxdtfuzpdukaguogyh.supabase.co/storage/v1/s3`
+- **Region**: `sa-east-1`
+
+### Pasos de Configuración Manual
+
+1. **Accede al Dashboard de Supabase:**
+   - Ve a https://supabase.com/dashboard/project/[tu-project-id]
+   - Navega a **Settings > Storage**
+
+2. **Configura el Storage Backend:**
+   - Cambia "Storage Backend" a **"S3"**
+   - Configura "S3 Endpoint" como: `https://rwgxdtfuzpdukaguogyh.supabase.co/storage/v1/s3`
+   - Configura "S3 Region" como: `sa-east-1`
+   - Configura las credenciales de acceso S3 (Access Key ID y Secret Access Key)
+   - Configura "S3 Bucket" con el nombre del bucket principal
+
+3. **Verifica los Buckets:**
+   - `product-images` (público)
+   - `category-images` (público)
+   - `payment-proofs` (privado)
+
+4. **Ejecuta las Migraciones:**
+   ```bash
+   # Ejecuta la migración de configuración S3
+   # Esta migración crea funciones helper para el storage
+   ```
+
+5. **Prueba la Configuración:**
+   - Sube una imagen de prueba desde el panel de administración
+   - Verifica que las imágenes se carguen correctamente en el frontend
+
+### Funciones Helper Disponibles
+
+Después de ejecutar las migraciones, tendrás acceso a estas funciones:
+
+- `public.check_storage_config()` - Verifica la configuración del storage
+- `public.get_storage_url(bucket_name, file_path)` - Genera URLs con el endpoint personalizado
+- `public.test_storage_connection()` - Prueba la conectividad del storage
+- `public.get_storage_stats()` - Obtiene estadísticas del storage
+- `public.cleanup_storage_urls()` - Limpia URLs obsoletas
+- `public.cleanup_orphaned_files()` - Limpia archivos huérfanos
+
 ## Sincronización de Tipos con Supabase
 
 Cada vez que cambies la base de datos, ejecuta:
@@ -160,9 +206,16 @@ La estructura es compatible para migrar a Next.js si necesitas SSR o rutas avanz
 ### Problemas Comunes
 
 1. **Error de CORS**: Verifica la configuración de dominios en Supabase
-2. **Imágenes no cargan**: Revisa las políticas del bucket `product-images`
+2. **Imágenes no cargan**: 
+   - Revisa las políticas del bucket `product-images`
+   - Verifica la configuración del Storage S3 en el dashboard
+   - Ejecuta `SELECT * FROM public.test_storage_connection()` para probar conectividad
 3. **Error de autenticación**: Verifica las variables de entorno
 4. **Reservas no funcionan**: Ejecuta las migraciones en orden cronológico
+5. **Storage S3 no funciona**: 
+   - Verifica que el endpoint esté configurado correctamente
+   - Confirma que las credenciales S3 sean válidas
+   - Ejecuta `SELECT * FROM public.get_storage_stats()` para ver estadísticas
 
 ### Debugging
 Para debugging, usa las herramientas del navegador:

@@ -17,6 +17,7 @@ import { useAddToCart } from '@/hooks/useCart';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCartContext } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
+import { getProductImageUrl, cleanTempImageUrl } from '@/utils';
 
 
 interface ProductDetailsModalProps {
@@ -131,7 +132,7 @@ export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetails
                         <CarouselItem key={index}>
                           <div className="w-full h-64 lg:h-80">
                             <img
-                              src={image.image_url}
+                              src={getProductImageUrl(cleanTempImageUrl(image.image_url))}
                               alt={`${product.name} - Imagen ${index + 1}`}
                               className="w-full h-full object-cover"
                             />
@@ -144,7 +145,7 @@ export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetails
                   </Carousel>
                 ) : (
                   <img
-                    src={product.image_url}
+                    src={getProductImageUrl(cleanTempImageUrl(product.image_url))}
                     alt={product.name}
                     className="w-full h-full object-cover"
                   />

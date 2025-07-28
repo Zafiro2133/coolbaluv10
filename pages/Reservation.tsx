@@ -16,7 +16,7 @@ import { supabase } from '@/services/supabase/client';
 import { CalendarDays, Clock, MapPin, Users, MessageSquare, CreditCard, AlertCircle, Calendar as CalendarIcon, ArrowLeft, Phone, CloudRain } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { cn } from '@/utils';
+import { cn, getProductImageUrl, cleanTempImageUrl } from '@/utils';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { useCartContext } from '@/contexts/CartContext';
 import { createReservation, createReservationItems } from '@/services/supabase/reservations';
@@ -729,7 +729,7 @@ export default function Reservation() {
                       <div className="w-12 h-12 bg-muted rounded-lg flex-shrink-0 overflow-hidden">
                         {item.product?.image_url ? (
                           <img
-                            src={item.product.image_url}
+                            src={getProductImageUrl(cleanTempImageUrl(item.product.image_url))}
                             alt={item.product.name}
                             className="w-full h-full object-cover"
                           />

@@ -8,6 +8,7 @@ import { useCartItems, useUpdateCartItem, useRemoveFromCart, calculateItemTotal,
 import { useAuth } from '@/contexts/AuthContext';
 import { Minus, Plus, Trash2, ShoppingBag, Truck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getProductImageUrl, cleanTempImageUrl } from '@/utils';
 
 export const CartDrawer = () => {
   const { isCartOpen, closeCart } = useCartContext();
@@ -114,7 +115,7 @@ export const CartDrawer = () => {
                   <div className="w-16 h-16 bg-muted rounded-lg flex-shrink-0 overflow-hidden">
                     {item.product?.image_url ? (
                       <img
-                        src={item.product.image_url}
+                        src={getProductImageUrl(cleanTempImageUrl(item.product.image_url))}
                         alt={item.product.name}
                         className="w-full h-full object-cover"
                       />

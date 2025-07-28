@@ -2,12 +2,66 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { Image, ChevronLeft, ChevronRight } from "lucide-react";
+import { Image, ChevronLeft, ChevronRight, Package } from "lucide-react";
 import { Product } from '@/hooks/useProducts';
 import { useAddToCart } from '@/hooks/useCart';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCartContext } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react';
+import { getProductImageUrl, cleanTempImageUrl } from '@/utils';
+
+// Componente de imagen con manejo de errores
+function ImageWithFallback({ 
+  src, 
+  alt, 
+  className, 
+  fallbackIcon: FallbackIcon = Image 
+}: { 
+  src: string; 
+  alt: string; 
+  className?: string; 
+  fallbackIcon?: React.ComponentType<{ className?: string }>;
+}) {
+  const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const handleError = () => {
+    console.error('❌ Error al cargar imagen:', src);
+    setHasError(true);
+    setIsLoading(false);
+  };
+
+  const handleLoad = () => {
+    console.log('✅ Imagen cargada correctamente:', src);
+    setIsLoading(false);
+  };
+
+  if (hasError) {
+    return (
+      <div className={`flex items-center justify-center bg-muted ${className}`}>
+        <FallbackIcon className="h-8 w-8 text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <div className={`relative ${className}`}>
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-muted">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
+      )}
+      <img
+        src={src}
+        alt={alt}
+        className={`${className} ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity`}
+        onError={handleError}
+        onLoad={handleLoad}
+      />
+    </div>
+  );
+}
 
 interface ProductCardProps {
   product: Product;
@@ -67,10 +121,11 @@ export const ProductCard = ({ product, onDetails, onReserve }: ProductCardProps)
                   {product.images.map((image, index) => (
                     <CarouselItem key={index}>
                       <div className="w-full h-48">
-                        <img
-                          src={image.image_url}
+                        <ImageWithFallback
+                          src={getProductImageUrl(cleanTempImageUrl(image.image_url))}
                           alt={`${product.name} - Imagen ${index + 1}`}
                           className="w-full h-full object-cover"
+                          fallbackIcon={Package}
                         />
                       </div>
                     </CarouselItem>
@@ -80,10 +135,11 @@ export const ProductCard = ({ product, onDetails, onReserve }: ProductCardProps)
                 <CarouselNext className="right-2 h-8 w-8" />
               </Carousel>
             ) : (
-              <img
-                src={product.image_url}
+              <ImageWithFallback
+                src={getProductImageUrl(cleanTempImageUrl(product.image_url))}
                 alt={product.name}
                 className="w-full h-full object-cover"
+                fallbackIcon={Package}
               />
             )
           ) : (
