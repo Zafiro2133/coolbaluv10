@@ -511,11 +511,11 @@ export default function Reservation() {
                     <div className="space-y-2">
                       <Label htmlFor="childCount">
                         <Users className="inline h-4 w-4 mr-1" />
-                        Cantidad de pibes
+                        Cantidad de niños
                       </Label>
                       <div className="flex items-center gap-2">
                         <label htmlFor="childCount" className="text-sm font-medium sr-only">
-                          Cantidad de pibes
+                          Cantidad de niños
                         </label>
                         <Input
                           type="number"
@@ -590,12 +590,6 @@ export default function Reservation() {
                         <SelectItem value="no">
                           <div className="flex flex-col">
                             <span className="font-medium">No reprogramar</span>
-                            <span className="text-xs text-muted-foreground">El evento se realiza igual aunque llueva</span>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="indoor">
-                          <div className="flex flex-col">
-                            <span className="font-medium">Lugar techado disponible</span>
                             <span className="text-xs text-muted-foreground">Tengo un espacio cubierto para el evento</span>
                           </div>
                         </SelectItem>
@@ -693,16 +687,18 @@ export default function Reservation() {
                   <div className="flex items-center gap-2 text-sm">
                     <Users className="h-4 w-4 text-muted-foreground" />
                     <span className="font-medium">Invitados:</span>
-                    <span>{formData.adultCount + formData.childCount} personas ({formData.adultCount} adultos, {formData.childCount} pibes)</span>
+                    <span>{formData.adultCount + formData.childCount} personas ({formData.adultCount} adultos, {formData.childCount} niños)</span>
                   </div>
                   {formData.rainReschedule && (
                     <div className="flex items-center gap-2 text-sm">
                       <CloudRain className="h-4 w-4 text-muted-foreground" />
                       <span className="font-medium">En caso de lluvia:</span>
                       <span>
-                        {formData.rainReschedule === 'no' ? 'No reprogramar' :
-                         formData.rainReschedule === 'indoor' ? 'Lugar techado disponible' :
-                         formData.rainReschedule === 'reschedule' ? 'Reprogramar automáticamente' : 'No especificado'}
+                        {formData.rainReschedule === 'no'
+                          ? 'Tengo un espacio cubierto para el evento'
+                          : formData.rainReschedule === 'reschedule'
+                            ? 'Reprogramar automáticamente. Si llueve reprogramamos para otra fecha'
+                            : 'No especificado'}
                       </span>
                     </div>
                   )}

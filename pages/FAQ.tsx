@@ -39,7 +39,7 @@ export const FAQ = () => {
         },
         {
           question: "¿Qué información necesitás para hacer una reserva?",
-          answer: "Necesitás: dirección exacta del evento, fecha y horario, cantidad de adultos y pibes y tus datos de contacto. El sistema te guía paso a paso."
+          answer: "Necesitás: dirección exacta del evento, fecha y horario, cantidad de adultos y niños y tus datos de contacto. El sistema te guía paso a paso."
         }
       ]
     },
@@ -48,7 +48,7 @@ export const FAQ = () => {
       questions: [
         {
           question: "¿Cómo funciona el carrito de compras?",
-          answer: "Podés agregar múltiples productos (inflables, mobiliario, catering) al carrito especificando cantidades. El carrito calcula automáticamente los precios base y te permite revisar todo antes de proceder al formulario de reserva."
+          answer: "Podés agregar múltiples productos (inflables, mobiliario, catering) al carrito. El carrito calcula automáticamente los precios base y te permite revisar todo antes de proceder al formulario de reserva."
         },
         {
           question: "¿Qué son las horas extra y cómo se agregan?",
@@ -107,19 +107,6 @@ export const FAQ = () => {
         }
       ]
     },
-    {
-      category: "Calidad y Seguridad",
-      questions: [
-        {
-          question: "¿Los productos están sanitizados?",
-          answer: "Sí, todos nuestros productos se sanitizan antes de cada uso. Seguimos protocolos estrictos de limpieza y desinfección."
-        },
-        {
-          question: "¿Qué medidas de seguridad tienen?",
-          answer: "Todos nuestros inflables cumplen normas de seguridad y contamos con personal capacitado para supervisar durante el evento."
-        }
-      ]
-    }
   ];
 
   return (

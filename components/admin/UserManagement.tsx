@@ -455,11 +455,9 @@ function UserDetails({
   const getRainRescheduleLabel = (value: string) => {
     switch (value) {
       case 'no':
-        return 'No reprogramar';
-      case 'indoor':
-        return 'Lugar techado';
+        return 'Tengo un espacio cubierto para el evento';
       case 'reschedule':
-        return 'Reprogramar';
+        return 'Reprogramar automáticamente. Si llueve reprogramamos para otra fecha';
       default:
         return 'No especificado';
     }

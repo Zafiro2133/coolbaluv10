@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useCartContext } from '@/contexts/CartContext';
-import { useCartItems, useUpdateCartItem, useRemoveFromCart, calculateItemTotal, calculateCartTotal, calculateCartSubtotal } from '@/hooks/useCart';
+import { useCartItems, useRemoveFromCart, calculateItemTotal, calculateCartTotal, calculateCartSubtotal } from '@/hooks/useCart';
 import { useAuth } from '@/contexts/AuthContext';
 import { Minus, Plus, Trash2, ShoppingBag, Truck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -14,7 +14,6 @@ export const CartDrawer = () => {
   const { isCartOpen, closeCart } = useCartContext();
   const { user } = useAuth();
   const { data: cartItems = [], isLoading } = useCartItems();
-  const updateCartItem = useUpdateCartItem();
   const removeFromCart = useRemoveFromCart();
   const navigate = useNavigate();
 
@@ -30,11 +29,6 @@ export const CartDrawer = () => {
       currency: 'ARS',
       minimumFractionDigits: 0,
     }).format(price);
-  };
-
-  const handleQuantityChange = (itemId: string, quantity: number) => {
-    if (quantity < 1) return;
-    updateCartItem.mutate({ itemId, quantity });
   };
 
   const handleRemoveItem = (itemId: string) => {
@@ -148,32 +142,6 @@ export const CartDrawer = () => {
                 </div>
 
                 {/* Quantity Control */}
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Cantidad:</span>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                      disabled={item.quantity <= 1}
-                    >
-                      <Minus className="h-3 w-3" />
-                    </Button>
-                    <span className="text-sm font-medium w-8 text-center">
-                      {item.quantity}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                    >
-                      <Plus className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-
-                <Separator />
-                
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Subtotal:</span>
                   <span className="font-bold text-primary">

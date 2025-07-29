@@ -53,7 +53,7 @@ const Index = () => {
             ¿Cómo Funciona?
           </h2>
           <p className="text-muted-foreground mb-12 max-w-3xl mx-auto text-lg">
-            Nuestro proceso es simple y transparente. Te guiamos paso a paso para que la fiesta de tus pibes sea perfecta.
+            Nuestro proceso es simple y transparente. Te guiamos paso a paso para que la fiesta de tus niños sea perfecta.
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
@@ -63,7 +63,7 @@ const Index = () => {
               </div>
               <h3 className="text-xl font-semibold mb-3">Explorá</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                Navegá nuestro catálogo organizado por categorías. Agregá inflables, mobiliario y/o catering al carrito con la cantidad que necesites.
+                Navegá nuestro catálogo organizado por categorías. Agregá inflables, mobiliario y/o catering al carrito.
               </p>
             </div>
             
@@ -73,7 +73,7 @@ const Index = () => {
               </div>
               <h3 className="text-xl font-semibold mb-3">Configurá</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                Revisá tu carrito y ajustá cantidades. El sistema calcula automáticamente el costo base incluyendo traslado e instalación.
+                Revisá tu carrito. El sistema calcula automáticamente el costo base incluyendo traslado e instalación.
               </p>
             </div>
             
@@ -189,7 +189,7 @@ const Index = () => {
                   <div>
                     <h3 className="text-lg font-semibold mb-2">Experiencia Premium</h3>
                     <p className="text-muted-foreground">
-                    Nuestro equipo profesional se encarga de todo para que vos te relajes y los pibes disfruten al máximo.
+                    Nuestro equipo profesional se encarga de todo para que vos te relajes y los niños disfruten al máximo.
                     </p>
                   </div>
                 </div>

@@ -193,11 +193,9 @@ export default function Profile() {
   const getRainRescheduleLabel = (value: string) => {
     switch (value) {
       case 'no':
-        return 'No reprogramar';
-      case 'indoor':
-        return 'Lugar techado disponible';
+        return 'Tengo un espacio cubierto para el evento';
       case 'reschedule':
-        return 'Reprogramar automáticamente';
+        return 'Reprogramar automáticamente. Si llueve reprogramamos para otra fecha';
       default:
         return 'No especificado';
     }
@@ -433,7 +431,7 @@ export default function Profile() {
                               </div>
                               <p>
                                 <span className="font-medium">Invitados:</span> {reservation.adult_count + reservation.child_count}
-                                ({reservation.adult_count} adultos, {reservation.child_count} pibes)
+                                ({reservation.adult_count} adultos, {reservation.child_count} niños)
                               </p>
                               {reservation.extra_hours > 0 && (
                                 <p>
