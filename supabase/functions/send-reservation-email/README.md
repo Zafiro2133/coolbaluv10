@@ -7,7 +7,7 @@ Función Edge de Supabase para enviar un email de confirmación de reserva usand
 Crea un archivo `.env` en `supabase/functions/send-reservation-email/` con:
 
 ```
-RESEND_API_KEY=tu_api_key_de_resend
+RESEND_API_KEY=re_Ja47ULaC_MNpwh3VonXuRhU3vx9y7b4b2
 ```
 
 ## Cómo probar localmente

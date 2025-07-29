@@ -203,7 +203,7 @@ export default function Reservation() {
       const fullAddress = `${formData.street} ${formData.number}, ${formData.city}`;
       // Usar selectedDateString para guardar la fecha exacta seleccionada
       const reservationData = {
-        user_id: user.id,
+        user_id: user.id, // Mejor práctica: usar el id del usuario autenticado
         event_date: selectedDateString || '',
         event_time: formData.eventTime,
         event_address: fullAddress,
@@ -247,6 +247,23 @@ export default function Reservation() {
       if (itemsError) {
         console.error('Error creating reservation items:', itemsError);
         throw new Error(`Error al crear los ítems de la reserva: ${itemsError.message || 'Error desconocido'}`);
+      }
+
+      // Enviar email de confirmación al cliente
+      try {
+        await fetch("/functions/v1/send-reservation-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: user.email, // Mejor práctica: usar el email del usuario autenticado
+            nombre: user.user_metadata?.full_name || user.email,
+            fecha: selectedDateString || '',
+            detalle: reservationItems.map(i => `${i.product_name} x${i.quantity}`).join(", "),
+            monto: total.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })
+          })
+        });
+      } catch (mailError) {
+        console.error('Error enviando email de confirmación:', mailError);
       }
 
       // Clear cart

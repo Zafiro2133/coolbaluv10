@@ -2,7 +2,7 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
-const FROM_EMAIL = "noreply@tu-dominio.com"; // Cambia esto por tu dominio real
+const FROM_EMAIL = "hola@estudiomaters.com"; // Dominio real
 
 function log(message: string, data?: unknown) {
   const time = new Date().toISOString();
@@ -67,6 +67,18 @@ serve(async (req) => {
       <li><strong>Detalle:</strong> ${detalle}</li>
       <li><strong>Monto a abonar:</strong> ${monto}</li>
     </ul>
+    <p><b>Pasos para abonar tu reserva:</b></p>
+    <ol>
+      <li>Realizá una transferencia a la cuenta bancaria:
+        <ul>
+          <li>CBU: 0000000000000000000000</li>
+          <li>Alias: ESTUDIOMATERS.BANCO</li>
+          <li>Titular: Estudio Maters</li>
+        </ul>
+      </li>
+      <li>Enviá el comprobante de pago por WhatsApp al <a href="https://wa.me/549XXXXXXXXXX">+54 XXXXXXXXXX</a>.</li>
+      <li>Una vez recibido el comprobante, confirmaremos tu reserva.</li>
+    </ol>
     <p>Te agradecemos por confiar en nosotros.<br/>¡Te esperamos!</p>
     <p style="font-size:0.9em;color:#888;">Este es un mensaje automático, por favor no respondas a este correo.</p>
   `;
