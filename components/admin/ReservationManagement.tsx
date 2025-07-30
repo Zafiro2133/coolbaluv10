@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useReservations, useUpdateReservationStatus, useDeleteReservation, useSystemSetting } from '@/hooks/useAdmin';
+import { useAdminContext } from '@/hooks/useAdminContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ import { Calendar, Clock, MapPin, Users, Eye, CheckCircle, XCircle, AlertCircle,
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { AcceptReservationDialog } from './AcceptReservationDialog';
+import { ReservationHistory } from './ReservationHistory';
 
 export function ReservationManagement() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -31,6 +33,8 @@ export function ReservationManagement() {
   const [acceptDialogOpen, setAcceptDialogOpen] = useState(false);
   const [reservationToAccept, setReservationToAccept] = useState<any>(null);
   
+  const { user, isAdmin, isLoading: adminLoading } = useAdminContext();
+  
   const { data: reservations, isLoading, refetch } = useReservations({
     status: statusFilter === 'all' ? undefined : statusFilter,
     startDate: dateFilter || undefined,
@@ -43,6 +47,24 @@ export function ReservationManagement() {
   const updateStatusMutation = useUpdateReservationStatus();
   const deleteReservationMutation = useDeleteReservation();
   const { toast } = useToast();
+
+  // Verificar que el usuario es admin
+  if (adminLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="h-8 bg-muted animate-pulse rounded" />
+        <div className="h-64 bg-muted animate-pulse rounded" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">No tienes permisos de administrador.</p>
+      </div>
+    );
+  }
 
   const handleStatusUpdate = async (reservationId: string, newStatus: string) => {
     try {
@@ -972,6 +994,21 @@ function ReservationDetails({
 
       <TabsContent value="actions" className="space-y-4">
         <h3 className="font-semibold">Acciones Rápidas</h3>
+        
+        {/* Historial y Reversión */}
+        <div>
+          <h4 className="font-medium mb-2">Historial y Reversión</h4>
+          <div className="flex gap-2 flex-wrap">
+            <ReservationHistory 
+              reservationId={reservation.id}
+              currentStatus={reservation.status}
+              onStatusReverted={() => {
+                // Refrescar la lista de reservas cuando se revierte un estado
+                window.location.reload();
+              }}
+            />
+          </div>
+        </div>
         
         {/* Cambiar Estado */}
         <div>

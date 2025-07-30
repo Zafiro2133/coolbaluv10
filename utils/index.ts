@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from "clsx"
+import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { supabase } from '@/services/supabase/client';
 
@@ -369,27 +369,22 @@ export const debounce = <T extends (...args: any[]) => any>(
  * @param imageUrl - La URL de la imagen almacenada en la base de datos
  * @returns La URL completa para acceder a la imagen
  */
-export const getProductImageUrl = (imageUrl: string | null | undefined): string => {
-  if (!imageUrl) {
-    return '';
-  }
-
-  // Si la URL ya es completa (comienza con http/https), la devolvemos tal como está
+export function getProductImageUrl(imageUrl: string): string {
+  if (!imageUrl) return '';
+  
+  // Si ya es una URL completa, devolverla tal como está
   if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
     return imageUrl;
   }
-
-  // Si es una URL relativa de Supabase Storage, la construimos correctamente
-  const supabaseUrl = (import.meta as any).env.VITE_SUPABASE_URL as string;
   
-  // Si la URL ya incluye el bucket, solo agregamos la URL base
-  if (imageUrl.includes('product-images/')) {
-    return `${supabaseUrl}/storage/v1/object/public/${imageUrl}`;
+  // Si es una URL de Supabase, devolverla tal como está
+  if (imageUrl.includes('supabase.co')) {
+    return imageUrl;
   }
-
-  // Si es solo el nombre del archivo, construimos la ruta completa
-  return `${supabaseUrl}/storage/v1/object/public/product-images/${imageUrl}`;
-};
+  
+  // Si es solo un nombre de archivo, construir la URL completa
+  return `https://rwgxdtfuzpdukaguogyh.supabase.co/storage/v1/object/public/product-images/${imageUrl}`;
+}
 
 /**
  * Función para verificar si una URL de imagen es válida y accesible
@@ -413,17 +408,16 @@ export const isImageUrlValid = async (imageUrl: string): Promise<boolean> => {
  * @param imageUrl - La URL de la imagen
  * @returns string - URL limpia o cadena vacía si contiene 'temp/'
  */
-export const cleanTempImageUrl = (imageUrl: string | null | undefined): string => {
+export function cleanTempImageUrl(imageUrl: string): string {
   if (!imageUrl) return '';
   
-  // Si la URL contiene 'temp/', la consideramos inválida
-  if (imageUrl.includes('temp/')) {
-    console.warn('URL de imagen contiene carpeta temp/, considerada inválida:', imageUrl);
-    return '';
+  // Si la URL contiene 'temp/', limpiarla
+  if (imageUrl.includes('/temp/')) {
+    return imageUrl.replace('/temp/', '/');
   }
   
   return imageUrl;
-};
+}
 
 /**
  * Función utilitaria para obtener la URL correcta de una imagen de categoría
@@ -579,3 +573,35 @@ export const debugRequestHeaders = async () => {
   
   console.log('=== END HEADER DEBUG ===');
 }; 
+
+// Función para limpiar objetos y eliminar propiedades extra como 'key'
+export function cleanObject<T extends Record<string, any>>(
+  obj: T, 
+  allowedKeys: (keyof T)[]
+): Partial<T> {
+  const cleaned: Partial<T> = {};
+  
+  for (const key of allowedKeys) {
+    if (key in obj) {
+      cleaned[key] = obj[key];
+    }
+  }
+  
+  return cleaned;
+}
+
+// Función específica para limpiar reservation_items
+export function cleanReservationItem(item: any) {
+  const allowedKeys = [
+    'reservation_id',
+    'product_id', 
+    'product_name',
+    'product_price',
+    'quantity',
+    'extra_hours',
+    'extra_hour_percentage',
+    'item_total'
+  ];
+  
+  return cleanObject(item, allowedKeys);
+} 

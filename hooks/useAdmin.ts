@@ -28,7 +28,7 @@ export interface ReservationWithDetails {
   subtotal: number;
   transport_cost: number;
   total: number;
-  status: 'pending_payment' | 'paid' | 'confirmed' | 'cancelled';
+  status: 'pending_payment' | 'paid' | 'confirmed' | 'completed' | 'cancelled';
   payment_proof_url?: string;
   created_at: string;
   updated_at: string;
@@ -131,6 +131,12 @@ export const useIsAdmin = () => {
   const { data: userRole, isLoading, refetch } = useUserRole();
   // Forzar refetch si el usuario cambia
   useEffect(() => { refetch(); }, [userRole?.user_id]);
+  
+  // Si está cargando, devolver false para evitar redirecciones prematuras
+  if (isLoading) {
+    return false;
+  }
+  
   return userRole?.role === 'admin';
 };
 
@@ -200,6 +206,17 @@ export const useUpdateReservationStatus = () => {
       status: string;
       paymentProofUrl?: string;
     }) => {
+      // Obtener el usuario actual para establecer el contexto de admin
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        // Establecer contexto de admin antes de hacer el cambio
+        await supabase.rpc('set_admin_context', {
+          user_id: user.id,
+          user_email: user.email || ''
+        });
+      }
+
       const updates: any = { status };
       if (paymentProofUrl) {
         updates.payment_proof_url = paymentProofUrl;
@@ -218,6 +235,7 @@ export const useUpdateReservationStatus = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-reservations'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['audit-logs'] });
     },
   });
 };
@@ -230,6 +248,17 @@ export const useDeleteReservation = () => {
       console.log('Iniciando eliminación de reserva:', reservationId);
       
       try {
+        // Obtener el usuario actual para establecer el contexto de admin
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          // Establecer contexto de admin antes de hacer el cambio
+          await supabase.rpc('set_admin_context', {
+            user_id: user.id,
+            user_email: user.email || ''
+          });
+        }
+
         // Primero eliminar los items de la reserva
         console.log('Eliminando reservation_items...');
         const { error: itemsError } = await supabase
@@ -268,6 +297,7 @@ export const useDeleteReservation = () => {
       console.log('Eliminación exitosa:', data);
       queryClient.invalidateQueries({ queryKey: ['admin-reservations'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['audit-logs'] });
     },
     onError: (error) => {
       console.error('Error en mutación de eliminación:', error);

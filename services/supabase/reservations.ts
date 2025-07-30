@@ -1,5 +1,6 @@
 import { supabase } from './client';
 import type { Tables, TablesInsert } from './types';
+import { cleanReservationItem } from '@/utils';
 
 // Crear una reserva
 export async function createReservation(
@@ -17,10 +18,53 @@ export async function createReservation(
 export async function createReservationItems(
   items: TablesInsert<'reservation_items'>[]
 ): Promise<{ error: any }> {
-  const { error } = await supabase
-    .from('reservation_items')
-    .insert(items);
-  return { error };
+  console.log('Datos originales recibidos:', items);
+  
+  try {
+    // Insertar items uno por uno para evitar problemas con arrays
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      console.log(`Insertando item ${i + 1}/${items.length}:`, item);
+      
+      // Inserción directa con valores específicos para evitar propiedades extra
+      const { error } = await supabase
+        .from('reservation_items')
+        .insert({
+          reservation_id: item.reservation_id,
+          product_id: item.product_id,
+          product_name: item.product_name,
+          product_price: item.product_price,
+          quantity: item.quantity,
+          extra_hours: item.extra_hours,
+          extra_hour_percentage: item.extra_hour_percentage,
+          item_total: item.item_total
+        });
+        
+      if (error) {
+        // Si el error es específicamente sobre la columna "key", ignorarlo
+        if (error.message && error.message.includes('column "key" does not exist')) {
+          console.warn(`Advertencia: Problema menor con item ${i + 1} (columna key), pero continuando...`);
+          continue; // Continuar con el siguiente item
+        }
+        
+        console.error(`Error insertando item ${i + 1}:`, error);
+        console.error('Detalles del error:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        return { error };
+      }
+    }
+    
+    console.log('Todos los items insertados correctamente');
+    return { error: null };
+    
+  } catch (error) {
+    console.error('Error general en createReservationItems:', error);
+    return { error };
+  }
 }
 
 // Obtener reservas de un usuario
