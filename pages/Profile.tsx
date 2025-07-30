@@ -6,8 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { User, Calendar, MapPin, Phone, Mail, Edit, Save, X, Package, Clock, ArrowLeft, CloudRain } from 'lucide-react';
+import { User, Calendar, MapPin, Phone, Mail, Edit, Save, X, Package, Clock, ArrowLeft, CloudRain, FileText, ExternalLink, Eye } from 'lucide-react';
 import { supabase } from '@/services/supabase/client';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -41,6 +42,7 @@ interface Reservation {
   extra_hours: number;
   created_at: string;
   phone: string;
+  payment_proof_url?: string;
   reservation_items?: Array<{
     id: string;
     product_name: string;
@@ -467,6 +469,105 @@ export default function Profile() {
                                       <span className="font-medium">${item.item_total.toLocaleString()}</span>
                                     </div>
                                   ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Mensaje de confirmación cuando la reserva está aprobada */}
+                            {reservation.payment_proof_url && (
+                              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <span className="text-blue-600 font-bold text-sm">✓</span>
+                                  </div>
+                                  <div>
+                                    <h4 className="font-semibold text-blue-900">¡Reserva Confirmada!</h4>
+                                    <p className="text-sm text-blue-700">Tu evento ha sido confirmado exitosamente</p>
+                                  </div>
+                                </div>
+                                
+                                <div className="space-y-3 text-sm text-blue-800">
+                                  <p className="flex items-start gap-2">
+                                    <span className="text-blue-600 mt-0.5">•</span>
+                                    <span><strong>Nos encontraremos en:</strong> {reservation.event_address}</span>
+                                  </p>
+                                  <p className="flex items-start gap-2">
+                                    <span className="text-blue-600 mt-0.5">•</span>
+                                    <span><strong>Fecha y hora:</strong> {format(new Date(reservation.event_date), 'dd MMMM yyyy', { locale: es })} a las {reservation.event_time}</span>
+                                  </p>
+                                  <p className="flex items-start gap-2">
+                                    <span className="text-blue-600 mt-0.5">•</span>
+                                    <span><strong>Llegaremos:</strong> Una hora antes para preparar todo</span>
+                                  </p>
+                                  <p className="flex items-start gap-2">
+                                    <span className="text-blue-600 mt-0.5">•</span>
+                                    <span><strong>Equipo preparado para:</strong> {reservation.adult_count + reservation.child_count} invitados</span>
+                                  </p>
+                                  <p className="flex items-start gap-2">
+                                    <span className="text-blue-600 mt-0.5">•</span>
+                                    <span><strong>Para cualquier consulta:</strong> Contactanos por WhatsApp</span>
+                                  </p>
+                                </div>
+                                
+                                <div className="mt-4 pt-3 border-t border-blue-200">
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <FileText className="h-4 w-4 text-blue-600" />
+                                    <span className="font-medium text-blue-800">Comprobante de Pago</span>
+                                  </div>
+                                  
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => window.open(reservation.payment_proof_url, '_blank')}
+                                      className="flex items-center gap-1 text-blue-700 border-blue-300 hover:bg-blue-100"
+                                    >
+                                      <ExternalLink className="h-3 w-3" />
+                                      Ver Comprobante
+                                    </Button>
+                                    
+                                    {reservation.payment_proof_url.match(/\.(jpg|jpeg|png|webp)$/i) && (
+                                      <Dialog>
+                                        <DialogTrigger asChild>
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="flex items-center gap-1 text-blue-700 border-blue-300 hover:bg-blue-100"
+                                          >
+                                            <Eye className="h-3 w-3" />
+                                            Vista Previa
+                                          </Button>
+                                        </DialogTrigger>
+                                        <DialogContent className="max-w-4xl">
+                                          <DialogHeader>
+                                            <DialogTitle>Comprobante de Pago</DialogTitle>
+                                          </DialogHeader>
+                                          <div className="flex justify-center">
+                                            <img
+                                              src={reservation.payment_proof_url}
+                                              alt="Comprobante de pago"
+                                              className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                                            />
+                                          </div>
+                                        </DialogContent>
+                                      </Dialog>
+                                    )}
+                                  </div>
+                                  
+                                  <div className="flex items-center gap-2 text-xs text-blue-600">
+                                    {reservation.payment_proof_url.match(/\.(jpg|jpeg|png|webp)$/i) && (
+                                      <div className="flex items-center gap-1">
+                                        <span>•</span>
+                                        <span>Imagen disponible</span>
+                                      </div>
+                                    )}
+                                    {reservation.payment_proof_url.match(/\.pdf$/i) && (
+                                      <div className="flex items-center gap-1">
+                                        <span>•</span>
+                                        <span>PDF disponible</span>
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             )}

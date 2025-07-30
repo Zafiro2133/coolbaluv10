@@ -352,14 +352,96 @@ export const uploadCategoryImage = async (file: File, categoryId?: string): Prom
  * Sube una imagen de comprobante de pago
  */
 export const uploadPaymentProof = async (file: File, userId: string): Promise<UploadResult> => {
-  const config: StorageConfig = {
-    bucket: 'payment-proofs',
-    folder: userId,
-    maxFileSize: 10 * 1024 * 1024, // 10MB
-    allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf']
-  };
-  
-  return uploadFile(file, config);
+  try {
+    // Verificar autenticación
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return {
+        url: '',
+        path: '',
+        success: false,
+        error: 'Usuario no autenticado'
+      };
+    }
+
+    // Determinar el tipo MIME correcto basado en la extensión
+    const fileName = file.name.toLowerCase();
+    let correctMimeType = file.type;
+    
+    if (fileName.endsWith('.png')) {
+      correctMimeType = 'image/png';
+    } else if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) {
+      correctMimeType = 'image/jpeg';
+    } else if (fileName.endsWith('.webp')) {
+      correctMimeType = 'image/webp';
+    } else if (fileName.endsWith('.pdf')) {
+      correctMimeType = 'application/pdf';
+    }
+
+    console.log('🔧 Tipo MIME corregido:', {
+      original: file.type,
+      corrected: correctMimeType,
+      fileName: file.name
+    });
+
+    // Generar nombre de archivo
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(2, 15);
+    const extension = file.name.split('.').pop()?.toLowerCase() || 'png';
+    const filePath = `${userId}/${timestamp}-${randomId}.${extension}`;
+    
+    console.log('🚀 Subiendo comprobante:', {
+      name: file.name,
+      originalType: file.type,
+      correctedType: correctMimeType,
+      size: file.size,
+      path: filePath
+    });
+
+    // Subir archivo con tipo MIME corregido
+    const { data, error } = await supabase.storage
+      .from('payment-proofs')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: correctMimeType // Forzar el tipo MIME correcto
+      });
+
+    if (error) {
+      console.error('❌ Error al subir comprobante:', error);
+      return {
+        url: '',
+        path: '',
+        success: false,
+        error: `Error al subir comprobante: ${error.message}`
+      };
+    }
+
+    // Generar URL pública
+    const { data: urlData } = supabase.storage
+      .from('payment-proofs')
+      .getPublicUrl(filePath);
+
+    console.log('✅ Comprobante subido exitosamente:', {
+      path: data.path,
+      url: urlData.publicUrl
+    });
+
+    return {
+      url: urlData.publicUrl,
+      path: data.path,
+      success: true
+    };
+
+  } catch (error) {
+    console.error('❌ Error inesperado al subir comprobante:', error);
+    return {
+      url: '',
+      path: '',
+      success: false,
+      error: `Error inesperado: ${error instanceof Error ? error.message : 'Error desconocido'}`
+    };
+  }
 };
 
 // ============================================================================

@@ -11,9 +11,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar, Clock, MapPin, Users, Eye, CheckCircle, XCircle, AlertCircle, CalendarDays, MessageSquare, CreditCard, ArrowLeft, Phone, CloudRain, DollarSign, TrendingUp, Filter, Search, Trash2, Download, RefreshCw, MoreHorizontal, Edit, Copy, Archive, FileText, BarChart3, Grid, List } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, Eye, CheckCircle, XCircle, AlertCircle, CalendarDays, MessageSquare, CreditCard, ArrowLeft, Phone, CloudRain, DollarSign, TrendingUp, Filter, Search, Trash2, Download, RefreshCw, MoreHorizontal, Edit, Copy, Archive, FileText, BarChart3, Grid, List, Upload } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { AcceptReservationDialog } from './AcceptReservationDialog';
 
 export function ReservationManagement() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -27,6 +28,8 @@ export function ReservationManagement() {
   const [itemsPerPage] = useState(10);
   const [sortBy, setSortBy] = useState<string>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [acceptDialogOpen, setAcceptDialogOpen] = useState(false);
+  const [reservationToAccept, setReservationToAccept] = useState<any>(null);
   
   const { data: reservations, isLoading, refetch } = useReservations({
     status: statusFilter === 'all' ? undefined : statusFilter,
@@ -58,6 +61,15 @@ export function ReservationManagement() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleAcceptWithProof = (reservation: any) => {
+    setReservationToAccept(reservation);
+    setAcceptDialogOpen(true);
+  };
+
+  const handleAcceptSuccess = () => {
+    refetch();
   };
 
   const handleDeleteReservation = async (reservationId: string) => {
@@ -511,6 +523,7 @@ export function ReservationManagement() {
                                   onStatusUpdate={handleStatusUpdate}
                                   onDelete={handleDeleteReservation}
                                   extraHourCost={extraHourCost}
+                                  onAcceptWithProof={handleAcceptWithProof}
                                 />
                               )}
                             </DialogContent>
@@ -520,10 +533,11 @@ export function ReservationManagement() {
                             <Button
                               variant="default"
                               size="sm"
-                              onClick={() => handleStatusUpdate(reservation.id, 'confirmed')}
+                              onClick={() => handleAcceptWithProof(reservation)}
                               disabled={updateStatusMutation.isPending}
                             >
-                              <CheckCircle className="h-4 w-4" />
+                              <Upload className="h-4 w-4 mr-1" />
+                              Aceptar y subir comprobante
                             </Button>
                           )}
                           
@@ -696,6 +710,7 @@ export function ReservationManagement() {
                               onStatusUpdate={handleStatusUpdate}
                               onDelete={handleDeleteReservation}
                               extraHourCost={extraHourCost}
+                              onAcceptWithProof={handleAcceptWithProof}
                             />
                           )}
                         </DialogContent>
@@ -767,6 +782,19 @@ export function ReservationManagement() {
           </CardContent>
         </Card>
       )}
+
+      {/* Diálogo de aceptar y subir comprobante */}
+      {reservationToAccept && (
+        <AcceptReservationDialog
+          reservation={reservationToAccept}
+          isOpen={acceptDialogOpen}
+          onClose={() => {
+            setAcceptDialogOpen(false);
+            setReservationToAccept(null);
+          }}
+          onSuccess={handleAcceptSuccess}
+        />
+      )}
     </div>
   );
 }
@@ -775,12 +803,14 @@ function ReservationDetails({
   reservation, 
   onStatusUpdate,
   onDelete,
-  extraHourCost
+  extraHourCost,
+  onAcceptWithProof
 }: { 
   reservation: any; 
   onStatusUpdate: (id: string, status: string) => void;
   onDelete: (id: string) => void;
   extraHourCost: number;
+  onAcceptWithProof: (reservation: any) => void;
 }) {
   const getRainRescheduleLabel = (value: string) => {
     switch (value) {
@@ -883,6 +913,38 @@ function ReservationDetails({
             </div>
           </div>
         </div>
+
+        {/* Comprobante de Pago */}
+        {reservation.payment_proof_url && (
+          <div>
+            <h3 className="font-semibold mb-2">Comprobante de Pago</h3>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="flex items-center gap-1">
+                  <CheckCircle className="h-3 w-3" />
+                  Comprobante subido
+                </Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open(reservation.payment_proof_url, '_blank')}
+                >
+                  <Download className="h-4 w-4 mr-1" />
+                  Ver comprobante
+                </Button>
+              </div>
+              {reservation.payment_proof_url.match(/\.(jpg|jpeg|png|webp)$/i) && (
+                <div className="mt-2">
+                  <img
+                    src={reservation.payment_proof_url}
+                    alt="Comprobante de pago"
+                    className="w-full max-w-md h-auto rounded-lg border"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </TabsContent>
 
       <TabsContent value="products" className="space-y-4">
@@ -917,11 +979,11 @@ function ReservationDetails({
           <div className="flex gap-2 flex-wrap">
             {reservation.status === 'pending_payment' && (
               <Button
-                onClick={() => onStatusUpdate(reservation.id, 'confirmed')}
+                onClick={() => onAcceptWithProof(reservation)}
                 className="flex items-center gap-2"
               >
-                <CheckCircle className="h-4 w-4" />
-                Confirmar Reserva
+                <Upload className="h-4 w-4" />
+                Aceptar y subir comprobante
               </Button>
             )}
             

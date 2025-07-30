@@ -8,6 +8,16 @@ export const cloudinaryConfig = {
   allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
 };
 
+// Configuración específica para comprobantes de pago
+export const cloudinaryPaymentProofConfig = {
+  cloudName: 'coolbaluv10',
+  apiKey: '428128483696796',
+  uploadPreset: 'coolbaluv10_products', // Usar el mismo preset
+  folder: 'payment-proofs',
+  maxFileSize: 10 * 1024 * 1024, // 10MB para comprobantes
+  allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf']
+};
+
 // URL base para subidas
 export const cloudinaryUploadUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`;
 
@@ -57,4 +67,49 @@ export const validateImageFile = (file: File): string | null => {
   }
 
   return null;
+};
+
+// Función para validar archivo de comprobante
+export const validatePaymentProofFile = (file: File): string | null => {
+  if (!cloudinaryPaymentProofConfig.allowedTypes.includes(file.type)) {
+    return `Tipo de archivo no permitido. Tipos permitidos: ${cloudinaryPaymentProofConfig.allowedTypes.join(', ')}`;
+  }
+
+  if (file.size > cloudinaryPaymentProofConfig.maxFileSize) {
+    const maxSizeMB = cloudinaryPaymentProofConfig.maxFileSize / (1024 * 1024);
+    return `El archivo es demasiado grande. Tamaño máximo: ${maxSizeMB}MB`;
+  }
+
+  return null;
+};
+
+// Función para subir comprobante a Cloudinary
+export const uploadPaymentProofToCloudinary = async (file: File, userId: string): Promise<string> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', cloudinaryPaymentProofConfig.uploadPreset);
+  formData.append('folder', `${cloudinaryPaymentProofConfig.folder}/${userId}`);
+  formData.append('api_key', cloudinaryPaymentProofConfig.apiKey);
+
+  // Determinar el tipo de recurso basado en la extensión
+  const fileName = file.name.toLowerCase();
+  let resourceType = 'image';
+  if (fileName.endsWith('.pdf')) {
+    resourceType = 'raw';
+  }
+
+  const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudinaryPaymentProofConfig.cloudName}/${resourceType}/upload`;
+
+  const response = await fetch(uploadUrl, { 
+    method: 'POST', 
+    body: formData 
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error?.message || 'Error al subir comprobante');
+  }
+
+  const data = await response.json();
+  return data.secure_url;
 }; 
