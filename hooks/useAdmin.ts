@@ -222,6 +222,59 @@ export const useUpdateReservationStatus = () => {
   });
 };
 
+export const useDeleteReservation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (reservationId: string) => {
+      console.log('Iniciando eliminación de reserva:', reservationId);
+      
+      try {
+        // Primero eliminar los items de la reserva
+        console.log('Eliminando reservation_items...');
+        const { error: itemsError } = await supabase
+          .from('reservation_items')
+          .delete()
+          .eq('reservation_id', reservationId);
+
+        if (itemsError) {
+          console.error('Error eliminando reservation_items:', itemsError);
+          throw new Error(`Error eliminando items de la reserva: ${itemsError.message}`);
+        }
+
+        console.log('Items eliminados correctamente');
+
+        // Luego eliminar la reserva
+        console.log('Eliminando reserva...');
+        const { error } = await supabase
+          .from('reservations')
+          .delete()
+          .eq('id', reservationId);
+
+        if (error) {
+          console.error('Error eliminando reserva:', error);
+          throw new Error(`Error eliminando reserva: ${error.message}`);
+        }
+
+        console.log('Reserva eliminada correctamente');
+
+        return { success: true };
+      } catch (error) {
+        console.error('Error completo en eliminación:', error);
+        throw error;
+      }
+    },
+    onSuccess: (data) => {
+      console.log('Eliminación exitosa:', data);
+      queryClient.invalidateQueries({ queryKey: ['admin-reservations'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+    },
+    onError: (error) => {
+      console.error('Error en mutación de eliminación:', error);
+    },
+  });
+};
+
 // Dashboard statistics
 export const useDashboardStats = () => {
   return useQuery({
