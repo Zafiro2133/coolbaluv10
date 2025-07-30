@@ -152,7 +152,7 @@ export const useReservations = (filters?: {
       // Consulta simple sin JOIN problemático
       let query = supabase
         .from('reservations')
-        .select(`*, reservation_items(*)`)
+        .select(`*, reservation_items(id, reservation_id, product_id, product_name, product_price, quantity, extra_hours, extra_hour_percentage, item_total)`)
         .order('created_at', { ascending: false });
 
       if (filters?.status && filters.status !== 'all') {
@@ -206,37 +206,71 @@ export const useUpdateReservationStatus = () => {
       status: string;
       paymentProofUrl?: string;
     }) => {
-      // Obtener el usuario actual para establecer el contexto de admin
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
-        // Establecer contexto de admin antes de hacer el cambio
-        await supabase.rpc('set_admin_context', {
-          user_id: user.id,
-          user_email: user.email || ''
+      try {
+        console.log('🔄 Actualizando estado de reserva:', {
+          reservationId,
+          status,
+          hasPaymentProof: !!paymentProofUrl
         });
+
+        // Establecer contexto de admin si es necesario
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          try {
+            await supabase.rpc('set_admin_context', {
+              user_id: user.id,
+              user_email: user.email || ''
+            });
+            console.log('✅ Contexto de admin establecido');
+          } catch (error) {
+            console.warn('⚠️ Error estableciendo contexto de admin:', error);
+            // Continuar sin contexto de admin
+          }
+        }
+
+        const updates: any = { status };
+        if (paymentProofUrl) {
+          updates.payment_proof_url = paymentProofUrl;
+        }
+
+        console.log('📝 Actualizaciones a aplicar:', updates);
+
+        const { data, error } = await supabase
+          .from('reservations')
+          .update(updates)
+          .eq('id', reservationId)
+          .select()
+          .single();
+
+        if (error) {
+          console.error('❌ Error al actualizar reserva:', error);
+          throw new Error(`Error al actualizar reserva: ${error.message}`);
+        }
+
+        if (!data) {
+          throw new Error('No se pudo actualizar la reserva');
+        }
+
+        console.log('✅ Reserva actualizada exitosamente:', {
+          id: data.id,
+          status: data.status,
+          paymentProofUrl: data.payment_proof_url
+        });
+
+        return data;
+      } catch (error) {
+        console.error('❌ Error en useUpdateReservationStatus:', error);
+        throw error;
       }
-
-      const updates: any = { status };
-      if (paymentProofUrl) {
-        updates.payment_proof_url = paymentProofUrl;
-      }
-
-      const { data, error } = await supabase
-        .from('reservations')
-        .update(updates)
-        .eq('id', reservationId)
-        .select()
-        .single();
-
-      if (error) throw new Error(error.message);
-      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-reservations'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-      queryClient.invalidateQueries({ queryKey: ['audit-logs'] });
     },
+    onError: (error: Error) => {
+      console.error('❌ Error en mutación de actualización:', error);
+    }
   });
 };
 
@@ -253,10 +287,15 @@ export const useDeleteReservation = () => {
         
         if (user) {
           // Establecer contexto de admin antes de hacer el cambio
-          await supabase.rpc('set_admin_context', {
-            user_id: user.id,
-            user_email: user.email || ''
-          });
+          try {
+            await supabase.rpc('set_admin_context', {
+              user_id: user.id,
+              user_email: user.email || ''
+            });
+          } catch (error) {
+            console.warn('⚠️ Error estableciendo contexto de admin:', error);
+            // Continuar sin contexto de admin
+          }
         }
 
         // Primero eliminar los items de la reserva
@@ -297,7 +336,6 @@ export const useDeleteReservation = () => {
       console.log('Eliminación exitosa:', data);
       queryClient.invalidateQueries({ queryKey: ['admin-reservations'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-      queryClient.invalidateQueries({ queryKey: ['audit-logs'] });
     },
     onError: (error) => {
       console.error('Error en mutación de eliminación:', error);

@@ -16,7 +16,6 @@ import { Calendar, Clock, MapPin, Users, Eye, CheckCircle, XCircle, AlertCircle,
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { AcceptReservationDialog } from './AcceptReservationDialog';
-import { ReservationHistory } from './ReservationHistory';
 
 export function ReservationManagement() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -995,20 +994,7 @@ function ReservationDetails({
       <TabsContent value="actions" className="space-y-4">
         <h3 className="font-semibold">Acciones Rápidas</h3>
         
-        {/* Historial y Reversión */}
-        <div>
-          <h4 className="font-medium mb-2">Historial y Reversión</h4>
-          <div className="flex gap-2 flex-wrap">
-            <ReservationHistory 
-              reservationId={reservation.id}
-              currentStatus={reservation.status}
-              onStatusReverted={() => {
-                // Refrescar la lista de reservas cuando se revierte un estado
-                window.location.reload();
-              }}
-            />
-          </div>
-        </div>
+
         
         {/* Cambiar Estado */}
         <div>

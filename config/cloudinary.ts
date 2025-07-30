@@ -85,31 +85,68 @@ export const validatePaymentProofFile = (file: File): string | null => {
 
 // Función para subir comprobante a Cloudinary
 export const uploadPaymentProofToCloudinary = async (file: File, userId: string): Promise<string> => {
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('upload_preset', cloudinaryPaymentProofConfig.uploadPreset);
-  formData.append('folder', `${cloudinaryPaymentProofConfig.folder}/${userId}`);
-  formData.append('api_key', cloudinaryPaymentProofConfig.apiKey);
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', cloudinaryPaymentProofConfig.uploadPreset);
+    formData.append('folder', `${cloudinaryPaymentProofConfig.folder}/${userId}`);
+    formData.append('api_key', cloudinaryPaymentProofConfig.apiKey);
 
-  // Determinar el tipo de recurso basado en la extensión
-  const fileName = file.name.toLowerCase();
-  let resourceType = 'image';
-  if (fileName.endsWith('.pdf')) {
-    resourceType = 'raw';
+    // Determinar el tipo de recurso basado en la extensión
+    const fileName = file.name.toLowerCase();
+    let resourceType = 'image';
+    if (fileName.endsWith('.pdf')) {
+      resourceType = 'raw';
+    }
+
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudinaryPaymentProofConfig.cloudName}/${resourceType}/upload`;
+
+    console.log('🌐 Subiendo a Cloudinary:', {
+      url: uploadUrl,
+      resourceType,
+      fileName: file.name,
+      size: file.size,
+      userId
+    });
+
+    const response = await fetch(uploadUrl, { 
+      method: 'POST', 
+      body: formData 
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Error HTTP ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error?.message || errorData.message || errorMessage;
+      } catch (parseError) {
+        console.warn('⚠️ No se pudo parsear el error de Cloudinary:', parseError);
+      }
+      
+      throw new Error(`Error al subir comprobante: ${errorMessage}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.secure_url) {
+      throw new Error('No se recibió URL del archivo subido');
+    }
+
+    console.log('✅ Cloudinary response:', {
+      url: data.secure_url,
+      publicId: data.public_id,
+      format: data.format
+    });
+
+    return data.secure_url;
+  } catch (error) {
+    console.error('❌ Error en uploadPaymentProofToCloudinary:', error);
+    
+    if (error instanceof Error) {
+      throw error;
+    } else {
+      throw new Error('Error desconocido al subir archivo a Cloudinary');
+    }
   }
-
-  const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudinaryPaymentProofConfig.cloudName}/${resourceType}/upload`;
-
-  const response = await fetch(uploadUrl, { 
-    method: 'POST', 
-    body: formData 
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error?.message || 'Error al subir comprobante');
-  }
-
-  const data = await response.json();
-  return data.secure_url;
 }; 

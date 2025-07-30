@@ -540,30 +540,26 @@ export const debugRequestHeaders = async () => {
       return;
     }
     
-    // Usar las variables de entorno para la URL y key
-    const supabaseUrl = (import.meta as any).env.VITE_SUPABASE_URL;
-    const supabaseKey = (import.meta as any).env.VITE_SUPABASE_ANON_KEY;
+    console.log('✅ Session available');
+    console.log('User ID:', session.user.id);
+    console.log('Access token exists:', !!session.access_token);
     
-    // Crear una petición manual para verificar headers
-    const response = await fetch(`${supabaseUrl}/rest/v1/user_roles?select=*&user_id=eq.${session.user.id}`, {
-      method: 'GET',
-      headers: {
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${session.access_token}`,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-    });
+    // Usar el cliente de Supabase en lugar de fetch directo
+    const { data, error } = await supabase
+      .from('user_roles')
+      .select('*')
+      .eq('user_id', session.user.id);
     
-    console.log('Response status:', response.status);
-    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Response error:', errorText);
+    if (error) {
+      console.error('❌ Supabase query error:', error);
+      console.error('Error details:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
     } else {
-      const data = await response.json();
-      console.log('✅ Response successful');
+      console.log('✅ Supabase query successful');
       console.log('Data:', data);
     }
     

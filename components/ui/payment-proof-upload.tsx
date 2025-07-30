@@ -34,6 +34,7 @@ export function PaymentProofUpload({
   const [isConfirming, setIsConfirming] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(existingProofUrl || null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -76,6 +77,8 @@ export function PaymentProofUpload({
     if (!uploadedFile) return;
 
     setIsUploading(true);
+    setUploadError(null); // Limpiar errores previos
+    
     try {
       console.log('🚀 Subiendo comprobante a Cloudinary:', {
         name: uploadedFile.name,
@@ -90,11 +93,6 @@ export function PaymentProofUpload({
       
       setPreviewUrl(imageUrl);
       onUploadSuccess(imageUrl);
-      
-      toast({
-        title: "Comprobante subido exitosamente",
-        description: "El archivo se ha subido correctamente a Cloudinary.",
-      });
 
       // Confirmación automática si está habilitada
       if (autoConfirmOnUpload && onAutoConfirm) {
@@ -103,13 +101,15 @@ export function PaymentProofUpload({
           await onAutoConfirm(imageUrl);
           toast({
             title: "Reserva confirmada automáticamente",
-            description: "La reserva ha sido confirmada automáticamente al subir el comprobante.",
+            description: "La reserva ha sido confirmada automáticamente al subir el comprobante. El cliente puede ver el comprobante de pago en su perfil.",
           });
         } catch (error) {
           console.error('❌ Error al confirmar automáticamente:', error);
+          const confirmError = error instanceof Error ? error.message : 'Error desconocido al confirmar';
+          onUploadError(confirmError);
           toast({
             title: "Error al confirmar reserva",
-            description: "El comprobante se subió pero hubo un error al confirmar la reserva.",
+            description: confirmError,
             variant: "destructive",
           });
         } finally {
@@ -118,7 +118,16 @@ export function PaymentProofUpload({
       }
     } catch (error) {
       console.error('❌ Error al subir comprobante:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      let errorMessage = 'Error desconocido al subir el archivo';
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        errorMessage = String(error.message);
+      }
+      
       onUploadError(errorMessage);
       toast({
         title: "Error al subir archivo",

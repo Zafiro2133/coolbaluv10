@@ -6,7 +6,7 @@ import { ReservationManagement } from '@/components/admin/ReservationManagement'
 import { CatalogManagement } from '@/components/admin/CatalogManagement';
 import { UserManagement } from '@/components/admin/UserManagement';
 import { SystemConfiguration } from '@/components/admin/SystemConfiguration';
-import { AuditLogPanel } from '@/components/admin/AuditLogPanel';
+
 import { 
   LayoutDashboard, 
   Calendar, 
@@ -14,8 +14,7 @@ import {
   MapPin,
   Users,
   Clock,
-  Settings,
-  History
+  Settings
 } from 'lucide-react';
 import AdminAvailabilities from './AdminAvailabilities';
 import { 
@@ -73,12 +72,7 @@ const adminMenuItems = [
     icon: MapPin,
     description: 'Gestión de zonas y barrios peligrosos'
   },
-  {
-    id: 'audit',
-    title: 'Auditoría',
-    icon: History,
-    description: 'Historial de acciones y reversiones'
-  },
+
   {
     id: 'settings',
     title: 'Configuración',
@@ -152,8 +146,7 @@ const AdminPanel = () => {
       // Mostrar ZoneManager para la nueva sección
       case 'zones':
         return <ZoneManager />;
-      case 'audit':
-        return <AuditLogPanel />;
+
       case 'settings':
         return <SystemConfiguration />;
       default:
