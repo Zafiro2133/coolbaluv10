@@ -59,27 +59,45 @@ export const useProducts = (categoryId?: string) => {
   return useQuery({
     queryKey: ['products', categoryId],
     queryFn: async () => {
-      let query = supabase
-        .from('products')
-        .select(`
-          *,
-          category:categories(*)
-        `)
-        .eq('is_active', true)
-        .order('display_order', { ascending: true });
+      try {
+        let query = supabase
+          .from('products')
+          .select(`
+            *,
+            category:categories(*)
+          `)
+          .eq('is_active', true)
+          .order('display_order', { ascending: true });
 
-      if (categoryId && categoryId !== 'all') {
-        query = query.eq('category_id', categoryId);
+        if (categoryId && categoryId !== 'all') {
+          query = query.eq('category_id', categoryId);
+        }
+
+        const { data, error } = await query;
+
+        if (error) {
+          console.error('Error fetching products:', error);
+          throw new Error(error.message);
+        }
+
+        // Asegurar que siempre devolvemos un array válido con productos válidos
+        const validProducts = (data || []).filter((product: any) => 
+          product && 
+          product.id && 
+          typeof product.id === 'string' &&
+          product.name &&
+          typeof product.name === 'string'
+        ) as Product[];
+
+        console.log(`✅ Productos cargados: ${validProducts.length} productos válidos`);
+        return validProducts;
+      } catch (error) {
+        console.error('Error en useProducts:', error);
+        throw error;
       }
-
-      const { data, error } = await query;
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      return data as Product[];
     },
+    retry: 2,
+    retryDelay: 1000,
   });
 };
 
@@ -126,10 +144,12 @@ export const useAdminProducts = (categoryId?: string) => {
       const { data, error } = await query;
 
       if (error) {
+        console.error('Error fetching admin products:', error);
         throw new Error(error.message);
       }
 
-      return data as Product[];
+      // Asegurar que siempre devolvemos un array válido
+      return (data || []) as Product[];
     },
   });
 };

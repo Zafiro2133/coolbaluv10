@@ -1,13 +1,14 @@
 import { HeroSection } from "@/components/HeroSection";
 import { CategoryFilter } from "@/components/CategoryFilter";
-import { ProductGrid } from "@/components/ProductGrid";
-import { ProductDetailsModal } from "@/components/ProductDetailsModal";
+import ProductGrid from "@/components/ProductGrid";
+import ProductDetailsModal from "@/components/ProductDetailsModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Clock, Shield, Truck, Star, ShoppingCart, MessageCircle, MapPin } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useProducts } from '@/hooks/useProducts';
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 
 const Index = () => {
   const [activeCategory, setActiveCategory] = useState("all");
@@ -217,11 +218,13 @@ const Index = () => {
           />
 
           <div className="mt-8">
-            <ProductGrid 
-              selectedCategory={activeCategory}
-              onProductDetails={handleProductDetails}
-              onProductReserve={handleProductReserve}
-            />
+            <ErrorBoundary>
+              <ProductGrid 
+                selectedCategory={activeCategory}
+                onProductDetails={handleProductDetails}
+                onProductReserve={handleProductReserve}
+              />
+            </ErrorBoundary>
           </div>
 
           <div className="text-center mt-12">
@@ -277,11 +280,13 @@ const Index = () => {
         </a>
       </footer>
 
-      <ProductDetailsModal
-        product={selectedProduct}
-        isOpen={selectedProductId !== null}
-        onClose={() => setSelectedProductId(null)}
-      />
+      <ErrorBoundary>
+        <ProductDetailsModal
+          product={selectedProduct}
+          isOpen={selectedProductId !== null}
+          onClose={() => setSelectedProductId(null)}
+        />
+      </ErrorBoundary>
     </main>
   );
 };

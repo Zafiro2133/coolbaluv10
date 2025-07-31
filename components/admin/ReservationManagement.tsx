@@ -16,6 +16,8 @@ import { Calendar, Clock, MapPin, Users, Eye, CheckCircle, XCircle, AlertCircle,
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { AcceptReservationDialog } from './AcceptReservationDialog';
+import { useReservationEmails } from '@/hooks/useReservationEmails';
+import { supabase } from '@/services/supabase/client';
 
 export function ReservationManagement() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -33,6 +35,7 @@ export function ReservationManagement() {
   const [reservationToAccept, setReservationToAccept] = useState<any>(null);
   
   const { user, isAdmin, isLoading: adminLoading } = useAdminContext();
+  const { resendEmails, isLoading: isEmailLoading } = useReservationEmails();
   
   const { data: reservations, isLoading, refetch } = useReservations({
     status: statusFilter === 'all' ? undefined : statusFilter,
@@ -104,6 +107,40 @@ export function ReservationManagement() {
       toast({
         title: "Error",
         description: "No se pudo eliminar la reserva.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleResendEmails = async (reservation: any) => {
+    try {
+      // Obtener el email del usuario de la reserva
+      const { data: userData } = await supabase.auth.admin.getUserById(reservation.user_id);
+      const userEmail = userData?.user?.email;
+      
+      if (!userEmail) {
+        toast({
+          title: "❌ Error",
+          description: "No se pudo obtener el email del usuario",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const result = await resendEmails(reservation.id, userEmail);
+      
+      if (result.success) {
+        toast({
+          title: "✅ Correos reenviados",
+          description: `Correos enviados a ${result.sentTo?.cliente} y ${result.sentTo?.admin}`,
+          variant: "default",
+        });
+      }
+    } catch (error) {
+      console.error('Error reenviando correos:', error);
+      toast({
+        title: "❌ Error",
+        description: "Error al reenviar los correos",
         variant: "destructive",
       });
     }

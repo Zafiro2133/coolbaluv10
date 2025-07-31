@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { AdminRoute } from '@/components/AdminRoute';
 import { AdminHeader } from '@/components/AdminHeader';
+
+// Importaciones directas de componentes admin
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { ReservationManagement } from '@/components/admin/ReservationManagement';
 import { CatalogManagement } from '@/components/admin/CatalogManagement';
 import { UserManagement } from '@/components/admin/UserManagement';
 import { SystemConfiguration } from '@/components/admin/SystemConfiguration';
+import ZoneManager from '@/components/admin/ZoneManager';
+import AdminAvailabilities from './AdminAvailabilities';
 
 import { 
   LayoutDashboard, 
@@ -16,7 +20,6 @@ import {
   Clock,
   Settings
 } from 'lucide-react';
-import AdminAvailabilities from './AdminAvailabilities';
 import { 
   Sidebar,
   SidebarContent,
@@ -29,8 +32,6 @@ import {
   SidebarProvider,
   useSidebar,
 } from '@/components/ui/sidebar';
-import ZoneManager from '../components/admin/ZoneManager';
-
 
 
 const adminMenuItems = [
@@ -143,10 +144,8 @@ const AdminPanel = () => {
         return <UserManagement />;
       case 'availabilities':
         return <AdminAvailabilities />;
-      // Mostrar ZoneManager para la nueva sección
       case 'zones':
         return <ZoneManager />;
-
       case 'settings':
         return <SystemConfiguration />;
       default:

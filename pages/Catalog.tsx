@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import { CategoryFilter } from "@/components/CategoryFilter";
-import { ProductGrid } from "@/components/ProductGrid";
-import { ProductDetailsModal } from "@/components/ProductDetailsModal";
 import { useProducts } from '@/hooks/useProducts';
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
+
+// Importaciones directas de componentes
+import ProductGrid from "@/components/ProductGrid";
+import ProductDetailsModal from "@/components/ProductDetailsModal";
 
 export const Catalog = () => {
   const [activeCategory, setActiveCategory] = useState("all");
@@ -62,18 +65,22 @@ export const Catalog = () => {
           />
 
           <div className="mt-8">
-            <ProductGrid 
-              selectedCategory={activeCategory}
-              onProductDetails={handleProductDetails}
-              onProductReserve={handleProductReserve}
-            />
+            <ErrorBoundary>
+              <ProductGrid 
+                selectedCategory={activeCategory}
+                onProductDetails={handleProductDetails}
+                onProductReserve={handleProductReserve}
+              />
+            </ErrorBoundary>
           </div>
 
-          <ProductDetailsModal
-            product={selectedProduct}
-            isOpen={selectedProductId !== null}
-            onClose={() => setSelectedProductId(null)}
-          />
+          <ErrorBoundary>
+            <ProductDetailsModal
+              product={selectedProduct}
+              isOpen={selectedProductId !== null}
+              onClose={() => setSelectedProductId(null)}
+            />
+          </ErrorBoundary>
         </div>
       </main>
       

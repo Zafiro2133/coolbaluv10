@@ -7,7 +7,7 @@ interface ProductGridProps {
   onProductReserve: (productId: string) => void;
 }
 
-export const ProductGrid = ({ selectedCategory, onProductDetails, onProductReserve }: ProductGridProps) => {
+const ProductGrid = ({ selectedCategory, onProductDetails, onProductReserve }: ProductGridProps) => {
   const { data: products, isLoading, error } = useProducts(selectedCategory);
 
   if (isLoading) {
@@ -21,6 +21,7 @@ export const ProductGrid = ({ selectedCategory, onProductDetails, onProductReser
   }
 
   if (error) {
+    console.error('Error loading products:', error);
     return (
       <div className="text-center py-12 px-6">
         <p className="text-muted-foreground">Error al cargar los productos</p>
@@ -28,7 +29,10 @@ export const ProductGrid = ({ selectedCategory, onProductDetails, onProductReser
     );
   }
 
-  if (!products?.length) {
+  // Asegurar que products sea un array válido
+  const validProducts = Array.isArray(products) ? products : [];
+
+  if (!validProducts.length) {
     return (
       <div className="text-center py-12 px-6">
         <p className="text-muted-foreground">
@@ -40,7 +44,7 @@ export const ProductGrid = ({ selectedCategory, onProductDetails, onProductReser
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-6 pb-8">
-      {products.map((product) => (
+      {validProducts.map((product) => (
         <ProductCard
           key={product.id}
           product={product}
@@ -51,3 +55,5 @@ export const ProductGrid = ({ selectedCategory, onProductDetails, onProductReser
     </div>
   );
 };
+
+export default ProductGrid;

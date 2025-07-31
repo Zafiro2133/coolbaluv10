@@ -75,6 +75,12 @@ export const ProductCard = ({ product, onDetails, onReserve }: ProductCardProps)
   const addToCart = useAddToCart();
   const { toast } = useToast();
 
+  // Validación adicional para evitar errores
+  if (!product || !product.id) {
+    console.error('ProductCard: Producto inválido', product);
+    return null;
+  }
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',

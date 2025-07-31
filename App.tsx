@@ -3,7 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { useFixSelectElements } from './hooks/use-fix-select-elements';
 
-// Pages
+// Importaciones directas de páginas
 import Index from './pages/Index';
 import { Catalog } from './pages/Catalog';
 import { Contact } from './pages/Contact';

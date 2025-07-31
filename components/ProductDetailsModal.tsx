@@ -26,14 +26,18 @@ interface ProductDetailsModalProps {
   onClose: () => void;
 }
 
-export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetailsModalProps) => {
+const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetailsModalProps) => {
   const { user } = useAuth();
   const { openCart } = useCartContext();
   const addToCart = useAddToCart();
   const { toast } = useToast();
   const [quantity, setQuantity] = useState(1);
 
-  if (!product) return null;
+  // Validación adicional para evitar errores
+  if (!product || !product.id || !isOpen) {
+    console.error('ProductDetailsModal: Producto inválido o modal cerrado', { product, isOpen });
+    return null;
+  }
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('es-AR', {
@@ -297,3 +301,5 @@ export const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetails
     </Dialog>
   );
 };
+
+export default ProductDetailsModal;
