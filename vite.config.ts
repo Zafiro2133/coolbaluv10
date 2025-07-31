@@ -40,7 +40,7 @@ export default defineConfig({
           if (id.includes('/product/') || id.includes('ProductCard') || id.includes('ProductGrid') || id.includes('ProductDetailsModal')) {
             return 'product';
           }
-          if (id.includes('Reservation') || id.includes('useReservationEmails')) {
+          if (id.includes('Reservation')) {
             return 'reservation';
           }
           if (id.includes('Auth') || id.includes('AuthContext')) {

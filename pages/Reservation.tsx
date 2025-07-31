@@ -20,8 +20,6 @@ import { cn, getProductImageUrl, cleanTempImageUrl } from '@/utils';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { useCartContext } from '@/contexts/CartContext';
 import { createReservation, createReservationItems } from '@/services/supabase/reservations';
-import { useReservationEmails } from '@/hooks/useReservationEmails';
-
 // Utilidad para validar si un objeto es un Polygon o MultiPolygon GeoJSON
 function isGeoJsonPolygon(obj: any): obj is { type: 'Polygon' | 'MultiPolygon'; coordinates: any } {
   return obj && typeof obj === 'object' && (obj.type === 'Polygon' || obj.type === 'MultiPolygon') && Array.isArray(obj.coordinates);
@@ -33,7 +31,6 @@ export default function Reservation() {
   const { toast } = useToast();
   const { data: cartItems = [] } = useCartItems();
   const clearCart = useClearCart();
-  const { sendEmailsForCurrentUser } = useReservationEmails();
 
   // Obtener costo fijo de traslado y montaje
   const transportCost = Number(localStorage.getItem('transportCost')) || 0;
@@ -259,30 +256,8 @@ export default function Reservation() {
         }
       }
 
-      // Enviar correos de confirmación usando el nuevo sistema
-      try {
-        const emailResult = await sendEmailsForCurrentUser(data.id);
-        
-        if (emailResult.success) {
-          console.log('✅ Correos de confirmación enviados exitosamente');
-        } else {
-          console.warn('⚠️ Error enviando correos:', emailResult.error);
-          // No fallar la reserva por error en correos
-          toast({
-            title: "⚠️ Aviso",
-            description: "La reserva se creó correctamente, pero hubo un problema enviando los correos de confirmación. Te contactaremos pronto.",
-            variant: "default",
-          });
-        }
-      } catch (emailError) {
-        console.warn('Error enviando correos:', emailError);
-        // No fallar la reserva por error en correos
-        toast({
-          title: "⚠️ Aviso",
-          description: "La reserva se creó correctamente, pero hubo un problema enviando los correos de confirmación. Te contactaremos pronto.",
-          variant: "default",
-        });
-      }
+      // Nota: Sistema de emails removido temporalmente para reconfiguración
+      console.log('✅ Reserva creada exitosamente - Sistema de emails en reconfiguración');
 
       // Clear cart
       await clearCart.mutateAsync();
