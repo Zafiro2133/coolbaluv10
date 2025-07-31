@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS reservations (
     event_date DATE NOT NULL,
     event_time TIME NOT NULL,
     event_address TEXT NOT NULL,
-    zone_id UUID REFERENCES zones(id) ON DELETE SET NULL,
+
     phone TEXT NOT NULL,
     adult_count INTEGER NOT NULL DEFAULT 1,
     child_count INTEGER NOT NULL DEFAULT 0,
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS reservations (
 ALTER TABLE reservations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reservation_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
-ALTER TABLE zones ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE availabilities ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contact_messages ENABLE ROW LEVEL SECURITY;
 
@@ -123,20 +123,20 @@ CREATE POLICY "Admins can manage products" ON products
         )
     );
 
--- 7. Crear policies para zones (lectura pública, escritura solo admin)
-DROP POLICY IF EXISTS "Anyone can view zones" ON zones;
-CREATE POLICY "Anyone can view zones" ON zones
-    FOR SELECT USING (true);
+-- 7. Crear policies para zones (ELIMINADO - sistema de zonas removido)
+-- DROP POLICY IF EXISTS "Anyone can view zones" ON zones;
+-- CREATE POLICY "Anyone can view zones" ON zones
+--     FOR SELECT USING (true);
 
-DROP POLICY IF EXISTS "Admins can manage zones" ON zones;
-CREATE POLICY "Admins can manage zones" ON zones
-    FOR ALL USING (
-        EXISTS (
-            SELECT 1 FROM auth.users 
-            WHERE auth.users.id = auth.uid() 
-            AND auth.users.raw_user_meta_data->>'role' = 'admin'
-        )
-    );
+-- DROP POLICY IF EXISTS "Admins can manage zones" ON zones;
+-- CREATE POLICY "Admins can manage zones" ON zones
+--     FOR ALL USING (
+--         EXISTS (
+--             SELECT 1 FROM auth.users 
+--             WHERE auth.users.id = auth.uid() 
+--             AND auth.users.raw_user_meta_data->>'role' = 'admin'
+--         )
+--     );
 
 -- 8. Crear policies para availabilities (lectura pública, escritura solo admin)
 DROP POLICY IF EXISTS "Anyone can view availabilities" ON availabilities;
@@ -247,9 +247,10 @@ BEGIN
         RAISE EXCEPTION 'La tabla products no existe';
     END IF;
     
-    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'zones') THEN
-        RAISE EXCEPTION 'La tabla zones no existe';
-    END IF;
+    -- IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'zones') THEN
+    --     RAISE EXCEPTION 'La tabla zones no existe';
+    -- END IF;
+    -- Verificación de zones eliminada - sistema de zonas removido
     
     IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'availabilities') THEN
         RAISE EXCEPTION 'La tabla availabilities no existe';

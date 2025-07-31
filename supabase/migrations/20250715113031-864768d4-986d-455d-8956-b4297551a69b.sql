@@ -68,11 +68,11 @@ ON public.products
 FOR ALL 
 USING (public.has_role(auth.uid(), 'admin'));
 
--- Zones admin policies
-CREATE POLICY "Admins can manage zones" 
-ON public.zones 
-FOR ALL 
-USING (public.has_role(auth.uid(), 'admin'));
+-- Zones admin policies (ELIMINADO - sistema de zonas removido)
+-- CREATE POLICY "Admins can manage zones" 
+-- ON public.zones 
+-- FOR ALL 
+-- USING (public.has_role(auth.uid(), 'admin'));
 
 -- Reservations admin policies
 CREATE POLICY "Admins can view all reservations" 

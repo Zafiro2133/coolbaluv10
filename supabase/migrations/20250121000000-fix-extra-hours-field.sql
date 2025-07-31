@@ -237,7 +237,7 @@ SELECT
     r.event_date,
     r.event_time,
     r.event_address,
-    r.zone_id,
+
     r.phone,
     r.adult_count,
     r.child_count,
@@ -251,8 +251,7 @@ SELECT
     r.payment_proof_url,
     r.created_at,
     r.updated_at,
-    z.name as zone_name,
-    z.transport_cost as zone_transport_cost,
+
     p.first_name,
     p.last_name,
     p.phone as user_phone,
@@ -260,10 +259,10 @@ SELECT
     SUM(ri.extra_hours) as total_extra_hours,
     SUM(ri.extra_hours * ri.extra_hour_percentage * ri.product_price / 100) as total_extra_hours_cost
 FROM public.reservations r
-LEFT JOIN public.zones z ON r.zone_id = z.id
+
 LEFT JOIN public.profiles p ON r.user_id = p.user_id
 LEFT JOIN public.reservation_items ri ON r.id = ri.reservation_id
-GROUP BY r.id, z.name, z.transport_cost, p.first_name, p.last_name, p.phone;
+GROUP BY r.id, p.first_name, p.last_name, p.phone;
 
 -- 12. Verificar que todo se aplicó correctamente
 DO $$

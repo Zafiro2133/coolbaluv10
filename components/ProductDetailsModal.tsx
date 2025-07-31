@@ -35,7 +35,6 @@ const ProductDetailsModal = ({ product, isOpen, onClose }: ProductDetailsModalPr
 
   // Validación adicional para evitar errores
   if (!product || !product.id || !isOpen) {
-    console.error('ProductDetailsModal: Producto inválido o modal cerrado', { product, isOpen });
     return null;
   }
 

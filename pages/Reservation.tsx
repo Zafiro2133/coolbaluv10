@@ -206,7 +206,7 @@ export default function Reservation() {
         event_date: selectedDateString || '',
         event_time: formData.eventTime,
         event_address: fullAddress,
-        zone_id: null, // No se usa zona
+
         phone: formData.phone,
         adult_count: formData.adultCount,
         child_count: formData.childCount,

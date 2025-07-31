@@ -31,7 +31,7 @@ export const SUPABASE_CONFIG = {
       CATEGORIES: 'categories',
       PROFILES: 'profiles',
       USER_ROLES: 'user_roles',
-      ZONES: 'zones',
+    
       AVAILABILITIES: 'availabilities',
       CONTACT_MESSAGES: 'contact_messages',
       CART_ITEMS: 'cart_items'

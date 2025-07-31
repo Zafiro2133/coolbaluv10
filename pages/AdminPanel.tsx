@@ -8,14 +8,13 @@ import { ReservationManagement } from '@/components/admin/ReservationManagement'
 import { CatalogManagement } from '@/components/admin/CatalogManagement';
 import { UserManagement } from '@/components/admin/UserManagement';
 import { SystemConfiguration } from '@/components/admin/SystemConfiguration';
-import ZoneManager from '@/components/admin/ZoneManager';
+
 import AdminAvailabilities from './AdminAvailabilities';
 
 import { 
   LayoutDashboard, 
   Calendar, 
   Package, 
-  MapPin,
   Users,
   Clock,
   Settings
@@ -66,13 +65,7 @@ const adminMenuItems = [
     icon: Clock,
     description: 'Fechas y horarios disponibles'
   },
-  // Nueva sección para zonas no cubiertas
-  {
-    id: 'zones',
-    title: 'Zonas no cubiertas',
-    icon: MapPin,
-    description: 'Gestión de zonas y barrios peligrosos'
-  },
+
 
   {
     id: 'settings',
@@ -144,8 +137,7 @@ const AdminPanel = () => {
         return <UserManagement />;
       case 'availabilities':
         return <AdminAvailabilities />;
-      case 'zones':
-        return <ZoneManager />;
+
       case 'settings':
         return <SystemConfiguration />;
       default:

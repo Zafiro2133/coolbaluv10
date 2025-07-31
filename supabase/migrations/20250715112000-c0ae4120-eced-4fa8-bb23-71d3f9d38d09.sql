@@ -1,15 +1,4 @@
--- Create zones table for coverage areas
-CREATE TABLE public.zones (
-  id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  name TEXT NOT NULL,
-  description TEXT,
-  postal_codes TEXT[], -- Array of postal codes
-  neighborhoods TEXT[], -- Array of neighborhood names  
-  transport_cost DECIMAL(10,2) NOT NULL DEFAULT 0,
-  is_active BOOLEAN NOT NULL DEFAULT true,
-  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
-);
+
 
 -- Create cart_items table for shopping cart
 CREATE TABLE public.cart_items (
@@ -30,7 +19,7 @@ CREATE TABLE public.reservations (
   event_date DATE NOT NULL,
   event_time TIME NOT NULL,
   event_address TEXT NOT NULL,
-  zone_id UUID REFERENCES public.zones(id),
+
   adult_count INTEGER NOT NULL DEFAULT 0,
   child_count INTEGER NOT NULL DEFAULT 0,
   comments TEXT,
@@ -58,16 +47,11 @@ CREATE TABLE public.reservation_items (
 );
 
 -- Enable Row Level Security
-ALTER TABLE public.zones ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.cart_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reservations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reservation_items ENABLE ROW LEVEL SECURITY;
 
--- Zones are publicly viewable (for address validation)
-CREATE POLICY "Zones are viewable by everyone" 
-ON public.zones 
-FOR SELECT 
-USING (is_active = true);
+
 
 -- Cart items policies
 CREATE POLICY "Users can view their own cart items" 
@@ -119,10 +103,7 @@ USING (
 );
 
 -- Create triggers for automatic timestamp updates
-CREATE TRIGGER update_zones_updated_at
-  BEFORE UPDATE ON public.zones
-  FOR EACH ROW
-  EXECUTE FUNCTION public.update_updated_at_column();
+
 
 CREATE TRIGGER update_cart_items_updated_at
   BEFORE UPDATE ON public.cart_items
@@ -134,9 +115,3 @@ CREATE TRIGGER update_reservations_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();
 
--- Insert sample zones
-INSERT INTO public.zones (name, description, postal_codes, neighborhoods, transport_cost) VALUES
-  ('Zona Centro', 'Centro de la ciudad', ARRAY['1000', '1001', '1002', '1003'], ARRAY['Centro', 'Microcentro', 'San Nicolás'], 2000.00),
-  ('Zona Norte', 'Zona norte de la ciudad', ARRAY['1400', '1401', '1402'], ARRAY['Palermo', 'Belgrano', 'Núñez'], 3500.00),
-  ('Zona Sur', 'Zona sur de la ciudad', ARRAY['1200', '1201', '1202'], ARRAY['San Telmo', 'La Boca', 'Barracas'], 3000.00),
-  ('Zona Oeste', 'Zona oeste de la ciudad', ARRAY['1600', '1601', '1602'], ARRAY['Villa Crespo', 'Almagro', 'Flores'], 4000.00);

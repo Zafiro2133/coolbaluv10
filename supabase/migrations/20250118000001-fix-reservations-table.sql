@@ -12,7 +12,7 @@ CREATE TABLE reservations (
     event_date DATE NOT NULL,
     event_time TIME NOT NULL,
     event_address TEXT NOT NULL,
-    zone_id UUID REFERENCES zones(id) ON DELETE SET NULL,
+
     phone TEXT NOT NULL,
     adult_count INTEGER NOT NULL DEFAULT 1,
     child_count INTEGER NOT NULL DEFAULT 0,

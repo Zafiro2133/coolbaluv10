@@ -35,7 +35,7 @@ BEGIN
             event_date DATE NOT NULL,
             event_time TIME NOT NULL,
             event_address TEXT NOT NULL,
-            zone_id UUID REFERENCES public.zones(id),
+
             phone TEXT NOT NULL,
             adult_count INTEGER NOT NULL DEFAULT 1,
             child_count INTEGER NOT NULL DEFAULT 0,

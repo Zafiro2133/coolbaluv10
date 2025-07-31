@@ -19,7 +19,7 @@ export interface ReservationWithDetails {
   event_date: string;
   event_time: string;
   event_address: string;
-  zone_id?: string;
+
   adult_count: number;
   child_count: number;
   comments?: string;
@@ -32,10 +32,7 @@ export interface ReservationWithDetails {
   payment_proof_url?: string;
   created_at: string;
   updated_at: string;
-  zone?: {
-    name: string;
-    transport_cost: number;
-  };
+
   user_profile?: {
     first_name?: string;
     last_name?: string;
@@ -585,47 +582,7 @@ export const useUpdateCategory = () => {
 };
 
 // Zone management
-export const useUpdateZone = () => {
-  const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async ({ 
-      zoneId, 
-      ...updates 
-    }: {
-      zoneId: string;
-      [key: string]: any;
-    }) => {
-      const { data, error } = await supabase
-        .from('zones')
-        .update(updates)
-        .eq('id', zoneId)
-        .select()
-        .single();
-
-      if (error) throw new Error(error.message);
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['zones'] });
-    },
-  });
-};
-
-// Obtener todas las zonas activas
-export const useZones = () => {
-  return useQuery({
-    queryKey: ['zones'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('zones')
-        .select('*');
-      if (error) throw new Error(error.message);
-      return data || [];
-    },
-    refetchOnWindowFocus: false,
-  });
-};
 
 // System Settings Management
 export interface SystemSetting {

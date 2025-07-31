@@ -33,7 +33,7 @@ export const AdminHeader = ({ currentSection }: AdminHeaderProps) => {
       dashboard: 'Dashboard',
       reservations: 'Gestión de Reservas',
       catalog: 'Gestión de Catálogo',
-      zones: 'Gestión de Zonas',
+
       users: 'Gestión de Usuarios',
     };
     return titles[section] || 'Panel de Administración';

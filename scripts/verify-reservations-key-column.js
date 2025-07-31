@@ -66,7 +66,7 @@ async function verifyReservationsKeyColumn() {
     console.log('🧪 Probando inserción con columna key en reservations...');
     const testData = {
       user_id: '00000000-0000-0000-0000-000000000000', // UUID de prueba
-      zone_id: '00000000-0000-0000-0000-000000000001', // UUID de prueba
+  
       reservation_date: new Date().toISOString(),
       start_time: '10:00',
       end_time: '12:00',

@@ -283,7 +283,7 @@ const Index = () => {
       <ErrorBoundary>
         <ProductDetailsModal
           product={selectedProduct}
-          isOpen={selectedProductId !== null}
+          isOpen={selectedProductId !== null && selectedProduct !== null}
           onClose={() => setSelectedProductId(null)}
         />
       </ErrorBoundary>
