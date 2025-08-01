@@ -1,0 +1,24 @@
+{
+  "projectId": "rwgxdtfuzpdukaguogyh",
+  "projectName": "Coolbalu Entretenimientos",
+  "exportDate": "2025-08-01T12:13:14.536Z",
+  "backupFile": "data-export-2025-08-01-0913.json",
+  "fileSize": "0.03 MB",
+  "createdBy": "export-database-data.js",
+  "description": "Exportación completa de datos de la base de datos Supabase",
+  "tablesExported": [
+    "profiles",
+    "user_roles",
+    "categories",
+    "products",
+    "reservations",
+    "reservation_items",
+    "availabilities",
+    "contact_messages",
+    "cart_items",
+    "email_logs",
+    "email_templates",
+    "email_config"
+  ],
+  "totalRecords": 55
+}

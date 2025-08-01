@@ -20,6 +20,7 @@ import { cn, getProductImageUrl, cleanTempImageUrl } from '@/utils';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { useCartContext } from '@/contexts/CartContext';
 import { createReservation, createReservationItems } from '@/services/supabase/reservations';
+import { sendReservationConfirmationEmail, getReservationEmailData } from '@/services/email';
 // Utilidad para validar si un objeto es un Polygon o MultiPolygon GeoJSON
 function isGeoJsonPolygon(obj: any): obj is { type: 'Polygon' | 'MultiPolygon'; coordinates: any } {
   return obj && typeof obj === 'object' && (obj.type === 'Polygon' || obj.type === 'MultiPolygon') && Array.isArray(obj.coordinates);
@@ -256,8 +257,21 @@ export default function Reservation() {
         }
       }
 
-      // Nota: Sistema de emails removido temporalmente para reconfiguración
-      console.log('✅ Reserva creada exitosamente - Sistema de emails en reconfiguración');
+      // Enviar email de confirmación
+      try {
+        const emailData = await getReservationEmailData(data.id);
+        if (emailData) {
+          const emailResult = await sendReservationConfirmationEmail(emailData);
+          if (!emailResult.success) {
+            console.warn('⚠️ No se pudo enviar el email de confirmación:', emailResult.error);
+          } else {
+            console.log('✅ Email de confirmación enviado exitosamente');
+          }
+        }
+      } catch (emailError) {
+        console.error('❌ Error al enviar email de confirmación:', emailError);
+        // No lanzar error aquí para no fallar la creación de la reserva
+      }
 
       // Clear cart
       await clearCart.mutateAsync();

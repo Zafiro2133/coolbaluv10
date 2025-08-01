@@ -34,7 +34,10 @@ export const SUPABASE_CONFIG = {
     
       AVAILABILITIES: 'availabilities',
       CONTACT_MESSAGES: 'contact_messages',
-      CART_ITEMS: 'cart_items'
+      CART_ITEMS: 'cart_items',
+      EMAIL_LOGS: 'email_logs',
+      EMAIL_TEMPLATES: 'email_templates',
+      EMAIL_CONFIG: 'email_config'
     }
   },
   

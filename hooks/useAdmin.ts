@@ -3,6 +3,7 @@ import { supabase } from '@/services/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect } from 'react';
 import { authenticatedQuery } from '@/utils';
+import { sendConfirmationEmailOnReservationUpdate } from '@/services/email';
 
 export type UserRole = 'admin' | 'customer';
 
@@ -216,8 +217,8 @@ export const useUpdateReservationStatus = () => {
         if (user) {
           try {
             await supabase.rpc('set_admin_context', {
-              user_id: user.id,
-              user_email: user.email || ''
+              admin_user_id: user.id,
+              admin_user_email: user.email || ''
             });
             console.log('✅ Contexto de admin establecido');
           } catch (error) {
@@ -255,6 +256,23 @@ export const useUpdateReservationStatus = () => {
           paymentProofUrl: data.payment_proof_url
         });
 
+        // Enviar email de confirmación si la reserva se confirmó
+        if (status === 'confirmed') {
+          console.log('📧 Enviando email de confirmación...');
+          try {
+            const emailResult = await sendConfirmationEmailOnReservationUpdate(reservationId);
+            if (emailResult.success) {
+              console.log('✅ Email de confirmación enviado exitosamente');
+            } else {
+              console.warn('⚠️ Error al enviar email de confirmación:', emailResult.error);
+              // No lanzar error para no afectar la confirmación de la reserva
+            }
+          } catch (emailError) {
+            console.error('❌ Error al enviar email de confirmación:', emailError);
+            // No lanzar error para no afectar la confirmación de la reserva
+          }
+        }
+
         return data;
       } catch (error) {
         console.error('❌ Error en useUpdateReservationStatus:', error);
@@ -286,8 +304,8 @@ export const useDeleteReservation = () => {
           // Establecer contexto de admin antes de hacer el cambio
           try {
             await supabase.rpc('set_admin_context', {
-              user_id: user.id,
-              user_email: user.email || ''
+              admin_user_id: user.id,
+              admin_user_email: user.email || ''
             });
           } catch (error) {
             console.warn('⚠️ Error estableciendo contexto de admin:', error);

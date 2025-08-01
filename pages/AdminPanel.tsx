@@ -10,6 +10,7 @@ import { UserManagement } from '@/components/admin/UserManagement';
 import { SystemConfiguration } from '@/components/admin/SystemConfiguration';
 
 import AdminAvailabilities from './AdminAvailabilities';
+import EmailLogs from '@/components/admin/EmailLogs';
 
 import { 
   LayoutDashboard, 
@@ -17,7 +18,8 @@ import {
   Package, 
   Users,
   Clock,
-  Settings
+  Settings,
+  Mail
 } from 'lucide-react';
 import { 
   Sidebar,
@@ -72,6 +74,12 @@ const adminMenuItems = [
     title: 'Configuración',
     icon: Settings,
     description: 'Configuración general del sistema'
+  },
+  {
+    id: 'emails',
+    title: 'Logs de Email',
+    icon: Mail,
+    description: 'Historial de emails enviados'
   },
 ];
 
@@ -140,6 +148,8 @@ const AdminPanel = () => {
 
       case 'settings':
         return <SystemConfiguration />;
+      case 'emails':
+        return <EmailLogs />;
       default:
         return <AdminDashboard />;
     }

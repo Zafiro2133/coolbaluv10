@@ -8,6 +8,7 @@ import Index from './pages/Index';
 import { Catalog } from './pages/Catalog';
 import { Contact } from './pages/Contact';
 import Auth from './pages/Auth';
+import EmailConfirmation from './pages/EmailConfirmation';
 import Reservation from './pages/Reservation';
 import Profile from './pages/Profile';
 import AdminPanel from './pages/AdminPanel';
@@ -27,6 +28,7 @@ const App = () => {
         <Route path="/catalog" element={<Catalog />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/confirm-email" element={<EmailConfirmation />} />
         <Route path="/reservation" element={<Reservation />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/admin" element={<AdminPanel />} />

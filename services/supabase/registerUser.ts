@@ -36,5 +36,19 @@ export async function registerUser({ email, password, firstName, lastName }: Reg
     return { error: profileError };
   }
 
+  // Paso 3: Asignar rol de cliente por defecto
+  const { error: roleError } = await supabase
+    .from('user_roles')
+    .insert({
+      user_id: userId,
+      role: 'customer',
+    });
+
+  if (roleError) {
+    console.warn('Error al asignar rol de cliente:', roleError);
+    // No retornamos error aquí porque el usuario ya se creó correctamente
+    // El trigger handle_new_user debería haber manejado esto automáticamente
+  }
+
   return { success: true };
 } 

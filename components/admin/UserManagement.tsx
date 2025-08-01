@@ -3,11 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Users, UserCheck, UserX, Search, Eye, Shield, Calendar, Mail, Phone, MapPin, CloudRain } from 'lucide-react';
+import { Users, UserCheck, UserX, Search, Eye, Shield, Calendar, Mail, Phone, MapPin, CloudRain, Trash2 } from 'lucide-react';
 import { supabase } from '@/services/supabase/client';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -35,6 +35,7 @@ interface UserWithDetails extends UserProfile {
   reservations_count?: number;
   total_spent?: number;
   last_reservation?: string;
+  has_profile?: boolean;
 }
 
 export function UserManagement() {
@@ -45,6 +46,9 @@ export function UserManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<UserWithDetails | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const { toast } = useToast();
 
@@ -93,6 +97,7 @@ export function UserManagement() {
             reservations_count,
             total_spent,
             last_reservation,
+            has_profile: true,
           };
         })
       );
@@ -100,6 +105,7 @@ export function UserManagement() {
       setUsers(usersWithStats);
       setFilteredUsers(usersWithStats);
     } catch (error) {
+      console.error('Error fetching users:', error);
       toast({
         title: "Error",
         description: "No se pudieron cargar los usuarios.",
@@ -199,6 +205,85 @@ export function UserManagement() {
         )}
       </Badge>
     );
+  };
+
+  const deleteUser = async (user: UserWithDetails) => {
+    setIsDeleting(true);
+    try {
+      // Eliminar el usuario usando la API de Supabase
+      const { error } = await supabase.auth.admin.deleteUser(user.user_id);
+
+      if (error) {
+        throw new Error(`Error al eliminar usuario: ${error.message}`);
+      }
+
+      toast({
+        title: "Usuario eliminado",
+        description: `El usuario ${user.first_name} ${user.last_name} ha sido eliminado exitosamente.`,
+      });
+
+      // Recargar la lista de usuarios
+      fetchUsers();
+      setIsDeleteDialogOpen(false);
+      setUserToDelete(null);
+    } catch (error) {
+      console.error('❌ Error al eliminar usuario:', error);
+      toast({
+        title: "Error",
+        description: `No se pudo eliminar el usuario: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteClick = (user: UserWithDetails) => {
+    setUserToDelete(user);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const createMissingProfile = async (user: UserWithDetails) => {
+    try {
+      // Create profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          user_id: user.user_id,
+          first_name: user.first_name || user.user_id.split('@')[0] || 'Usuario',
+          last_name: user.last_name || 'Cliente',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+
+      if (profileError) throw profileError;
+
+      // Create role if doesn't exist
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: user.user_id,
+          role: 'customer',
+          created_at: new Date().toISOString(),
+        });
+
+      if (roleError && !roleError.message.includes('duplicate')) throw roleError;
+
+      toast({
+        title: "Perfil creado",
+        description: `Se ha creado el perfil para ${user.first_name} ${user.last_name}.`,
+      });
+
+      // Refresh users
+      fetchUsers();
+    } catch (error) {
+      console.error('Error creating profile:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo crear el perfil del usuario.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isLoading) {
@@ -316,12 +401,22 @@ export function UserManagement() {
                       <div>
                         <div className="font-medium">
                           {user.first_name} {user.last_name}
+                          {!user.has_profile && (
+                            <Badge variant="outline" className="ml-2 text-xs">
+                              Sin Perfil
+                            </Badge>
+                          )}
                         </div>
                         <div className="text-sm text-muted-foreground">
                           {user.phone && (
                             <span className="flex items-center gap-1">
                               <Phone className="h-3 w-3" />
                               {user.phone}
+                            </span>
+                          )}
+                          {!user.has_profile && (
+                            <span className="text-orange-600 text-xs">
+                              ⚠️ Usuario sin perfil completo
                             </span>
                           )}
                         </div>
@@ -393,6 +488,25 @@ export function UserManagement() {
                             <SelectItem value="admin">Admin</SelectItem>
                           </SelectContent>
                         </Select>
+
+                        {!user.has_profile && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => createMissingProfile(user)}
+                          >
+                            Crear Perfil
+                          </Button>
+                        )}
+                        
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteClick(user)}
+                          disabled={getUserRole(user) === 'admin'}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -408,6 +522,64 @@ export function UserManagement() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Diálogo de Confirmación de Eliminación */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar Eliminación</DialogTitle>
+            <DialogDescription>
+              ¿Estás seguro de que quieres eliminar al usuario{' '}
+              <strong>{userToDelete?.first_name} {userToDelete?.last_name}</strong>?
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="bg-destructive/10 p-4 rounded-lg">
+              <h4 className="font-semibold text-destructive mb-2">⚠️ Acción Irreversible</h4>
+              <ul className="text-sm space-y-1">
+                <li>• Se eliminará permanentemente el usuario del sistema</li>
+                <li>• Se perderán todos los datos asociados (perfil, reservas, etc.)</li>
+                <li>• Se eliminarán los registros de auditoría</li>
+                <li>• Esta acción no se puede deshacer</li>
+              </ul>
+            </div>
+
+            {userToDelete && (
+              <div className="bg-muted p-4 rounded-lg">
+                <h4 className="font-semibold mb-2">Información del Usuario</h4>
+                <div className="text-sm space-y-1">
+                  <p><strong>Nombre:</strong> {userToDelete.first_name} {userToDelete.last_name}</p>
+                  <p><strong>Rol:</strong> {getUserRole(userToDelete) === 'admin' ? 'Administrador' : 'Cliente'}</p>
+                  <p><strong>Reservas:</strong> {userToDelete.reservations_count || 0}</p>
+                  <p><strong>Total gastado:</strong> ${(userToDelete.total_spent || 0).toLocaleString()}</p>
+                  <p><strong>Registrado:</strong> {format(new Date(userToDelete.created_at), 'dd MMM yyyy', { locale: es })}</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsDeleteDialogOpen(false);
+                setUserToDelete(null);
+              }}
+              disabled={isDeleting}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => userToDelete && deleteUser(userToDelete)}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Eliminando...' : 'Eliminar Usuario'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

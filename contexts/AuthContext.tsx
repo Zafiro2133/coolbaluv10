@@ -51,12 +51,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const createProfileIfNotExists = async () => {
       if (user) {
-        const { data, error } = await supabase
+        // Verificar si existe el perfil
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('id')
           .eq('user_id', user.id)
           .single();
-        if (!data) {
+        
+        if (!profileData) {
           await supabase
             .from('profiles')
             .insert({
@@ -65,13 +67,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               last_name: user.user_metadata?.last_name || '',
             });
         }
+
+        // Verificar si existe el rol de usuario
+        const { data: roleData, error: roleError } = await supabase
+          .from('user_roles')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+
+        if (!roleData) {
+          await supabase
+            .from('user_roles')
+            .insert({
+              user_id: user.id,
+              role: 'customer',
+            });
+        }
       }
     };
     createProfileIfNotExists();
   }, [user]);
 
   const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
-    const redirectUrl = `${window.location.origin}/`;
+    const redirectUrl = `${window.location.origin}/confirm-email`;
     
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -85,12 +103,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     });
 
-    // Si el registro fue exitoso y tenemos el user, guardamos el perfil
+    // Si el registro fue exitoso y tenemos el user, guardamos el perfil y asignamos rol
     if (!error && data?.user) {
       await supabase.from('profiles').insert({
         user_id: data.user.id,
         first_name: firstName || '',
         last_name: lastName || '',
+      });
+
+      // Asignar rol de cliente por defecto
+      await supabase.from('user_roles').insert({
+        user_id: data.user.id,
+        role: 'customer',
       });
     }
     return { error };

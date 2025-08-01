@@ -1,0 +1,699 @@
+{
+  "metadata": {
+    "projectId": "rwgxdtfuzpdukaguogyh",
+    "projectName": "Coolbalu Entretenimientos",
+    "exportDate": "2025-08-01T12:13:11.109Z",
+    "totalTables": 12,
+    "createdBy": "export-database-data.js"
+  },
+  "tables": {
+    "profiles": {
+      "count": 3,
+      "data": [
+        {
+          "id": "8e1a2813-a32c-4642-988b-ed44f5ca85a9",
+          "user_id": "173b1839-82e9-47aa-ae36-5669624ae570",
+          "first_name": "Pau",
+          "last_name": "Hanna",
+          "phone": null,
+          "address": null,
+          "created_at": "2025-07-29T15:53:39.657163+00:00",
+          "updated_at": "2025-07-29T15:53:39.657163+00:00",
+          "rol": "admin",
+          "email": null
+        },
+        {
+          "id": "1895e8ba-8b8b-473c-b4d7-910e0d0baf46",
+          "user_id": "3a31125b-e75e-4837-823e-2eb095b7bc80",
+          "first_name": "Lali",
+          "last_name": "Esposito",
+          "phone": null,
+          "address": null,
+          "created_at": "2025-07-31T22:41:44.457722+00:00",
+          "updated_at": "2025-07-31T22:41:44.457722+00:00",
+          "rol": "admin",
+          "email": null
+        },
+        {
+          "id": "c9dea795-7054-4d68-9449-9b16963ee7e2",
+          "user_id": "74bbd49b-9ccc-471c-a921-a894aa34eedf",
+          "first_name": "Maria",
+          "last_name": "Perez",
+          "phone": "",
+          "address": "",
+          "created_at": "2025-07-31T22:43:23.444174+00:00",
+          "updated_at": "2025-07-31T22:43:23.444174+00:00",
+          "rol": "admin",
+          "email": null
+        }
+      ]
+    },
+    "user_roles": {
+      "count": 1,
+      "data": [
+        {
+          "id": "37532b8d-594c-4a55-94a4-ccda20c89c59",
+          "user_id": "173b1839-82e9-47aa-ae36-5669624ae570",
+          "role": "admin",
+          "created_at": "2025-07-29T16:13:48.161361+00:00",
+          "email": null
+        }
+      ]
+    },
+    "categories": {
+      "count": 4,
+      "data": [
+        {
+          "id": "9a94483c-b163-4a9d-a92f-a7a35e014e5a",
+          "name": "Inflables",
+          "description": "Juegos inflables para todas las edades",
+          "image_url": null,
+          "is_active": true,
+          "display_order": 1,
+          "created_at": "2025-07-24T17:19:43.595752+00:00",
+          "updated_at": "2025-07-28T14:44:35.448086+00:00"
+        },
+        {
+          "id": "1fab2af6-fbca-4519-8a50-3902bdcddf42",
+          "name": "Catering",
+          "description": "Servicios de comida y bebida para tu evento",
+          "image_url": null,
+          "is_active": true,
+          "display_order": 2,
+          "created_at": "2025-07-24T17:19:43.595752+00:00",
+          "updated_at": "2025-07-28T14:44:35.448086+00:00"
+        },
+        {
+          "id": "b9652dd7-d249-437c-82c8-15a6177d1266",
+          "name": "Mobiliario",
+          "description": "Mesas, sillas y mobiliario para eventos",
+          "image_url": null,
+          "is_active": true,
+          "display_order": 3,
+          "created_at": "2025-07-24T17:19:43.595752+00:00",
+          "updated_at": "2025-07-28T14:44:35.448086+00:00"
+        },
+        {
+          "id": "8ae950ef-2272-4626-b415-52d25a959f51",
+          "name": "Combos",
+          "description": "Paquetes completos con descuentos especiales",
+          "image_url": null,
+          "is_active": true,
+          "display_order": 4,
+          "created_at": "2025-07-24T17:19:43.595752+00:00",
+          "updated_at": "2025-07-28T14:44:35.448086+00:00"
+        }
+      ]
+    },
+    "products": {
+      "count": 5,
+      "data": [
+        {
+          "id": "3f219b85-83fc-4b78-bb31-3f15c68d25b6",
+          "category_id": "9a94483c-b163-4a9d-a92f-a7a35e014e5a",
+          "name": "Torre Mágica",
+          "description": "Ideal para niños pequeños y poco espacio.",
+          "image_url": "https://res.cloudinary.com/dtwcgp3ho/image/upload/v1753726279/products/torremagica_wcnlme.png",
+          "base_price": 50000,
+          "extra_hour_percentage": 15,
+          "is_active": true,
+          "display_order": 1,
+          "created_at": "2025-07-28T18:11:26.282674+00:00",
+          "updated_at": "2025-07-28T18:11:26.282674+00:00"
+        },
+        {
+          "id": "5c8b14bf-d451-47f6-9dfd-f354dcc2889e",
+          "category_id": "9a94483c-b163-4a9d-a92f-a7a35e014e5a",
+          "name": "Fortaleza Fantástica",
+          "description": "Ideal para aquellos que se sientan un poco más osados",
+          "image_url": "https://res.cloudinary.com/dtwcgp3ho/image/upload/v1753726972/products/fortalezafantastica_a1tktr.jpg",
+          "base_price": 70000,
+          "extra_hour_percentage": 15,
+          "is_active": true,
+          "display_order": 1,
+          "created_at": "2025-07-28T18:14:44.463908+00:00",
+          "updated_at": "2025-07-28T18:22:56.954535+00:00"
+        },
+        {
+          "id": "5f34a144-046c-4708-9369-032bcb9cfb02",
+          "category_id": "9a94483c-b163-4a9d-a92f-a7a35e014e5a",
+          "name": "Arco Encantado",
+          "description": "Sólo para los aventureros",
+          "image_url": "https://res.cloudinary.com/dtwcgp3ho/image/upload/v1753727061/products/arcoencantado_ykvwhq.jpg",
+          "base_price": 80000,
+          "extra_hour_percentage": 15,
+          "is_active": true,
+          "display_order": 3,
+          "created_at": "2025-07-28T18:15:41.887112+00:00",
+          "updated_at": "2025-07-28T18:24:23.86137+00:00"
+        },
+        {
+          "id": "c886f93b-7201-4d81-8d81-927c2b15dbd2",
+          "category_id": "9a94483c-b163-4a9d-a92f-a7a35e014e5a",
+          "name": "Ciudad de Sueños",
+          "description": "Ideal para aquellos que necesiten descargar energías ",
+          "image_url": "https://res.cloudinary.com/dtwcgp3ho/image/upload/v1753727072/products/ciudaddesue%C3%B1os_rqxiu1.jpg",
+          "base_price": 90000,
+          "extra_hour_percentage": 15,
+          "is_active": true,
+          "display_order": 4,
+          "created_at": "2025-07-28T18:16:05.416808+00:00",
+          "updated_at": "2025-07-28T18:24:35.958785+00:00"
+        },
+        {
+          "id": "99a934d1-3286-435e-a565-a49fe054cb18",
+          "category_id": "9a94483c-b163-4a9d-a92f-a7a35e014e5a",
+          "name": "Reino de Diversión",
+          "description": "Perfecto para juntadas numerosas.",
+          "image_url": "https://res.cloudinary.com/dtwcgp3ho/image/upload/v1753727086/products/reinodediversion_mgys5u.jpg",
+          "base_price": 90000,
+          "extra_hour_percentage": 15,
+          "is_active": true,
+          "display_order": 5,
+          "created_at": "2025-07-28T18:16:39.090479+00:00",
+          "updated_at": "2025-07-28T18:24:48.345057+00:00"
+        }
+      ]
+    },
+    "reservations": {
+      "count": 6,
+      "data": [
+        {
+          "id": "74b035b2-2656-4bb4-85e7-1f3d6a7c05a1",
+          "user_id": "173b1839-82e9-47aa-ae36-5669624ae570",
+          "event_date": "2025-07-31",
+          "event_time": "12:00:00",
+          "event_address": "cddacas acacsa, cascs",
+          "phone": "21123",
+          "adult_count": 1,
+          "child_count": 0,
+          "comments": "",
+          "rain_reschedule": "reschedule",
+          "subtotal": 50000,
+          "transport_cost": 0,
+          "total": 50000,
+          "status": "pending_payment",
+          "payment_proof_url": null,
+          "created_at": "2025-07-31T18:50:37.289912+00:00",
+          "updated_at": "2025-07-31T18:50:37.422261+00:00",
+          "extra_hours": 4,
+          "user_email": null,
+          "key": null
+        },
+        {
+          "id": "fc5d9890-8566-45b2-a404-fa2be207e960",
+          "user_id": "173b1839-82e9-47aa-ae36-5669624ae570",
+          "event_date": "2025-07-31",
+          "event_time": "12:00:00",
+          "event_address": "asad asda, sadad",
+          "phone": "2313",
+          "adult_count": 1,
+          "child_count": 2,
+          "comments": "",
+          "rain_reschedule": "no",
+          "subtotal": 50000,
+          "transport_cost": 0,
+          "total": 50000,
+          "status": "confirmed",
+          "payment_proof_url": "https://res.cloudinary.com/dtwcgp3ho/image/upload/v1753992379/payment-proofs/173b1839-82e9-47aa-ae36-5669624ae570/comprobante_ejemplo_q36azn.png",
+          "created_at": "2025-07-31T20:06:03.251886+00:00",
+          "updated_at": "2025-07-31T20:06:20.682552+00:00",
+          "extra_hours": 3,
+          "user_email": null,
+          "key": null
+        },
+        {
+          "id": "a1443d2e-5ab6-4d08-a4c4-29ebcfbfd911",
+          "user_id": "173b1839-82e9-47aa-ae36-5669624ae570",
+          "event_date": "2025-07-31",
+          "event_time": "12:00:00",
+          "event_address": "necochea 1010, rosario",
+          "phone": "3415083314",
+          "adult_count": 4,
+          "child_count": 4,
+          "comments": "",
+          "rain_reschedule": "no",
+          "subtotal": 50000,
+          "transport_cost": 0,
+          "total": 50000,
+          "status": "pending_payment",
+          "payment_proof_url": null,
+          "created_at": "2025-07-31T20:52:18.179665+00:00",
+          "updated_at": "2025-07-31T20:52:18.379759+00:00",
+          "extra_hours": 5,
+          "user_email": null,
+          "key": null
+        },
+        {
+          "id": "d669c89a-c18c-464a-a3be-7c634dab5e15",
+          "user_id": "173b1839-82e9-47aa-ae36-5669624ae570",
+          "event_date": "2025-07-31",
+          "event_time": "12:00:00",
+          "event_address": "dfgfd dfgd, fdg",
+          "phone": "32424",
+          "adult_count": 1,
+          "child_count": 0,
+          "comments": "",
+          "rain_reschedule": "reschedule",
+          "subtotal": 80000,
+          "transport_cost": 0,
+          "total": 80000,
+          "status": "confirmed",
+          "payment_proof_url": "https://res.cloudinary.com/dtwcgp3ho/image/upload/v1753995940/payment-proofs/173b1839-82e9-47aa-ae36-5669624ae570/comprobante_ejemplo_fmmvnb.png",
+          "created_at": "2025-07-31T21:05:11.301974+00:00",
+          "updated_at": "2025-07-31T21:05:41.198936+00:00",
+          "extra_hours": 3,
+          "user_email": null,
+          "key": null
+        },
+        {
+          "id": "2886eb07-2135-4431-b09d-f7fd5af132b4",
+          "user_id": "173b1839-82e9-47aa-ae36-5669624ae570",
+          "event_date": "2025-07-31",
+          "event_time": "12:00:00",
+          "event_address": "tttt tttt, ttt",
+          "phone": "555555",
+          "adult_count": 1,
+          "child_count": 0,
+          "comments": "",
+          "rain_reschedule": "no",
+          "subtotal": 50000,
+          "transport_cost": 0,
+          "total": 50000,
+          "status": "confirmed",
+          "payment_proof_url": "https://res.cloudinary.com/dtwcgp3ho/image/upload/v1753996057/payment-proofs/173b1839-82e9-47aa-ae36-5669624ae570/comprobante_ejemplo_i8sxw0.png",
+          "created_at": "2025-07-31T21:07:18.951956+00:00",
+          "updated_at": "2025-07-31T21:07:37.88878+00:00",
+          "extra_hours": 3,
+          "user_email": null,
+          "key": null
+        },
+        {
+          "id": "fc5d22e2-df85-40ad-87ea-8e00d375d690",
+          "user_id": "3a31125b-e75e-4837-823e-2eb095b7bc80",
+          "event_date": "2025-08-09",
+          "event_time": "12:00:00",
+          "event_address": "amenabar 1565, rosario",
+          "phone": "3415083314",
+          "adult_count": 2,
+          "child_count": 5,
+          "comments": "",
+          "rain_reschedule": "reschedule",
+          "subtotal": 70000,
+          "transport_cost": 0,
+          "total": 70000,
+          "status": "confirmed",
+          "payment_proof_url": "https://res.cloudinary.com/dtwcgp3ho/image/upload/v1754000101/payment-proofs/3a31125b-e75e-4837-823e-2eb095b7bc80/comprobante_ejemplo_ffzhbz.png",
+          "created_at": "2025-07-31T22:13:12.002864+00:00",
+          "updated_at": "2025-07-31T22:15:02.736519+00:00",
+          "extra_hours": 6,
+          "user_email": null,
+          "key": null
+        }
+      ]
+    },
+    "reservation_items": {
+      "count": 6,
+      "data": [
+        {
+          "id": "e4eed30b-33db-4403-9bb0-3d6b859fe25e",
+          "reservation_id": "74b035b2-2656-4bb4-85e7-1f3d6a7c05a1",
+          "product_id": "3f219b85-83fc-4b78-bb31-3f15c68d25b6",
+          "product_name": "Torre Mágica",
+          "product_price": 50000,
+          "quantity": 1,
+          "extra_hours": 0,
+          "extra_hour_percentage": 15,
+          "item_total": 50000,
+          "created_at": "2025-07-31T18:50:37.422261+00:00",
+          "key": null
+        },
+        {
+          "id": "a2748433-25f7-4be1-b1c8-08666ad9860e",
+          "reservation_id": "fc5d9890-8566-45b2-a404-fa2be207e960",
+          "product_id": "3f219b85-83fc-4b78-bb31-3f15c68d25b6",
+          "product_name": "Torre Mágica",
+          "product_price": 50000,
+          "quantity": 1,
+          "extra_hours": 0,
+          "extra_hour_percentage": 15,
+          "item_total": 50000,
+          "created_at": "2025-07-31T20:06:03.475045+00:00",
+          "key": null
+        },
+        {
+          "id": "b340ca84-6d10-42b1-941e-29e945228104",
+          "reservation_id": "a1443d2e-5ab6-4d08-a4c4-29ebcfbfd911",
+          "product_id": "3f219b85-83fc-4b78-bb31-3f15c68d25b6",
+          "product_name": "Torre Mágica",
+          "product_price": 50000,
+          "quantity": 1,
+          "extra_hours": 0,
+          "extra_hour_percentage": 15,
+          "item_total": 50000,
+          "created_at": "2025-07-31T20:52:18.379759+00:00",
+          "key": null
+        },
+        {
+          "id": "5d02954a-2d06-419f-9ae0-4063db6bf619",
+          "reservation_id": "d669c89a-c18c-464a-a3be-7c634dab5e15",
+          "product_id": "5f34a144-046c-4708-9369-032bcb9cfb02",
+          "product_name": "Arco Encantado",
+          "product_price": 80000,
+          "quantity": 1,
+          "extra_hours": 0,
+          "extra_hour_percentage": 15,
+          "item_total": 80000,
+          "created_at": "2025-07-31T21:05:11.396782+00:00",
+          "key": null
+        },
+        {
+          "id": "3042315c-c89d-463b-81a6-88693b40da02",
+          "reservation_id": "2886eb07-2135-4431-b09d-f7fd5af132b4",
+          "product_id": "3f219b85-83fc-4b78-bb31-3f15c68d25b6",
+          "product_name": "Torre Mágica",
+          "product_price": 50000,
+          "quantity": 1,
+          "extra_hours": 0,
+          "extra_hour_percentage": 15,
+          "item_total": 50000,
+          "created_at": "2025-07-31T21:07:19.045596+00:00",
+          "key": null
+        },
+        {
+          "id": "f6e2836a-60ed-4d3c-9705-d6e79fe46b60",
+          "reservation_id": "fc5d22e2-df85-40ad-87ea-8e00d375d690",
+          "product_id": "5c8b14bf-d451-47f6-9dfd-f354dcc2889e",
+          "product_name": "Fortaleza Fantástica",
+          "product_price": 70000,
+          "quantity": 1,
+          "extra_hours": 0,
+          "extra_hour_percentage": 15,
+          "item_total": 70000,
+          "created_at": "2025-07-31T22:13:12.159378+00:00",
+          "key": null
+        }
+      ]
+    },
+    "availabilities": {
+      "count": 17,
+      "data": [
+        {
+          "id": "c5a74f04-6911-43b9-bb8e-42461701fb38",
+          "date": "2025-07-31",
+          "hour": "12:00:00",
+          "created_at": "2025-07-30T13:08:15.436589+00:00"
+        },
+        {
+          "id": "71d4138e-3534-44ed-89c9-e55d25d3d613",
+          "date": "2025-08-01",
+          "hour": "12:00:00",
+          "created_at": "2025-07-30T13:08:15.436589+00:00"
+        },
+        {
+          "id": "5bcb21d0-b37c-49b5-a7b3-9aad9c18e059",
+          "date": "2025-08-02",
+          "hour": "12:00:00",
+          "created_at": "2025-07-30T13:08:15.436589+00:00"
+        },
+        {
+          "id": "06d54a28-0712-4e17-9436-31145a25c17e",
+          "date": "2025-08-03",
+          "hour": "12:00:00",
+          "created_at": "2025-07-30T13:08:15.436589+00:00"
+        },
+        {
+          "id": "7139106d-94df-4468-9084-11be214ea46b",
+          "date": "2025-08-04",
+          "hour": "12:00:00",
+          "created_at": "2025-07-30T13:08:15.436589+00:00"
+        },
+        {
+          "id": "52080f36-12ef-403e-a958-cdaf2a559d24",
+          "date": "2025-08-05",
+          "hour": "12:00:00",
+          "created_at": "2025-07-30T13:08:15.436589+00:00"
+        },
+        {
+          "id": "c1e9bed7-42b4-4ef4-b079-73afa76d0ce4",
+          "date": "2025-08-06",
+          "hour": "12:00:00",
+          "created_at": "2025-07-30T13:08:15.436589+00:00"
+        },
+        {
+          "id": "2d216259-b13c-4545-a9ea-7e1c683cfc36",
+          "date": "2025-08-07",
+          "hour": "12:00:00",
+          "created_at": "2025-07-30T13:08:15.436589+00:00"
+        },
+        {
+          "id": "f0e7472f-1912-4721-a869-9465d4373009",
+          "date": "2025-08-08",
+          "hour": "12:00:00",
+          "created_at": "2025-07-30T13:08:15.436589+00:00"
+        },
+        {
+          "id": "bc52a36b-d85d-43c6-abde-3cc238a99073",
+          "date": "2025-08-09",
+          "hour": "12:00:00",
+          "created_at": "2025-07-30T13:08:15.436589+00:00"
+        },
+        {
+          "id": "f497b097-1e6c-435a-9d15-e3d9c7582aa8",
+          "date": "2025-08-10",
+          "hour": "12:00:00",
+          "created_at": "2025-07-30T13:08:15.436589+00:00"
+        },
+        {
+          "id": "d6751a52-6b7d-491d-960e-574943c12aa6",
+          "date": "2025-08-11",
+          "hour": "12:00:00",
+          "created_at": "2025-07-30T13:08:15.436589+00:00"
+        },
+        {
+          "id": "853e542f-31d7-4525-94d4-a7f99fd79280",
+          "date": "2025-08-12",
+          "hour": "12:00:00",
+          "created_at": "2025-07-30T13:08:15.436589+00:00"
+        },
+        {
+          "id": "455f1272-6831-4e8d-9728-54cff19182dc",
+          "date": "2025-08-13",
+          "hour": "12:00:00",
+          "created_at": "2025-07-30T13:08:15.436589+00:00"
+        },
+        {
+          "id": "a1f5c396-1152-4c2b-84d5-b3a7c3ec919d",
+          "date": "2025-08-14",
+          "hour": "12:00:00",
+          "created_at": "2025-07-30T13:08:15.436589+00:00"
+        },
+        {
+          "id": "8f2d9ad0-a388-42f7-a041-983f9ee803de",
+          "date": "2025-08-15",
+          "hour": "12:00:00",
+          "created_at": "2025-07-30T13:08:15.436589+00:00"
+        },
+        {
+          "id": "9008364b-0398-4a3d-ac77-5099a7b3d21a",
+          "date": "2025-08-16",
+          "hour": "12:00:00",
+          "created_at": "2025-07-30T13:08:15.436589+00:00"
+        }
+      ]
+    },
+    "contact_messages": {
+      "count": 0,
+      "data": []
+    },
+    "cart_items": {
+      "count": 0,
+      "data": []
+    },
+    "email_logs": {
+      "count": 3,
+      "data": [
+        {
+          "id": "619b6dc7-0acb-48a4-8c51-c51a62bf007b",
+          "email_type": "reservation_confirmation",
+          "recipient_email": "test@example.com",
+          "recipient_name": "Test User",
+          "subject": "Test Subject",
+          "content": "Test Content",
+          "status": "sent",
+          "error_message": null,
+          "metadata": {
+            "test": true
+          },
+          "related_reservation_id": null,
+          "related_contact_message_id": null,
+          "sent_at": "2025-07-31T21:51:40.622561+00:00",
+          "created_at": "2025-07-31T21:51:40.622561+00:00"
+        },
+        {
+          "id": "473df48e-c7b4-403a-af09-0a8ad8c24341",
+          "email_type": "reservation_confirmation",
+          "recipient_email": "pauhannie@gmail.com",
+          "recipient_name": "Cliente",
+          "subject": "Prueba de confirmación - Coolbalu",
+          "content": "\n        <h1>¡Hola Cliente!</h1>\n        <p>Esta es una prueba del sistema de emails de Coolbalu.</p>\n        <p>Tu reserva ID: 2886eb07-2135-4431-b09d-f7fd5af132b4</p>\n        <p>Fecha del evento: 2025-07-31</p>\n        <p>Total: $50000</p>\n        <p>Si recibes este email, el sistema está funcionando correctamente.</p>\n      ",
+          "status": "sent",
+          "error_message": null,
+          "metadata": {
+            "test": true,
+            "resend_id": "e7874e06-a9b6-41c2-ba07-cd82906df7b6"
+          },
+          "related_reservation_id": "2886eb07-2135-4431-b09d-f7fd5af132b4",
+          "related_contact_message_id": null,
+          "sent_at": "2025-07-31T21:52:45.66367+00:00",
+          "created_at": "2025-07-31T21:52:45.66367+00:00"
+        },
+        {
+          "id": "32421e0a-c6c5-41f5-b2c2-b6782fc5efa9",
+          "email_type": "reservation_confirmation",
+          "recipient_email": "pauhannie@gmail.com",
+          "recipient_name": "Cliente",
+          "subject": "Tu reserva en Coolbalu ha sido confirmada",
+          "content": "\n      <h1>¡Hola Cliente!</h1>\n      <p>Tu reserva en <strong>Coolbalu</strong> ha sido confirmada.</p>\n      \n      <div style=\"background: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0;\">\n        <h2>Detalles de tu reserva:</h2>\n        <p><strong>ID de Reserva:</strong> 2886eb07-2135-4431-b09d-f7fd5af132b4</p>\n        <p><strong>Fecha:</strong> 2025-07-31</p>\n        <p><strong>Hora:</strong> 12:00:00</p>\n        <p><strong>Dirección:</strong> tttt tttt, ttt</p>\n        <p><strong>Total:</strong> $50000</p>\n      </div>\n      \n      <p>¡Nos vemos en tu evento!</p>\n    ",
+          "status": "sent",
+          "error_message": null,
+          "metadata": {
+            "resend_id": "5858435b-1ce3-4a2f-8d83-50c5902bd2f4"
+          },
+          "related_reservation_id": "2886eb07-2135-4431-b09d-f7fd5af132b4",
+          "related_contact_message_id": null,
+          "sent_at": "2025-07-31T21:55:24.726809+00:00",
+          "created_at": "2025-07-31T21:55:24.726809+00:00"
+        }
+      ]
+    },
+    "email_templates": {
+      "count": 3,
+      "data": [
+        {
+          "id": "533c2836-7489-42ed-9d7f-a398d497ba81",
+          "template_key": "reservation_confirmation",
+          "template_name": "Confirmación de Reserva",
+          "subject": "Tu reserva en Coolbalu fue creada exitosamente",
+          "html_content": "<!DOCTYPE html>\r\n<html>\r\n<head>\r\n    <meta charset=\"utf-8\">\r\n    <title>Confirmación de Reserva - Coolbalu</title>\r\n</head>\r\n<body style=\"font-family: Arial, sans-serif; line-height: 1.6; color: #333;\">\r\n    <div style=\"max-width: 600px; margin: 0 auto; padding: 20px;\">\r\n        <h1 style=\"color: #2563eb;\">¡Hola {{customerName}}!</h1>\r\n        <p>Tu reserva en <strong>Coolbalu</strong> fue creada exitosamente.</p>\r\n        \r\n        <div style=\"background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;\">\r\n            <h2 style=\"color: #1e40af;\">Detalles de tu reserva:</h2>\r\n            <p><strong>ID de Reserva:</strong> {{reservationId}}</p>\r\n            <p><strong>Fecha:</strong> {{eventDate}}</p>\r\n            <p><strong>Hora:</strong> {{eventTime}}</p>\r\n            <p><strong>Dirección:</strong> {{eventAddress}}</p>\r\n            <p><strong>Total:</strong> ${{total}}</p>\r\n        </div>\r\n        \r\n        <p>Te contactaremos pronto para coordinar los detalles finales.</p>\r\n        \r\n        <div style=\"margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;\">\r\n            <p style=\"font-size: 14px; color: #6b7280;\">\r\n                Saludos,<br>\r\n                El equipo de Coolbalu\r\n            </p>\r\n        </div>\r\n    </div>\r\n</body>\r\n</html>",
+          "text_content": "Hola {{customerName}}!\r\n\r\nTu reserva en Coolbalu fue creada exitosamente.\r\n\r\nDetalles de tu reserva:\r\n- ID de Reserva: {{reservationId}}\r\n- Fecha: {{eventDate}}\r\n- Hora: {{eventTime}}\r\n- Dirección: {{eventAddress}}\r\n- Total: ${{total}}\r\n\r\nTe contactaremos pronto para coordinar los detalles finales.\r\n\r\nSaludos,\r\nEl equipo de Coolbalu",
+          "variables": [
+            "customerName",
+            "reservationId",
+            "eventDate",
+            "eventTime",
+            "eventAddress",
+            "total"
+          ],
+          "is_active": true,
+          "created_at": "2025-07-31T20:47:30.713069+00:00",
+          "updated_at": "2025-07-31T21:40:33.274536+00:00"
+        },
+        {
+          "id": "7838bfea-7d29-4472-8a1a-0c0b9674f01d",
+          "template_key": "contact_form_notification",
+          "template_name": "Notificación de Formulario de Contacto",
+          "subject": "Nuevo mensaje de contacto recibido",
+          "html_content": "<!DOCTYPE html>\r\n<html>\r\n<head>\r\n    <meta charset=\"utf-8\">\r\n    <title>Nuevo Mensaje de Contacto - Coolbalu</title>\r\n</head>\r\n<body style=\"font-family: Arial, sans-serif; line-height: 1.6; color: #333;\">\r\n    <div style=\"max-width: 600px; margin: 0 auto; padding: 20px;\">\r\n        <h1 style=\"color: #dc2626;\">Nuevo mensaje de contacto</h1>\r\n        \r\n        <div style=\"background: #fef2f2; padding: 20px; border-radius: 8px; margin: 20px 0;\">\r\n            <p><strong>Nombre:</strong> {{nombre}} {{apellido}}</p>\r\n            <p><strong>Email:</strong> {{email}}</p>\r\n            <p><strong>Teléfono:</strong> {{telefono}}</p>\r\n            <p><strong>Mensaje:</strong></p>\r\n            <div style=\"background: white; padding: 15px; border-radius: 4px; margin-top: 10px;\">\r\n                {{mensaje}}\r\n            </div>\r\n        </div>\r\n        \r\n        <p>Responder a: <a href=\"mailto:{{email}}\">{{email}}</a></p>\r\n    </div>\r\n</body>\r\n</html>",
+          "text_content": "Nuevo mensaje de contacto\r\n\r\nNombre: {{nombre}} {{apellido}}\r\nEmail: {{email}}\r\nTeléfono: {{telefono}}\r\n\r\nMensaje:\r\n{{mensaje}}\r\n\r\nResponder a: {{email}}",
+          "variables": [
+            "nombre",
+            "apellido",
+            "email",
+            "telefono",
+            "mensaje"
+          ],
+          "is_active": true,
+          "created_at": "2025-07-31T20:47:30.713069+00:00",
+          "updated_at": "2025-07-31T21:40:33.274536+00:00"
+        },
+        {
+          "id": "12d81137-633f-4641-b90f-43d4613a8c49",
+          "template_key": "payment_confirmation",
+          "template_name": "Confirmación de Pago",
+          "subject": "Pago confirmado - Tu reserva está confirmada",
+          "html_content": "<!DOCTYPE html>\r\n<html>\r\n<head>\r\n    <meta charset=\"utf-8\">\r\n    <title>Pago Confirmado - Coolbalu</title>\r\n</head>\r\n<body style=\"font-family: Arial, sans-serif; line-height: 1.6; color: #333;\">\r\n    <div style=\"max-width: 600px; margin: 0 auto; padding: 20px;\">\r\n        <h1 style=\"color: #059669;\">¡Pago confirmado!</h1>\r\n        <p>Tu reserva en <strong>Coolbalu</strong> ha sido confirmada.</p>\r\n        \r\n        <div style=\"background: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0;\">\r\n            <h2 style=\"color: #047857;\">Detalles de la reserva:</h2>\r\n            <p><strong>ID de Reserva:</strong> {{reservationId}}</p>\r\n            <p><strong>Fecha:</strong> {{eventDate}}</p>\r\n            <p><strong>Hora:</strong> {{eventTime}}</p>\r\n            <p><strong>Dirección:</strong> {{eventAddress}}</p>\r\n            <p><strong>Total pagado:</strong> ${{total}}</p>\r\n        </div>\r\n        \r\n        <p>¡Nos vemos en tu evento!</p>\r\n        \r\n        <div style=\"margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;\">\r\n            <p style=\"font-size: 14px; color: #6b7280;\">\r\n                Saludos,<br>\r\n                El equipo de Coolbalu\r\n            </p>\r\n        </div>\r\n    </div>\r\n</body>\r\n</html>",
+          "text_content": "¡Pago confirmado!\r\n\r\nTu reserva en Coolbalu ha sido confirmada.\r\n\r\nDetalles de la reserva:\r\n- ID de Reserva: {{reservationId}}\r\n- Fecha: {{eventDate}}\r\n- Hora: {{eventTime}}\r\n- Dirección: {{eventAddress}}\r\n- Total pagado: ${{total}}\r\n\r\n¡Nos vemos en tu evento!\r\n\r\nSaludos,\r\nEl equipo de Coolbalu",
+          "variables": [
+            "reservationId",
+            "eventDate",
+            "eventTime",
+            "eventAddress",
+            "total"
+          ],
+          "is_active": true,
+          "created_at": "2025-07-31T20:47:30.713069+00:00",
+          "updated_at": "2025-07-31T21:40:33.274536+00:00"
+        }
+      ]
+    },
+    "email_config": {
+      "count": 7,
+      "data": [
+        {
+          "id": "a4599263-229b-415d-9b01-af066854a1ac",
+          "config_key": "sender_email",
+          "config_value": "hola@estudiomaters.com",
+          "description": "Email del remitente",
+          "is_sensitive": false,
+          "created_at": "2025-07-31T20:47:30.713069+00:00",
+          "updated_at": "2025-07-31T21:40:33.274536+00:00"
+        },
+        {
+          "id": "69d7b398-5a1a-44b2-bd72-a3c954a89c2c",
+          "config_key": "sender_name",
+          "config_value": "Coolbalu",
+          "description": "Nombre del remitente",
+          "is_sensitive": false,
+          "created_at": "2025-07-31T20:47:30.713069+00:00",
+          "updated_at": "2025-07-31T21:40:33.274536+00:00"
+        },
+        {
+          "id": "20a54dbf-6687-4ec0-a367-1539c87c3ac6",
+          "config_key": "reply_to_email",
+          "config_value": "info@coolbalu.com",
+          "description": "Email de respuesta",
+          "is_sensitive": false,
+          "created_at": "2025-07-31T20:47:30.713069+00:00",
+          "updated_at": "2025-07-31T21:40:33.274536+00:00"
+        },
+        {
+          "id": "3f0b6a8b-5a75-4053-b820-f7a37aca454a",
+          "config_key": "max_retries",
+          "config_value": "3",
+          "description": "Número máximo de reintentos para envío de emails",
+          "is_sensitive": false,
+          "created_at": "2025-07-31T20:47:30.713069+00:00",
+          "updated_at": "2025-07-31T21:40:33.274536+00:00"
+        },
+        {
+          "id": "54496e8b-9b94-489f-9b3a-17947094fdec",
+          "config_key": "retry_delay_minutes",
+          "config_value": "5",
+          "description": "Delay entre reintentos en minutos",
+          "is_sensitive": false,
+          "created_at": "2025-07-31T20:47:30.713069+00:00",
+          "updated_at": "2025-07-31T21:40:33.274536+00:00"
+        },
+        {
+          "id": "556edb84-e9f4-4d32-b1f6-0aeedbd12778",
+          "config_key": "enable_email_logging",
+          "config_value": "true",
+          "description": "Habilitar logging de emails",
+          "is_sensitive": false,
+          "created_at": "2025-07-31T20:47:30.713069+00:00",
+          "updated_at": "2025-07-31T21:40:33.274536+00:00"
+        },
+        {
+          "id": "6e1cb31c-1b4d-4ab2-9f7e-8033a814c551",
+          "config_key": "admin_notification_email",
+          "config_value": "admin@coolbalu.com",
+          "description": "Email para notificaciones de administrador",
+          "is_sensitive": false,
+          "created_at": "2025-07-31T20:47:30.713069+00:00",
+          "updated_at": "2025-07-31T21:40:33.274536+00:00"
+        }
+      ]
+    }
+  }
+}
