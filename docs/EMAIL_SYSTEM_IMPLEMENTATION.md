@@ -1,339 +1,365 @@
-# Sistema de Emails - Implementación Completa
+# Sistema de Emails - Coolbalu
 
-## 📋 Resumen
+## 📧 Descripción General
 
-Se ha implementado un sistema completo de emails en Supabase que permite:
+Se ha implementado un sistema completo de emails automatizados usando **Resend** como proveedor de emails transaccionales. El sistema incluye:
 
-- **Almacenar logs** de todos los emails enviados
-- **Gestionar plantillas** de email desde la base de datos
-- **Configurar parámetros** del sistema de email
-- **Monitorear el estado** de envío de emails
-- **Administrar** todo desde el panel de administración
+- ✅ Emails de activación de cuenta
+- ✅ Emails de bienvenida
+- ✅ Emails de confirmación de reserva
+- ✅ Emails de notificación al admin
+- ✅ Logs completos de emails
+- ✅ Templates HTML profesionales
+- ✅ Sistema de tokens de activación
 
 ## 🏗️ Arquitectura
 
-### Tablas de Base de Datos
+### Estructura de Archivos
 
-#### 1. `email_logs`
-Almacena el historial completo de emails enviados:
+```
+services/
+├── email/
+│   ├── emailTypes.ts          # Tipos TypeScript
+│   └── emailService.ts        # Servicio principal de emails
+├── supabase/
+│   ├── registerUser.ts        # Registro con emails
+│   ├── activateAccount.ts     # Activación de cuentas
+│   └── reservations.ts        # Reservas con emails
+hooks/
+└── useEmail.ts               # Hook personalizado
+components/
+└── admin/
+    └── EmailLogs.tsx         # Panel de logs
+pages/
+└── ActivateAccount.tsx       # Página de activación
+```
 
+### Base de Datos
+
+#### Tabla `email_logs`
 ```sql
-- id: UUID (PK)
-- email_type: VARCHAR(50) - Tipo de email
-- recipient_email: VARCHAR(255) - Email del destinatario
-- recipient_name: VARCHAR(255) - Nombre del destinatario
-- subject: VARCHAR(500) - Asunto del email
-- content: TEXT - Contenido completo del email
-- status: VARCHAR(20) - Estado (pending, sent, failed, bounced)
-- error_message: TEXT - Mensaje de error si falló
-- metadata: JSONB - Metadatos adicionales
-- related_reservation_id: UUID - ID de reserva relacionada
-- related_contact_message_id: UUID - ID de mensaje de contacto
-- sent_at: TIMESTAMP - Fecha de envío
-- created_at: TIMESTAMP - Fecha de creación
+CREATE TABLE email_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  email_type VARCHAR(50) NOT NULL,
+  recipient_email VARCHAR(255) NOT NULL,
+  subject VARCHAR(255) NOT NULL,
+  status VARCHAR(20) NOT NULL CHECK (status IN ('sent', 'failed', 'pending')),
+  sent_at TIMESTAMP WITH TIME ZONE,
+  error_message TEXT,
+  metadata JSONB,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 ```
 
-#### 2. `email_templates`
-Gestiona las plantillas de email:
-
+#### Tabla `activation_tokens`
 ```sql
-- id: UUID (PK)
-- template_key: VARCHAR(100) - Clave única de la plantilla
-- template_name: VARCHAR(255) - Nombre descriptivo
-- subject: VARCHAR(500) - Asunto de la plantilla
-- html_content: TEXT - Contenido HTML
-- text_content: TEXT - Contenido de texto plano
-- variables: JSONB - Variables disponibles
-- is_active: BOOLEAN - Si está activa
-- created_at: TIMESTAMP
-- updated_at: TIMESTAMP
+CREATE TABLE activation_tokens (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  token VARCHAR(255) UNIQUE NOT NULL,
+  expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  used_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 ```
 
-#### 3. `email_config`
-Configuración del sistema de emails:
+## 🚀 Configuración
 
-```sql
-- id: UUID (PK)
-- config_key: VARCHAR(100) - Clave de configuración
-- config_value: TEXT - Valor de configuración
-- description: TEXT - Descripción
-- is_sensitive: BOOLEAN - Si es información sensible
-- created_at: TIMESTAMP
-- updated_at: TIMESTAMP
+### 1. Variables de Entorno
+
+Asegúrate de tener estas variables en tu archivo `.env`:
+
+```env
+# Resend Configuration
+VITE_RESEND_API_KEY=re_tu_api_key_aqui
+VITE_RESEND_FROM_EMAIL=hola@estudiomaters.com
+VITE_RESEND_FROM_NAME=Coolbalu
+
+# Supabase Configuration
+VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
+VITE_SUPABASE_ANON_KEY=tu_anon_key_aqui
+SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key_aqui
 ```
 
-### Políticas de Seguridad (RLS)
+### 2. Configurar Base de Datos
 
-- **Solo administradores** pueden acceder a todas las tablas
-- **Logs de email** solo visibles para admins
-- **Plantillas** solo editables por admins
-- **Configuración** protegida para admins
-
-## 🔧 Funcionalidades Implementadas
-
-### 1. Envío de Emails con Logging
-
-```typescript
-// Enviar email de confirmación de reserva
-const result = await sendReservationConfirmationEmail({
-  reservationId: 'uuid',
-  customerName: 'Juan Pérez',
-  customerEmail: 'juan@example.com',
-  eventDate: '2025-02-15',
-  eventTime: '14:00',
-  eventAddress: 'Av. Corrientes 123',
-  total: 50000,
-  items: [...]
-});
-
-// Enviar notificación de formulario de contacto
-const result = await sendContactFormEmail({
-  nombre: 'María',
-  apellido: 'González',
-  email: 'maria@example.com',
-  telefono: '+54 9 11 1234-5678',
-  mensaje: 'Hola, necesito información...',
-  contactMessageId: 'uuid'
-});
-```
-
-### 2. Plantillas de Email
-
-#### Plantillas Incluidas:
-
-1. **`reservation_confirmation`** - Confirmación de reserva
-2. **`contact_form_notification`** - Notificación de formulario de contacto
-3. **`payment_confirmation`** - Confirmación de pago
-
-#### Variables Disponibles:
-
-- `{{customerName}}` - Nombre del cliente
-- `{{reservationId}}` - ID de la reserva
-- `{{eventDate}}` - Fecha del evento
-- `{{eventTime}}` - Hora del evento
-- `{{eventAddress}}` - Dirección del evento
-- `{{total}}` - Total de la reserva
-- `{{nombre}}`, `{{apellido}}`, `{{email}}`, `{{telefono}}`, `{{mensaje}}` - Datos de contacto
-
-### 3. Configuración del Sistema
-
-#### Configuraciones Incluidas:
-
-- `sender_email` - Email del remitente
-- `sender_name` - Nombre del remitente
-- `reply_to_email` - Email de respuesta
-- `max_retries` - Número máximo de reintentos
-- `retry_delay_minutes` - Delay entre reintentos
-- `enable_email_logging` - Habilitar logging
-- `admin_notification_email` - Email para notificaciones
-
-### 4. Panel de Administración
-
-#### Nueva Sección: "Logs de Email"
-
-- **Filtros avanzados** por tipo, estado y destinatario
-- **Vista detallada** de cada email enviado
-- **Estadísticas** de envío
-- **Gestión de errores** y reintentos
-
-## 📁 Archivos Creados/Modificados
-
-### Nuevos Archivos:
-
-1. **`supabase/migrations/20250131000004-create-contact-messages-if-not-exists.sql`**
-   - Migración para crear tabla contact_messages si no existe
-2. **`supabase/migrations/20250131000003-create-email-system.sql`**
-   - Migración completa del sistema de emails
-
-2. **`services/supabase/email.ts`**
-   - Servicio principal de emails con Supabase
-
-3. **`components/admin/EmailLogs.tsx`**
-   - Componente para administrar logs de email
-
-4. **`scripts/setup-email-system.js`**
-   - Script para configurar el sistema
-
-5. **`docs/EMAIL_SYSTEM_IMPLEMENTATION.md`**
-   - Esta documentación
-
-### Archivos Modificados:
-
-1. **`services/email.ts`**
-   - Actualizado para usar el nuevo sistema
-
-2. **`hooks/useContact.ts`**
-   - Agregado envío de email de notificación
-
-3. **`pages/Reservation.tsx`**
-   - Agregado envío de email de confirmación
-
-4. **`pages/AdminPanel.tsx`**
-   - Agregada sección de logs de email
-
-5. **`config/supabase-config.js`**
-   - Agregadas nuevas tablas
-
-## 🚀 Instalación y Configuración
-
-### 1. Ejecutar la Migración
+Ejecuta el script de configuración:
 
 ```bash
-# Opción 1: Usar el script automatizado (recomendado)
 node scripts/setup-email-system.js
-
-# Opción 2: Ejecutar manualmente en Supabase
-# 1. Primero ejecutar:
-# supabase/migrations/20250131000004-create-contact-messages-if-not-exists.sql
-# 2. Luego ejecutar:
-# supabase/migrations/20250131000003-create-email-system.sql
-```
-
-### 2. Verificar Configuración
-
-```bash
-# Verificar que las tablas se crearon
-# Verificar que las plantillas están cargadas
-# Verificar que la configuración está establecida
 ```
 
 ### 3. Probar el Sistema
 
-1. **Crear una reserva** - Debería enviar email de confirmación
-2. **Enviar formulario de contacto** - Debería enviar notificación al admin
-3. **Revisar logs** en el panel de administración
-
-## 🔍 Monitoreo y Debugging
-
-### Logs de Consola
-
-El sistema genera logs detallados:
-
+```bash
+node scripts/test-email-system.js
 ```
-📧 Enviando email con plantilla: reservation_confirmation
-✅ Email enviado exitosamente: { id: "res_123" }
-✅ Email registrado exitosamente: log_uuid
+
+## 📨 Tipos de Emails
+
+### 1. Activación de Cuenta
+- **Trigger**: Registro de usuario
+- **Destinatario**: Nuevo usuario
+- **Contenido**: Enlace de activación con token único
+- **Expiración**: 24 horas
+
+### 2. Bienvenida
+- **Trigger**: Activación de cuenta exitosa
+- **Destinatario**: Usuario activado
+- **Contenido**: Confirmación y bienvenida
+
+### 3. Reserva Creada
+- **Trigger**: Creación de nueva reserva
+- **Destinatario**: Cliente
+- **Contenido**: Detalles de reserva y datos de pago
+
+### 4. Notificación Admin
+- **Trigger**: Creación de nueva reserva
+- **Destinatario**: Administrador
+- **Contenido**: Notificación de nueva reserva pendiente
+
+### 5. Reserva Confirmada
+- **Trigger**: Confirmación de pago por admin
+- **Destinatario**: Cliente
+- **Contenido**: Confirmación y detalles finales
+
+## 🔧 Uso en el Código
+
+### Registro de Usuario
+
+```typescript
+import { registerUser } from '../services/supabase/registerUser';
+
+// El email de activación se envía automáticamente
+const result = await registerUser({
+  email: 'usuario@ejemplo.com',
+  password: 'password123',
+  firstName: 'Juan',
+  lastName: 'Pérez'
+});
 ```
+
+### Activación de Cuenta
+
+```typescript
+import { activateAccount } from '../services/supabase/activateAccount';
+
+// El email de bienvenida se envía automáticamente
+const result = await activateAccount(token);
+```
+
+### Creación de Reserva
+
+```typescript
+import { createReservationWithEmails } from '../services/supabase/reservations';
+
+// Los emails se envían automáticamente
+const result = await createReservationWithEmails(
+  reservationData,
+  itemsData,
+  'admin@coolbalu.com'
+);
+```
+
+### Confirmación de Reserva
+
+```typescript
+import { confirmReservationWithEmail } from '../services/supabase/reservations';
+
+// El email de confirmación se envía automáticamente
+const result = await confirmReservationWithEmail(
+  reservationId,
+  'admin@coolbalu.com'
+);
+```
+
+### Hook Personalizado
+
+```typescript
+import { useEmail } from '../hooks/useEmail';
+
+const { sendAccountActivationEmail, sendReservationEmails } = useEmail();
+
+// Enviar email manualmente si es necesario
+await sendAccountActivationEmail(email, name, token);
+```
+
+## 🎨 Templates HTML
+
+Los templates están diseñados con:
+
+- ✅ Diseño responsive
+- ✅ Compatibilidad con clientes de email
+- ✅ Branding de Coolbalu
+- ✅ Botones de acción claros
+- ✅ Información estructurada
+- ✅ Colores consistentes
+
+### Estructura de Template
+
+```html
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <!-- Header con gradiente -->
+  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <h1>Coolbalu</h1>
+  </div>
+  
+  <!-- Contenido principal -->
+  <div style="background: white; padding: 30px;">
+    <!-- Contenido específico del email -->
+  </div>
+</div>
+```
+
+## 📊 Monitoreo y Logs
 
 ### Panel de Administración
 
-- **Filtros** por tipo, estado y destinatario
-- **Vista detallada** de cada email
-- **Estadísticas** de envío
-- **Gestión de errores**
+Accede a `/admin` → "Logs de Email" para ver:
 
-### Estados de Email
+- 📈 Estadísticas de emails enviados/fallidos
+- 📋 Historial completo de emails
+- 🔍 Filtros por tipo, estado y fecha
+- ⚠️ Errores y mensajes de fallo
 
-- `pending` - Pendiente de envío
-- `sent` - Enviado exitosamente
-- `failed` - Falló el envío
-- `bounced` - Email rebotado
+### Logs en Base de Datos
+
+```sql
+-- Ver todos los emails
+SELECT * FROM email_logs ORDER BY created_at DESC;
+
+-- Ver emails fallidos
+SELECT * FROM email_logs WHERE status = 'failed';
+
+-- Estadísticas por tipo
+SELECT email_type, status, COUNT(*) 
+FROM email_logs 
+GROUP BY email_type, status;
+```
 
 ## 🔒 Seguridad
 
-### Políticas RLS Implementadas
+### Tokens de Activación
 
-- **Solo administradores** pueden acceder a logs
-- **Configuración protegida** para admins
-- **Plantillas editables** solo por admins
-- **Datos sensibles** marcados apropiadamente
+- ✅ Tokens únicos por usuario
+- ✅ Expiración automática (24 horas)
+- ✅ Uso único (se marcan como usados)
+- ✅ Limpieza automática de tokens expirados
 
-### Funciones Helper Seguras
+### Políticas RLS
 
-- `get_email_config()` - Obtener configuración
-- `get_email_template()` - Obtener plantilla
-- `log_email_sent()` - Registrar email enviado
+- ✅ Usuarios solo ven sus propios logs
+- ✅ Admins ven todos los logs
+- ✅ Service role puede insertar/actualizar
+- ✅ Protección de datos sensibles
 
-## 📊 Rendimiento
+## 🚨 Troubleshooting
 
-### Optimizaciones Implementadas
+### Problemas Comunes
 
-- **Índices** en campos de búsqueda frecuente
-- **Paginación** en logs de email
-- **Filtros eficientes** por tipo y estado
-- **Caché** de plantillas y configuración
-
-### Límites Configurados
-
-- **50 logs** por página por defecto
-- **3 reintentos** máximo por email
-- **5 minutos** entre reintentos
-
-## 🛠️ Mantenimiento
-
-### Tareas Regulares
-
-1. **Revisar logs fallidos** semanalmente
-2. **Actualizar plantillas** según necesidades
-3. **Monitorear métricas** de envío
-4. **Limpiar logs antiguos** mensualmente
-
-### Comandos Útiles
-
+#### 1. Emails no se envían
 ```bash
-# Verificar estado del sistema
-node scripts/setup-email-system.js
+# Verificar configuración de Resend
+node scripts/test-email-system.js
+```
 
-# Revisar logs en Supabase
-SELECT * FROM email_logs WHERE status = 'failed' ORDER BY created_at DESC;
+#### 2. Error de dominio no verificado
+- Verificar que el dominio esté verificado en Resend
+- Usar un dominio verificado en `VITE_RESEND_FROM_EMAIL`
 
-# Verificar plantillas activas
-SELECT template_key, template_name FROM email_templates WHERE is_active = true;
+#### 3. Tokens de activación expirados
+```sql
+-- Limpiar tokens expirados manualmente
+SELECT cleanup_expired_activation_tokens();
+```
+
+#### 4. Logs no aparecen en admin
+- Verificar políticas RLS
+- Verificar que el usuario tenga rol de admin
+
+### Logs de Debug
+
+```typescript
+// Habilitar logs detallados
+console.log('Email service error:', error);
+console.log('Resend response:', response);
+```
+
+## 📈 Métricas y Analytics
+
+### KPIs Recomendados
+
+- 📧 Tasa de entrega de emails
+- ⏱️ Tiempo de activación de cuentas
+- 💰 Conversión de reservas
+- 🔄 Tasa de reenvío de emails
+
+### Dashboard Sugerido
+
+```typescript
+// Métricas para dashboard
+const metrics = {
+  totalEmails: await getEmailCount(),
+  deliveryRate: await getDeliveryRate(),
+  activationRate: await getActivationRate(),
+  reservationConversion: await getReservationConversion()
+};
+```
+
+## 🔄 Mantenimiento
+
+### Limpieza Automática
+
+```sql
+-- Limpiar tokens expirados (ejecutar diariamente)
+SELECT cleanup_expired_activation_tokens();
+
+-- Limpiar logs antiguos (opcional)
+DELETE FROM email_logs 
+WHERE created_at < NOW() - INTERVAL '90 days';
+```
+
+### Backup de Logs
+
+```sql
+-- Exportar logs importantes
+SELECT * FROM email_logs 
+WHERE created_at > NOW() - INTERVAL '30 days'
+ORDER BY created_at DESC;
 ```
 
 ## 🎯 Próximos Pasos
 
-### Mejoras Futuras
+### Mejoras Sugeridas
 
-1. **Webhooks** para notificaciones en tiempo real
-2. **Plantillas dinámicas** con editor visual
-3. **Métricas avanzadas** y reportes
-4. **Integración** con otros proveedores de email
-5. **Automatización** de reintentos fallidos
+1. **Templates Dinámicos**
+   - Sistema de plantillas en base de datos
+   - Editor visual de templates
 
-### Integración con Otros Sistemas
+2. **Automatización Avanzada**
+   - Emails de recordatorio
+   - Emails de seguimiento
+   - Notificaciones push
 
-- **Notificaciones push** para admins
-- **Reportes automáticos** de métricas
-- **Integración** con CRM
-- **Analytics** de engagement
+3. **Analytics Avanzado**
+   - Tracking de apertura y clics
+   - A/B testing de templates
+   - Métricas de engagement
 
-## ✅ Checklist de Verificación
+4. **Integración con WhatsApp**
+   - Notificaciones por WhatsApp Business API
+   - Envío de comprobantes automático
 
-- [ ] Migración ejecutada correctamente
-- [ ] Tablas creadas en Supabase
-- [ ] Plantillas cargadas
-- [ ] Configuración establecida
-- [ ] Políticas RLS funcionando
-- [ ] Panel de administración accesible
-- [ ] Emails de reserva funcionando
-- [ ] Emails de contacto funcionando
-- [ ] Logs registrándose correctamente
-- [ ] Filtros del panel funcionando
+## 📞 Soporte
 
-## 🆘 Solución de Problemas
+Para problemas o consultas:
 
-### Problemas Comunes
+1. Revisar logs en `/admin/emails`
+2. Ejecutar script de prueba
+3. Verificar configuración de Resend
+4. Consultar documentación de Resend
 
-1. **Emails no se envían**
-   - Verificar API key de Resend
-   - Revisar configuración de remitente
-   - Verificar logs de error
+---
 
-2. **Logs no se registran**
-   - Verificar políticas RLS
-   - Revisar permisos de usuario
-   - Verificar función `log_email_sent`
-
-3. **Plantillas no cargan**
-   - Verificar tabla `email_templates`
-   - Revisar campo `is_active`
-   - Verificar variables en plantilla
-
-### Contacto para Soporte
-
-Para problemas técnicos, revisar:
-- Logs de consola del navegador
-- Logs de Supabase
-- Documentación de Resend
-- Esta documentación 
+**¡El sistema de emails está listo para usar! 🎉** 

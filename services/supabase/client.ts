@@ -5,6 +5,7 @@ import { SUPABASE_CONFIG } from '@/config/supabase-config';
 // Usar configuración centralizada con fallback a variables de entorno
 const SUPABASE_URL = SUPABASE_CONFIG.SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = SUPABASE_CONFIG.ANON_PUBLIC_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
+const SUPABASE_SERVICE_KEY = SUPABASE_CONFIG.SERVICE_ROLE_KEY || import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
 // Verificar que las credenciales estén disponibles
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
@@ -25,6 +26,20 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
+  },
+  global: {
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+  },
+});
+
+// Cliente administrativo para operaciones que requieren SERVICE_ROLE_KEY
+export const supabaseAdmin = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
   },
   global: {
     headers: {

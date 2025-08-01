@@ -10,7 +10,7 @@ import { UserManagement } from '@/components/admin/UserManagement';
 import { SystemConfiguration } from '@/components/admin/SystemConfiguration';
 
 import AdminAvailabilities from './AdminAvailabilities';
-import EmailLogs from '@/components/admin/EmailLogs';
+import { EmailLogs } from '@/components/admin/EmailLogs';
 
 import { 
   LayoutDashboard, 

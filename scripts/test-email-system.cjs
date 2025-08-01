@@ -7,121 +7,83 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function testEmailSystem() {
-  console.log('🧪 Probando sistema de emails...\n');
+  console.log('🧪 Probando sistema de emails de Supabase Auth...\n');
 
   try {
-    // 1. Probar la edge function directamente
-    console.log('1️⃣ Probando edge function...');
+    // Paso 1: Intentar registrar un usuario de prueba
+    console.log('1️⃣ Registrando usuario de prueba...');
     
-    const testData = {
-      to: 'test@example.com',
-      subject: 'Test de Email - Coolbalu',
-      reservationData: {
-        reservationId: 'test-123',
-        customerName: 'Cliente de Prueba',
-        customerEmail: 'test@example.com',
-        eventDate: '2025-02-15',
-        eventTime: '14:00',
-        eventAddress: 'Calle de Prueba 123, Buenos Aires',
-        adultCount: 2,
-        childCount: 1,
-        total: 50000,
-        subtotal: 45000,
-        transportCost: 5000,
-        items: [
-          {
-            productName: 'Producto de Prueba',
-            quantity: 1,
-            price: 45000,
-            extraHours: 0,
-            itemTotal: 45000
-          }
-        ],
-        comments: 'Comentario de prueba',
-        rainReschedule: 'no'
-      }
-    };
-
-    const { data, error } = await supabase.functions.invoke('resend-email', {
-      body: testData
-    });
-
-    if (error) {
-      console.error('❌ Error en edge function:', error);
-    } else {
-      console.log('✅ Edge function funcionando correctamente');
-      console.log('📧 Respuesta:', data);
-    }
-
-    // 2. Verificar configuración de Resend
-    console.log('\n2️⃣ Verificando configuración de Resend...');
+    const testEmail = `test-${Date.now()}@example.com`;
+    const testPassword = 'TestPassword123!';
     
-    // Intentar obtener información de la API de Resend
-    const resendTest = await supabase.functions.invoke('resend-email', {
-      body: {
-        to: 'test@example.com',
-        subject: 'Test de Configuración',
-        reservationData: {
-          reservationId: 'config-test',
-          customerName: 'Test',
-          customerEmail: 'test@example.com',
-          eventDate: '2025-02-15',
-          eventTime: '14:00',
-          eventAddress: 'Test',
-          adultCount: 1,
-          childCount: 0,
-          total: 1000,
-          subtotal: 1000,
-          transportCost: 0,
-          items: []
+    const { data, error } = await supabase.auth.signUp({
+      email: testEmail,
+      password: testPassword,
+      options: {
+        emailRedirectTo: 'http://localhost:3000/confirm-email',
+        data: {
+          first_name: 'Test',
+          last_name: 'User'
         }
       }
     });
 
-    if (resendTest.error) {
-      console.error('❌ Error en configuración de Resend:', resendTest.error);
-    } else {
-      console.log('✅ Configuración de Resend correcta');
+    if (error) {
+      console.error('❌ Error al registrar usuario:', error);
+      return;
     }
 
-    // 3. Verificar datos de reservas
-    console.log('\n3️⃣ Verificando datos de reservas...');
+    console.log('✅ Usuario registrado exitosamente');
+    console.log('📧 Email:', testEmail);
+    console.log('🆔 User ID:', data.user?.id);
+    console.log('📧 Email confirmado:', data.user?.email_confirmed_at);
+    console.log('📧 Email enviado:', data.user?.email_confirmed_at ? 'Sí' : 'No');
+
+    // Paso 2: Verificar configuración de emails en Supabase
+    console.log('\n2️⃣ Verificando configuración de emails...');
     
-    const { data: reservations, error: reservationsError } = await supabase
-      .from('reservations')
-      .select('*')
-      .limit(1);
-
-    if (reservationsError) {
-      console.error('❌ Error al obtener reservas:', reservationsError);
+    // Intentar obtener la configuración de auth
+    const { data: authData, error: authError } = await supabase.auth.getSession();
+    
+    if (authError) {
+      console.error('❌ Error al obtener sesión:', authError);
     } else {
-      console.log('✅ Datos de reservas accesibles');
-      console.log(`📊 Reservas encontradas: ${reservations?.length || 0}`);
-      
-      if (reservations && reservations.length > 0) {
-        const reservation = reservations[0];
-        console.log('📋 Ejemplo de reserva:');
-        console.log(`   ID: ${reservation.id}`);
-        console.log(`   Estado: ${reservation.status}`);
-        console.log(`   Total: $${reservation.total}`);
-        console.log(`   Fecha: ${reservation.event_date}`);
-      }
+      console.log('✅ Conexión a Supabase Auth exitosa');
     }
 
-    console.log('\n✅ Prueba del sistema de emails completada');
-    console.log('\n📝 Resumen:');
-    console.log('- Edge function: ✅ Funcionando');
-    console.log('- Resend config: ✅ Correcta');
-    console.log('- Datos de reservas: ✅ Accesibles');
-    console.log('\n🚀 El sistema está listo para usar!');
+    // Paso 3: Verificar si el email se envió
+    console.log('\n3️⃣ Verificando envío de email...');
+    
+    if (data.user && !data.user.email_confirmed_at) {
+      console.log('📧 Email de confirmación enviado (usuario no confirmado)');
+      console.log('🔗 El usuario debe hacer clic en el enlace del email para confirmar');
+    } else if (data.user && data.user.email_confirmed_at) {
+      console.log('✅ Email ya confirmado (esto no debería pasar en un registro nuevo)');
+    }
+
+    // Paso 4: Limpiar usuario de prueba
+    console.log('\n4️⃣ Limpiando usuario de prueba...');
+    
+    // Intentar eliminar el usuario de prueba (esto requiere permisos de admin)
+    console.log('⚠️ Para eliminar el usuario de prueba, usa el panel de administración de Supabase');
+    console.log('📧 Email del usuario de prueba:', testEmail);
+
+    console.log('\n✅ Prueba completada');
+    console.log('\n📋 Resumen:');
+    console.log('- Usuario registrado:', testEmail);
+    console.log('- Email enviado:', data.user && !data.user.email_confirmed_at ? 'Sí' : 'No');
+    console.log('- Estado de confirmación:', data.user?.email_confirmed_at ? 'Confirmado' : 'Pendiente');
+    
+    if (!data.user?.email_confirmed_at) {
+      console.log('\n💡 Recomendaciones:');
+      console.log('1. Verifica que el email llegó a la bandeja de entrada');
+      console.log('2. Revisa la carpeta de spam si no lo encuentras');
+      console.log('3. Verifica la configuración de SMTP en Supabase Dashboard');
+      console.log('4. Asegúrate de que el dominio de email esté verificado en Supabase');
+    }
 
   } catch (error) {
-    console.error('❌ Error en la prueba:', error);
-    console.log('\n🔧 Posibles soluciones:');
-    console.log('1. Verificar que la edge function esté desplegada');
-    console.log('2. Verificar la API key de Resend');
-    console.log('3. Verificar el dominio verificado en Resend');
-    console.log('4. Verificar permisos de Supabase');
+    console.error('❌ Error inesperado:', error);
   }
 }
 

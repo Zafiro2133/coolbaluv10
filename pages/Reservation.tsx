@@ -73,6 +73,18 @@ export default function Reservation() {
   useEffect(() => {
     if (!user) {
       navigate('/auth');
+      return;
+    }
+    
+    // Verificar si el email está confirmado
+    if (!user.email_confirmed_at) {
+      toast({
+        title: "Email no confirmado",
+        description: "Debes confirmar tu email antes de hacer una reserva. Revisa tu bandeja de entrada.",
+        variant: "destructive",
+      });
+      navigate('/auth');
+      return;
     }
     
     if (cartItems.length === 0) {

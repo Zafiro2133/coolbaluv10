@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Users, UserCheck, UserX, Search, Eye, Shield, Calendar, Mail, Phone, MapPin, CloudRain, Trash2 } from 'lucide-react';
-import { supabase } from '@/services/supabase/client';
+import { supabase, supabaseAdmin } from '@/services/supabase/client';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -210,8 +210,8 @@ export function UserManagement() {
   const deleteUser = async (user: UserWithDetails) => {
     setIsDeleting(true);
     try {
-      // Eliminar el usuario usando la API de Supabase
-      const { error } = await supabase.auth.admin.deleteUser(user.user_id);
+      // Eliminar el usuario usando el cliente administrativo de Supabase
+      const { error } = await supabaseAdmin.auth.admin.deleteUser(user.user_id);
 
       if (error) {
         throw new Error(`Error al eliminar usuario: ${error.message}`);

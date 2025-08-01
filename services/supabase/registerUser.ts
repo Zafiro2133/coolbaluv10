@@ -1,4 +1,4 @@
-import { supabase } from '@/services/supabase/client';
+import { supabase } from './client';
 
 interface RegisterUserParams {
   email: string;
@@ -8,10 +8,17 @@ interface RegisterUserParams {
 }
 
 export async function registerUser({ email, password, firstName, lastName }: RegisterUserParams) {
-  // Paso 1: Crear usuario en auth
+  // Paso 1: Crear usuario en auth con Supabase Auth nativo
   const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      emailRedirectTo: `${window.location.origin}/confirm-email`,
+      data: {
+        first_name: firstName,
+        last_name: lastName,
+      }
+    }
   });
 
   if (signUpError) {
@@ -47,8 +54,10 @@ export async function registerUser({ email, password, firstName, lastName }: Reg
   if (roleError) {
     console.warn('Error al asignar rol de cliente:', roleError);
     // No retornamos error aquí porque el usuario ya se creó correctamente
-    // El trigger handle_new_user debería haber manejado esto automáticamente
   }
+
+  // Paso 4: Cerrar la sesión para forzar la confirmación de email
+  await supabase.auth.signOut();
 
   return { success: true };
 } 

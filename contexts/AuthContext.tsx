@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Crear perfil automáticamente si no existe después de login
   useEffect(() => {
     const createProfileIfNotExists = async () => {
-      if (user) {
+      if (user && user.email_confirmed_at) {
         // Verificar si existe el perfil
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
@@ -104,6 +104,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     // Si el registro fue exitoso y tenemos el user, guardamos el perfil y asignamos rol
+    // PERO NO establecemos la sesión automáticamente - el usuario debe confirmar su email
     if (!error && data?.user) {
       await supabase.from('profiles').insert({
         user_id: data.user.id,
@@ -116,6 +117,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         user_id: data.user.id,
         role: 'customer',
       });
+      
+      // Cerrar la sesión para forzar la confirmación de email
+      await supabase.auth.signOut();
     }
     return { error };
   };
