@@ -78,7 +78,9 @@ export class EmailService {
   }
 
   static async sendAccountActivationEmail(email: string, name: string, activationToken: string): Promise<boolean> {
-    const activationUrl = `${window.location.origin}/activate?token=${activationToken}`;
+    // Usar el sistema de Supabase Auth nativo en lugar del sistema personalizado
+    // El token será manejado automáticamente por Supabase
+    const activationUrl = `${window.location.origin}/confirm-email`;
     
     const emailData: EmailData = {
       to: email,
